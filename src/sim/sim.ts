@@ -660,12 +660,6 @@ import type { RiftEvent, RiftInstance } from './rift/types';
 // (online.ts) stays byte-identical.
 export { computeQuestState } from './quests/quest_commands';
 
-import { completeCurrentQuestsForDev, completeQuestForDev } from './quests/dev_quest_commands';
-import * as arenaMod from './social/arena';
-import { clearAfkOnMove } from './social/away';
-import * as bgMod from './social/battleground';
-import * as bgOutcomesMod from './social/battleground_outcomes';
-import * as bgProposalMod from './social/battleground_proposal';
 import {
   type CardDeckState,
   emptyCardDeckState,
@@ -673,9 +667,15 @@ import {
   sanitizeCardDeckState,
   serializeCardDeckState,
 } from './minigames/card_duel';
+import { completeCurrentQuestsForDev, completeQuestForDev } from './quests/dev_quest_commands';
+import * as arenaMod from './social/arena';
+import { clearAfkOnMove } from './social/away';
+import * as bgMod from './social/battleground';
+import * as bgOutcomesMod from './social/battleground_outcomes';
+import * as bgProposalMod from './social/battleground_proposal';
+import * as cardDeckCmd from './social/card_deck_commands';
 import type { CardDuelMatch } from './social/card_duel';
 import * as cardDuelMod from './social/card_duel';
-import * as cardDeckCmd from './social/card_deck_commands';
 import * as cardDuelBots from './social/card_duel_bots';
 import * as duelMod from './social/duel';
 // A4: Protect Yumi (formats yumi3/yumi5); match logic in social/yumi.ts, reached

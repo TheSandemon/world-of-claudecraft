@@ -63,7 +63,11 @@ async function liveArtIds() {
 }
 
 function moduleText(ids) {
-  const lines = ids.map((id) => `  '${id}',`).join('\n');
+  // Biome prints an empty array literal inline, so the empty case (no art
+  // commissioned yet) must emit `new Set([])` rather than a bracket pair
+  // wrapped around a blank line, or the changed-files format gate fails on a
+  // file no human is allowed to hand-edit.
+  const body = ids.length === 0 ? '[]' : `[\n${ids.map((id) => `  '${id}',`).join('\n')}\n]`;
   return `// Card art ids with committed paintings under public/ui/cards/<art>.webp
 // (${CARD_WIDTH}x${CARD_HEIGHT} portrait WebP, produced by scripts/convert_card_art_webp.mjs).
 // GENERATED: do not hand-edit; re-run the script to regenerate. Imported by
@@ -72,8 +76,7 @@ function moduleText(ids) {
 // empty while art is still being commissioned. tests/card_art.test.ts gates it
 // against the committed .webp files (exact set equality, both directions).
 
-export const CARD_IMAGE_IDS: ReadonlySet<string> = new Set([
-${lines}${lines ? '\n' : ''}]);
+export const CARD_IMAGE_IDS: ReadonlySet<string> = new Set(${body});
 `;
 }
 

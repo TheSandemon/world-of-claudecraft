@@ -34,7 +34,8 @@ function view(over: Partial<CardBotView> = {}): CardBotView {
   };
 }
 
-const valueOf = (v: CardBotView, iid: number | null) =>
+/** The face value of the card a policy picked, for readable assertions. */
+const pickedValue = (v: CardBotView, iid: number | null) =>
   v.hand.find((c) => c.iid === iid)?.value ?? null;
 
 describe('card_duel bot tiers', () => {
@@ -59,16 +60,16 @@ describe('card_duel bot tiers', () => {
   it('Steady commits its highest card on the round that decides the match', () => {
     // One win from the threshold, either way: this round matters.
     const mine = view({ myRounds: 1 });
-    expect(valueOf(mine, steadyPolicy(mine, new Rng(1)))).toBe(9);
+    expect(pickedValue(mine, steadyPolicy(mine, new Rng(1)))).toBe(9);
     const theirs = view({ opponentRounds: 1 });
-    expect(valueOf(theirs, steadyPolicy(theirs, new Rng(1)))).toBe(9);
+    expect(pickedValue(theirs, steadyPolicy(theirs, new Rng(1)))).toBe(9);
   });
 
   it('Steady sheds a low card on a round that decides nothing', () => {
     const v = view();
     // The 0.75 arm: most seeds dump the cheapest card rather than burning a 9.
     const picks = Array.from({ length: 20 }, (_, seed) =>
-      valueOf(v, steadyPolicy(v, new Rng(seed))),
+      pickedValue(v, steadyPolicy(v, new Rng(seed))),
     );
     const low = picks.filter((value) => value === 2).length;
     expect(low).toBeGreaterThan(picks.length / 2);
@@ -78,11 +79,11 @@ describe('card_duel bot tiers', () => {
     // The opponent just spent a 10, so their next card is likely small and a
     // middling card takes the round cheaply.
     const v = view({ opponentPlayedValues: [10] });
-    expect(valueOf(v, sharpPolicy(v, new Rng(3)))).toBe(5);
+    expect(pickedValue(v, sharpPolicy(v, new Rng(3)))).toBe(5);
     // With no such tell it falls back to the Steady behavior.
     const plain = view();
-    expect(valueOf(plain, sharpPolicy(plain, new Rng(3)))).toBe(
-      valueOf(plain, steadyPolicy(plain, new Rng(3))),
+    expect(pickedValue(plain, sharpPolicy(plain, new Rng(3)))).toBe(
+      pickedValue(plain, steadyPolicy(plain, new Rng(3))),
     );
   });
 
@@ -107,12 +108,12 @@ describe('card_duel bot tiers', () => {
 
   it('Master plays the surest card when the round decides the match', () => {
     const v = view({ myRounds: 1, opponentPlayedValues: [] });
-    expect(valueOf(v, masterPolicy(v, new Rng(1)))).toBe(9);
+    expect(pickedValue(v, masterPolicy(v, new Rng(1)))).toBe(9);
   });
 
   it('Master spends its worst card first when the round decides nothing', () => {
     const v = view();
-    expect(valueOf(v, masterPolicy(v, new Rng(1)))).toBe(2);
+    expect(pickedValue(v, masterPolicy(v, new Rng(1)))).toBe(2);
   });
 
   it('Master exploits a counted-out deck: nothing left can beat a 9 once both tens are gone', () => {
@@ -124,7 +125,7 @@ describe('card_duel bot tiers', () => {
     expect(beatChance(9, remaining)).toBeGreaterThan(
       beatChance(9, opponentRemainingValues(view())),
     );
-    expect(valueOf(v, masterPolicy(v, new Rng(2)))).toBe(9);
+    expect(pickedValue(v, masterPolicy(v, new Rng(2)))).toBe(9);
   });
 
   it('every tier commits after a delay, and always inside the round window', () => {

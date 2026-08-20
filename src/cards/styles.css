@@ -197,9 +197,11 @@ body {
   }
 }
 
+/* The slice has no motion of its own beyond the button hover the browser
+   gives it, so reduced motion only has to disarm the card lift. */
 @media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-    animation: none !important;
+  .cards-card,
+  .cards-button {
+    transition: none;
   }
 }

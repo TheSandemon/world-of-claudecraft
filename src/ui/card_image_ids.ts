@@ -6,5 +6,4 @@
 // empty while art is still being commissioned. tests/card_art.test.ts gates it
 // against the committed .webp files (exact set equality, both directions).
 
-export const CARD_IMAGE_IDS: ReadonlySet<string> = new Set([
-]);
+export const CARD_IMAGE_IDS: ReadonlySet<string> = new Set([]);
