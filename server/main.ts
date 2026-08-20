@@ -493,6 +493,8 @@ const STATIC_PAGE_ALIASES = new Map([
   ['/wiki/', '/guide.html'],
   ['/editor', '/editor.html'],
   ['/editor/', '/editor.html'],
+  ['/cards', '/cards.html'],
+  ['/cards/', '/cards.html'],
 ]);
 // Chat-log and perf-report retention days (0 = forever) plus the Turnstile secret
 // and the hard per-IP WS cap now live on the boot Config (see activeConfig above):

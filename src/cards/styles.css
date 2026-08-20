@@ -1,0 +1,205 @@
+/* Card Duel playtest slice. Deliberately small and self-contained: this entry
+   never loads the HUD sheets (src/styles/), because it is a world-less table,
+   not a game window. The in-game Card Duel window keeps its own HUD styling. */
+
+:root {
+  color-scheme: dark;
+  --cards-bg: #0c0f14;
+  --cards-panel: #151b24;
+  --cards-line: #2a3442;
+  --cards-text: #e6ecf3;
+  --cards-muted: #93a1b1;
+  --cards-accent: #ffaa66;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--cards-bg);
+  color: var(--cards-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+#cards-app {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+.cards-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  color: var(--cards-accent);
+}
+
+.cards-header p {
+  margin: 0 0 1.5rem;
+  color: var(--cards-muted);
+}
+
+.cards-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  padding: 0.75rem;
+  border: 1px solid var(--cards-line);
+  border-radius: 0.5rem;
+  background: var(--cards-panel);
+}
+
+.cards-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--cards-muted);
+}
+
+.cards-seed,
+.cards-bot {
+  min-height: 2.5rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--cards-line);
+  border-radius: 0.35rem;
+  background: var(--cards-bg);
+  color: var(--cards-text);
+  font: inherit;
+}
+
+.cards-button {
+  min-height: 2.5rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--cards-line);
+  border-radius: 0.35rem;
+  background: var(--cards-bg);
+  color: var(--cards-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.cards-button:hover {
+  border-color: var(--cards-accent);
+}
+
+.cards-table {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.cards-seat {
+  padding: 0.75rem;
+  border: 1px solid var(--cards-line);
+  border-radius: 0.5rem;
+  background: var(--cards-panel);
+}
+
+.cards-seat h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.cards-seat-status {
+  margin: 0.15rem 0 0.5rem;
+  color: var(--cards-accent);
+  font-size: 0.85rem;
+}
+
+.cards-seat-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 0 0.75rem;
+  color: var(--cards-muted);
+  font-size: 0.8rem;
+}
+
+.cards-hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cards-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: center;
+  justify-content: center;
+  width: 5.5rem;
+  min-height: 7.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--cards-line);
+  border-radius: 0.5rem;
+  background: var(--cards-bg);
+  color: var(--cards-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.cards-card:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.cards-card-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--cards-accent);
+}
+
+.cards-card-name {
+  font-size: 0.7rem;
+  color: var(--cards-muted);
+  text-align: center;
+}
+
+.cards-result {
+  margin: 0;
+  font-weight: 600;
+}
+
+.cards-log-row {
+  padding: 0.5rem 0.75rem;
+  border-left: 2px solid var(--cards-line);
+  margin-bottom: 0.5rem;
+}
+
+.cards-log-row h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--cards-accent);
+}
+
+.cards-log-row p {
+  margin: 0.1rem 0;
+  font-size: 0.85rem;
+}
+
+.cards-log-detail {
+  color: var(--cards-muted);
+  font-size: 0.75rem;
+}
+
+@media (min-width: 45rem) {
+  .cards-table {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cards-result,
+  .cards-log {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

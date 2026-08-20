@@ -45,9 +45,11 @@ non-commutative primitives ever share a priority.
 
 ## Determinism rules that are not optional
 
-- **Rng is drawn in `deck.ts` and `selectors.ts` only.** A guard test asserts
-  no other module here touches the injected rng. A hidden draw elsewhere
-  silently invalidates `tests/parity/golden/card_duel.json`.
+- **Round resolution draws rng in `deck.ts` and `selectors.ts` only.** A guard
+  test asserts no other module here touches the injected rng, with one declared
+  exception: `bot.ts`, which draws to CHOOSE a card and is not part of
+  resolution. A hidden draw anywhere else silently invalidates
+  `tests/parity/golden/card_duel.json`.
 - **Never iterate a `Map` or `Set` for anything that affects outcome.** Effect
   collection walks explicit arrays sorted by declared keys; the hosts can
   populate insertion-ordered collections differently.

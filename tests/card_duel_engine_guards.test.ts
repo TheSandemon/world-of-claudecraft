@@ -9,9 +9,12 @@ import { tsFilesUnder } from './helpers/ts_files_under';
 // Structural guards over the Card Duel engine. These are the two properties no
 // behavior test can prove on its own:
 //
-//  1. Rng is drawn in deck.ts and selectors.ts ONLY. A hidden draw anywhere
-//     else silently shifts the shared sim stream and invalidates
+//  1. Round RESOLUTION draws rng in deck.ts and selectors.ts ONLY. A hidden
+//     draw anywhere else silently shifts the shared sim stream and invalidates
 //     tests/parity/golden/card_duel.json without failing a single card test.
+//     bot.ts is the one other module allowed to draw, and it is not part of
+//     resolution at all: its draw happens when a CPU seat chooses a card, at
+//     the orchestrator's commit step.
 //  2. Every sanctioned primitive holds a resolution priority. A new primitive
 //     with no priority sorts as `undefined` and would resolve in an arbitrary
 //     place, which is exactly the order-dependence the engine promises not to
@@ -26,15 +29,17 @@ const ENGINE_DIR = path.join(
   'card_duel',
 );
 
-/** The modules allowed to consume the injected rng. */
-const RNG_SITES = ['deck.ts', 'selectors.ts'];
+/** The modules allowed to consume the injected rng: the two resolution sites
+ *  plus the bot policy, which draws to choose a card rather than to resolve
+ *  one. */
+const RNG_SITES = ['bot.ts', 'deck.ts', 'selectors.ts'];
 
 function stripComments(code: string): string {
   return code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
 
 describe('card_duel engine guards', () => {
-  it('draws rng in the two declared sites and nowhere else', () => {
+  it('draws rng in the declared sites and nowhere else', () => {
     const files = tsFilesUnder(ENGINE_DIR);
     // Vacuity floor: the engine is a multi-module folder, so a scan that found
     // one or two files has lost most of it and would pass trivially.

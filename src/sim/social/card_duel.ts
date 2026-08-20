@@ -12,6 +12,8 @@
 
 import { cardMasterInRange } from '../instances/card_master';
 import {
+  CARD_DUEL_ROUND_DEADLINE_S,
+  CARD_DUEL_ROUNDS_TO_WIN,
   type CardHandState,
   createCardHand,
   drawOne,
@@ -26,15 +28,11 @@ import {
   tryPairCardDuel,
 } from './card_duel_queue';
 
-// Best-of-3 rounds; first to 2 round wins takes the match.
-export const CARD_DUEL_ROUNDS_TO_WIN = 2;
-
-// A player who never plays a card (opponent gone idle / linkdead-but-not-yet-
-// dropped) forfeits the current round, and the match, once this much sim time
-// has passed since the round started. Keeps a live match from deadlocking the
-// other side forever (see leaveCardMinigameEntirely / forfeitCardDuelMatch for
-// the player-issued escape).
-export const CARD_DUEL_ROUND_DEADLINE_S = 90;
+// The match-shape constants now live in the engine (minigames/card_duel/rules.ts),
+// so the standalone slice and the bot read the same numbers this orchestrator
+// does. Re-exported here because this module is where every caller and every
+// pinned test resolves them.
+export { CARD_DUEL_ROUND_DEADLINE_S, CARD_DUEL_ROUNDS_TO_WIN } from '../minigames/card_duel';
 
 export interface CardDuelMatch {
   a: number;
