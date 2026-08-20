@@ -79,9 +79,11 @@ describe('Sim.cardMinigameInfoFor', () => {
     expect(infoA.match.opponent.pid).toBe(b);
     expect(infoB.match.opponent.pid).toBe(a);
 
-    // The read surface exposes no opponentHand / raw card field at all: the
-    // only cross-referenced data is counts and identity, never the actual
-    // card values held by the other side.
+    // The read surface exposes no opponentHand / raw card field at all. The
+    // cross-referenced data is counts, identity, public play history, and the
+    // REVEALED set (cards a reveal effect entitled this viewer to see), never
+    // the opponent's held cards. Pinned as an exact key set so a new field
+    // cannot be added without this assertion being reconsidered.
     expect(Object.keys(infoA.match).sort()).toEqual(
       [
         'opponent',
@@ -90,7 +92,14 @@ describe('Sim.cardMinigameInfoFor', () => {
         'discardCount',
         'myRounds',
         'opponentRounds',
+        'roundsToWin',
+        'round',
         'waitingOnOpponent',
+        'secondsLeft',
+        'myCounters',
+        'opponentCounters',
+        'opponentRevealed',
+        'opponentPlayedValues',
       ].sort(),
     );
     expect(Object.keys(infoA.match.opponent).sort()).toEqual(['name', 'pid']);
@@ -99,13 +108,56 @@ describe('Sim.cardMinigameInfoFor', () => {
     // perspective-flip bug (B-side hand leaking into A's view) would fail this.
     const rawMatch = sim.cardDuelMatchFor(a);
     if (!rawMatch) throw new Error('expected a live match on the sim');
-    expect(infoA.match.hand.slice().sort()).toEqual(handValues(rawMatch.handA.hand).sort());
-    expect(infoB.match.hand.slice().sort()).toEqual(handValues(rawMatch.handB.hand).sort());
+    expect(infoA.match.hand.map((c) => c.iid).sort()).toEqual(
+      rawMatch.state.a.cards.hand.map((c) => c.iid).sort(),
+    );
+    expect(infoB.match.hand.map((c) => c.iid).sort()).toEqual(
+      rawMatch.state.b.cards.hand.map((c) => c.iid).sort(),
+    );
     // And A's view must NOT equal B's actual hand (unless coincidentally
     // identical multiset, which the deck's two-of-each shuffle makes
     // exceedingly unlikely for a 4-card starting hand from the same seed
     // pool; assert the two producer hands are tracked independently instead).
-    expect(rawMatch.handA).not.toBe(rawMatch.handB);
+    expect(rawMatch.state.a.cards).not.toBe(rawMatch.state.b.cards);
+
+    // Nothing has been revealed, so neither side's snapshot names a single one
+    // of the opponent's instance ids anywhere in it.
+    const bIids = new Set(rawMatch.state.b.cards.hand.map((c) => c.iid));
+    const aIids = new Set(rawMatch.state.a.cards.hand.map((c) => c.iid));
+    expect(infoA.match.opponentRevealed).toEqual([]);
+    expect(infoB.match.opponentRevealed).toEqual([]);
+    for (const iid of JSON.stringify(infoA.match).match(/\d+/g) ?? []) {
+      expect(bIids.has(Number(iid))).toBe(false);
+    }
+    for (const iid of JSON.stringify(infoB.match).match(/\d+/g) ?? []) {
+      expect(aIids.has(Number(iid))).toBe(false);
+    }
+  });
+
+  it('serializes an opponent card ONLY once a reveal effect entitled the viewer to it', () => {
+    const sim = makeWorld();
+    const { a, b } = queueDuo(sim);
+    const match = sim.cardDuelMatchFor(a);
+    if (!match) throw new Error('expected a live match');
+    const revealed = match.state.b.cards.hand[1];
+    // The engine records the entitlement on the OWNER's side; the snapshot
+    // builder is what turns it into bytes for the other viewer.
+    match.state.b.revealedToOpponent.push(revealed.iid);
+
+    const infoA = sim.cardMinigameInfoFor(a);
+    const infoB = sim.cardMinigameInfoFor(b);
+    if (!infoA.match || !infoB.match) throw new Error('expected live matches');
+    expect(infoA.match.opponentRevealed.map((c) => c.iid)).toEqual([revealed.iid]);
+    expect(infoA.match.opponentRevealed[0].cardId).toBe(revealed.cardId);
+    // And only that one: the rest of B's hand is still absent from A's view.
+    const stillHidden = match.state.b.cards.hand
+      .filter((c) => c.iid !== revealed.iid)
+      .map((c) => c.iid);
+    for (const iid of JSON.stringify(infoA.match).match(/\d+/g) ?? []) {
+      expect(stillHidden.includes(Number(iid))).toBe(false);
+    }
+    // B gains nothing from revealing its own card.
+    expect(infoB.match.opponentRevealed).toEqual([]);
   });
 });
 

@@ -9,6 +9,10 @@
 import type { CardMinigameInfo } from '../world_api';
 
 export interface CardDuelHandCardView {
+  /** The per-match instance handle the play command names. A hand can hold two
+   *  DIFFERENT cards of the same value, so the value is not an identity. */
+  iid: number;
+  cardId: string;
   value: number;
   playable: boolean;
 }
@@ -27,6 +31,8 @@ export interface CardDuelViewModel {
   opponentName: string;
   myRounds: number;
   opponentRounds: number;
+  roundsToWin: number;
+  round: number;
   waitingOnOpponent: boolean;
 }
 
@@ -41,18 +47,27 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
       opponentName: '',
       myRounds: 0,
       opponentRounds: 0,
+      roundsToWin: 0,
+      round: 0,
       waitingOnOpponent: false,
     };
   }
   const m = info.match;
   return {
     state: 'inMatch',
-    hand: m.hand.map((value) => ({ value, playable: !m.waitingOnOpponent })),
+    hand: m.hand.map((card) => ({
+      iid: card.iid,
+      cardId: card.cardId,
+      value: card.value,
+      playable: !m.waitingOnOpponent,
+    })),
     deckCount: m.deckCount,
     discardCount: m.discardCount,
     opponentName: m.opponent.name,
     myRounds: m.myRounds,
     opponentRounds: m.opponentRounds,
+    roundsToWin: m.roundsToWin,
+    round: m.round,
     waitingOnOpponent: m.waitingOnOpponent,
   };
 }

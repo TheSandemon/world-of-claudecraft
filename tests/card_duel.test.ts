@@ -2,13 +2,19 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import { CARD_MASTER_NPC_ID } from '../src/sim/content/card_master';
+import { CARD_CATALOG, DEFAULT_DECK_LIST } from '../src/sim/content/cards';
+import type { CardInstance } from '../src/sim/minigames/card_duel';
+import { validateDeck } from '../src/sim/minigames/card_duel';
 import { Rng } from '../src/sim/rng';
 import type { PlayerMeta } from '../src/sim/sim';
 import type { SimContext } from '../src/sim/sim_context';
+import type { CardDuelMatch } from '../src/sim/social/card_duel';
 import {
+  buildCardMinigameInfo,
   CARD_DUEL_ROUND_DEADLINE_S,
   CARD_DUEL_ROUNDS_TO_WIN,
   cardDuelMatchFor,
+  deckForPlayer,
   forfeitCardDuelMatch,
   joinCardMinigameQueue,
   leaveCardMinigameEntirely,
@@ -68,6 +74,24 @@ function makeCtx(
     },
   } as unknown as SimContext & { time: number };
   return { ctx, players, entities, bumpDeedStat, error, emit };
+}
+
+// A hand holds CardInstances, so a test names the exact card it wants to play
+// rather than a value: two cards of one value are different cards now.
+function highestCard(hand: readonly CardInstance[]): CardInstance {
+  return [...hand].sort((x, y) => y.value - x.value || x.iid - y.iid)[0];
+}
+
+function lowestCard(hand: readonly CardInstance[]): CardInstance {
+  return [...hand].sort((x, y) => x.value - y.value || x.iid - y.iid)[0];
+}
+
+/** Forces a decisive round: side A plays a 9, side B a 1. */
+function playHighLow(ctx: SimContext, match: CardDuelMatch): void {
+  match.state.a.cards.hand[0] = cardOfValue(9);
+  match.state.b.cards.hand[0] = cardOfValue(1);
+  playCardInDuel(ctx, match.state.a.cards.hand[0].iid, 1);
+  playCardInDuel(ctx, match.state.b.cards.hand[0].iid, 2);
 }
 
 describe('card_duel', () => {
@@ -166,12 +190,12 @@ describe('card_duel', () => {
     const match = cardDuelMatchFor(ctx, 1);
     if (!match) throw new Error('expected a live match');
     (entities.get(1) as { dead: boolean }).dead = true;
-    const card = match.handA.hand[0];
-    playCardInDuel(ctx, card.value, 1);
+    const card = match.state.a.cards.hand[0];
+    playCardInDuel(ctx, card.iid, 1);
     expect(error).toHaveBeenCalledWith(1, "You can't do that while dead.");
     // The blocked attempt did not consume the card or record a play.
-    expect(cardDuelMatchFor(ctx, 1)?.handA.hand).toContain(card);
-    expect(cardDuelMatchFor(ctx, 1)?.playedA).toBeNull();
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.cards.hand).toContain(card);
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.playedThisRound).toBeNull();
   });
 
   it('resolves a full match to a winner and bumps cardDuelsWon exactly once', () => {
@@ -187,10 +211,8 @@ describe('card_duel', () => {
     while (cardDuelMatchFor(ctx, 1) !== null && guard < 500) {
       const match = cardDuelMatchFor(ctx, 1);
       if (!match) break;
-      const highA = Math.max(...handValues(match.handA.hand));
-      const lowB = Math.min(...handValues(match.handB.hand));
-      playCardInDuel(ctx, highA, 1);
-      playCardInDuel(ctx, lowB, 2);
+      playCardInDuel(ctx, highestCard(match.state.a.cards.hand).iid, 1);
+      playCardInDuel(ctx, lowestCard(match.state.b.cards.hand).iid, 2);
       guard++;
     }
     expect(cardDuelMatchFor(ctx, 1)).toBeNull();
@@ -215,14 +237,17 @@ describe('card_duel', () => {
     // Force both hands to hold a shared value (5) regardless of the actual
     // deal, so the round resolves as a deterministic push (a === b) without
     // depending on the fixed rng's exact draw.
-    if (!handValues(match.handA.hand).includes(5)) match.handA.hand[0] = cardOfValue(5);
-    if (!handValues(match.handB.hand).includes(5)) match.handB.hand[0] = cardOfValue(5);
-    playCardInDuel(ctx, 5, 1);
-    playCardInDuel(ctx, 5, 2);
+    for (const side of [match.state.a, match.state.b]) {
+      if (!side.cards.hand.some((c) => c.value === 5)) side.cards.hand[0] = cardOfValue(5);
+    }
+    const fiveA = match.state.a.cards.hand.find((c) => c.value === 5) as CardInstance;
+    const fiveB = match.state.b.cards.hand.find((c) => c.value === 5) as CardInstance;
+    playCardInDuel(ctx, fiveA.iid, 1);
+    playCardInDuel(ctx, fiveB.iid, 2);
     const after = cardDuelMatchFor(ctx, 1);
     expect(after).not.toBeNull();
-    expect(after?.roundsA).toBe(0);
-    expect(after?.roundsB).toBe(0);
+    expect(after?.state.a.roundWins).toBe(0);
+    expect(after?.state.b.roundWins).toBe(0);
     expect(bumpDeedStat).not.toHaveBeenCalled();
   });
 
@@ -233,9 +258,12 @@ describe('card_duel', () => {
     updateCardDuelQueue(ctx);
     const match = cardDuelMatchFor(ctx, 1);
     if (!match) throw new Error('expected a live match');
-    const held = handValues(match.handA.hand);
-    const notHeld = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].find((v) => !held.includes(v));
-    playCardInDuel(ctx, notHeld as number, 1);
+    // An instance id the hand does not hold: the exact rejection the server
+    // path relies on when a client names a card it does not have.
+    const heldIids = new Set(match.state.a.cards.hand.map((c) => c.iid));
+    const notHeld = cardOfValue(5).iid;
+    expect(heldIids.has(notHeld)).toBe(false);
+    playCardInDuel(ctx, notHeld, 1);
     expect(error).toHaveBeenCalledWith(1, "You don't hold that card.");
   });
 
@@ -246,17 +274,17 @@ describe('card_duel', () => {
     updateCardDuelQueue(ctx);
     const match = cardDuelMatchFor(ctx, 1);
     if (!match) throw new Error('expected a live match');
-    const [first, second] = match.handA.hand;
-    playCardInDuel(ctx, first.value, 1);
-    playCardInDuel(ctx, second.value, 1);
+    const [first, second] = match.state.a.cards.hand;
+    playCardInDuel(ctx, first.iid, 1);
+    playCardInDuel(ctx, second.iid, 1);
     expect(error).toHaveBeenCalledWith(1, 'You already played a card this round.');
     // The second attempt did not consume the card: hand still holds it.
-    expect(cardDuelMatchFor(ctx, 1)?.handA.hand).toContain(second);
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.cards.hand).toContain(second);
   });
 
   it('rejects playing a card when not in any match', () => {
     const { ctx, error } = makeCtx();
-    playCardInDuel(ctx, 5, 3);
+    playCardInDuel(ctx, 5000, 3);
     expect(error).toHaveBeenCalledWith(3, 'You are not in a Card Duel.');
   });
 
@@ -278,11 +306,8 @@ describe('card_duel', () => {
     // before either side has won a round voids instead of crediting a win
     // (finding 3, the same anti-farm gate as the both-idle AFK case), so
     // exercising the CREDIT path here needs a round already on the board.
-    match.handA.hand[0] = cardOfValue(9);
-    match.handB.hand[0] = cardOfValue(1);
-    playCardInDuel(ctx, 9, 1);
-    playCardInDuel(ctx, 1, 2);
-    expect(cardDuelMatchFor(ctx, 1)?.roundsA).toBe(1);
+    playHighLow(ctx, match);
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.roundWins).toBe(1);
     leaveCardMinigameEntirely(ctx, 1);
     expect(cardDuelMatchFor(ctx, 1)).toBeNull();
     expect(cardDuelMatchFor(ctx, 2)).toBeNull();
@@ -337,11 +362,8 @@ describe('card_duel', () => {
     updateCardDuelQueue(ctx);
     const match = cardDuelMatchFor(ctx, 1);
     if (!match) throw new Error('expected a live match');
-    match.handA.hand[0] = cardOfValue(9);
-    match.handB.hand[0] = cardOfValue(1);
-    playCardInDuel(ctx, 9, 1);
-    playCardInDuel(ctx, 1, 2);
-    expect(cardDuelMatchFor(ctx, 1)?.roundsA).toBe(1);
+    playHighLow(ctx, match);
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.roundWins).toBe(1);
     forfeitCardDuelMatch(ctx, 2);
     expect(cardDuelMatchFor(ctx, 1)).toBeNull();
     expect(bumpDeedStat).toHaveBeenCalledTimes(1);
@@ -387,15 +409,12 @@ describe('card_duel', () => {
     // Play out one full round first so roundsA + roundsB > 0 (finding 3's
     // anti-farm gate voids an AFK forfeit before any round has been won, same
     // as the both-idle case), so this exercises the CREDIT path deliberately.
-    match.handA.hand[0] = cardOfValue(9);
-    match.handB.hand[0] = cardOfValue(1);
-    playCardInDuel(ctx, 9, 1);
-    playCardInDuel(ctx, 1, 2);
-    expect(cardDuelMatchFor(ctx, 1)?.roundsA).toBe(1);
+    playHighLow(ctx, match);
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.roundWins).toBe(1);
     // Side A plays round 2; side B goes idle (an unresponsive opponent).
     const live = cardDuelMatchFor(ctx, 1);
     if (!live) throw new Error('expected a live match');
-    playCardInDuel(ctx, live.handA.hand[0].value, 1);
+    playCardInDuel(ctx, live.state.a.cards.hand[0].iid, 1);
     (ctx as unknown as { time: number }).time = live.roundDeadline + 1;
     updateCardDuelDeadlines(ctx);
     expect(cardDuelMatchFor(ctx, 1)).toBeNull();
@@ -419,17 +438,14 @@ describe('card_duel', () => {
     if (!match) throw new Error('expected a live match');
     // Play out one full round first so roundsA + roundsB > 0 (see the sibling
     // test above for why the zero-round anti-farm gate requires this here).
-    match.handA.hand[0] = cardOfValue(9);
-    match.handB.hand[0] = cardOfValue(1);
-    playCardInDuel(ctx, 9, 1);
-    playCardInDuel(ctx, 1, 2);
-    expect(cardDuelMatchFor(ctx, 1)?.roundsA).toBe(1);
+    playHighLow(ctx, match);
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.roundWins).toBe(1);
     // Side B plays round 2; side A goes idle. Without this arm, a regression
     // that always forfeits match.b (the constant that also satisfies the
     // other test) would go undetected.
     const live = cardDuelMatchFor(ctx, 1);
     if (!live) throw new Error('expected a live match');
-    playCardInDuel(ctx, live.handB.hand[0].value, 2);
+    playCardInDuel(ctx, live.state.b.cards.hand[0].iid, 2);
     (ctx as unknown as { time: number }).time = live.roundDeadline + 1;
     updateCardDuelDeadlines(ctx);
     expect(cardDuelMatchFor(ctx, 1)).toBeNull();
@@ -479,14 +495,130 @@ describe('card_duel', () => {
     if (!match) throw new Error('expected a live match');
     const startDeadline = match.roundDeadline;
     // Advance sim time to just before the deadline started at, then resolve
-    // a round: without the per-round deadline refresh, the match would auto-
-    // forfeit 90s after it STARTED rather than after its last completed round.
+    // a round: without the per-round refresh, the match would auto-forfeit one
+    // clock after it STARTED rather than after its last completed round.
     (ctx as unknown as { time: number }).time = startDeadline - 1;
-    playCardInDuel(ctx, match.handA.hand[0].value, 1);
-    playCardInDuel(ctx, match.handB.hand[0].value, 2);
+    playCardInDuel(ctx, match.state.a.cards.hand[0].iid, 1);
+    playCardInDuel(ctx, match.state.b.cards.hand[0].iid, 2);
     expect(match.roundDeadline).toBeGreaterThan(startDeadline - 1);
     updateCardDuelDeadlines(ctx);
     expect(cardDuelMatchFor(ctx, 1)).not.toBeNull();
+  });
+
+  it('both clocks expiring AFTER a card was played is a recorded draw, crediting nobody', () => {
+    const { ctx, emit, bumpDeedStat } = makeCtx();
+    joinCardMinigameQueue(ctx, 1);
+    joinCardMinigameQueue(ctx, 2);
+    updateCardDuelQueue(ctx);
+    const match = cardDuelMatchFor(ctx, 1);
+    if (!match) throw new Error('expected a live match');
+    // One full round is played, so the match HAS content...
+    playCardInDuel(ctx, match.state.a.cards.hand[0].iid, 1);
+    playCardInDuel(ctx, match.state.b.cards.hand[0].iid, 2);
+    expect(match.anyCardPlayed).toBe(true);
+    // ...then both sides go idle and the clock runs out on the next round.
+    (ctx as unknown as { time: number }).time = match.roundDeadline + 1;
+    updateCardDuelDeadlines(ctx);
+    expect(cardDuelMatchFor(ctx, 1)).toBeNull();
+    expect(bumpDeedStat).not.toHaveBeenCalled();
+    for (const pid of [1, 2]) {
+      expect(emit).toHaveBeenCalledWith(
+        expect.objectContaining({ text: 'Your Card Duel ends in a draw.', pid }),
+      );
+      expect(emit).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'cardDuelMatchEnd', won: false, draw: true, pid }),
+      );
+    }
+  });
+
+  it('the draw and the void turn on DIFFERENT questions, and conflating them is the bug', () => {
+    // draw vs unrecorded splits on whether any CARD was played; the manual
+    // forfeit void splits on whether any ROUND was won. A match with one
+    // push has cards played but no round won: it draws on the clock, and
+    // voids on a manual forfeit.
+    const { ctx, emit } = makeCtx();
+    joinCardMinigameQueue(ctx, 1);
+    joinCardMinigameQueue(ctx, 2);
+    updateCardDuelQueue(ctx);
+    const match = cardDuelMatchFor(ctx, 1);
+    if (!match) throw new Error('expected a live match');
+    const five = cardOfValue(5);
+    const otherFive = cardOfValue(5);
+    match.state.a.cards.hand[0] = five;
+    match.state.b.cards.hand[0] = otherFive;
+    playCardInDuel(ctx, five.iid, 1);
+    playCardInDuel(ctx, otherFive.iid, 2);
+    // A push: cards played, no round won.
+    expect(match.state.a.roundWins + match.state.b.roundWins).toBe(0);
+    expect(match.anyCardPlayed).toBe(true);
+    (ctx as unknown as { time: number }).time = match.roundDeadline + 1;
+    updateCardDuelDeadlines(ctx);
+    expect(emit).toHaveBeenCalledWith(
+      expect.objectContaining({ text: 'Your Card Duel ends in a draw.', pid: 1 }),
+    );
+  });
+
+  it('refills both hands back to four after every round', () => {
+    const { ctx } = makeCtx();
+    joinCardMinigameQueue(ctx, 1);
+    joinCardMinigameQueue(ctx, 2);
+    updateCardDuelQueue(ctx);
+    const match = cardDuelMatchFor(ctx, 1);
+    if (!match) throw new Error('expected a live match');
+    expect(match.state.a.cards.hand.length).toBe(4);
+    playCardInDuel(ctx, match.state.a.cards.hand[0].iid, 1);
+    playCardInDuel(ctx, match.state.b.cards.hand[0].iid, 2);
+    // Refill, not draw-one: the hand is back to four even though a card left it.
+    expect(match.state.a.cards.hand.length).toBe(4);
+    expect(match.state.b.cards.hand.length).toBe(4);
+  });
+
+  it('deals both seats a legal twenty-card deck from the shipping catalog', () => {
+    const { ctx } = makeCtx();
+    joinCardMinigameQueue(ctx, 1);
+    joinCardMinigameQueue(ctx, 2);
+    updateCardDuelQueue(ctx);
+    const match = cardDuelMatchFor(ctx, 1);
+    if (!match) throw new Error('expected a live match');
+    for (const side of [match.state.a, match.state.b]) {
+      const pool = [...side.cards.hand, ...side.cards.deck, ...side.cards.discard];
+      expect(pool.length).toBe(20);
+      const entries = pool.map((c) => ({ cardId: c.cardId, value: c.value }));
+      expect(validateDeck(entries, CARD_CATALOG).ok).toBe(true);
+      // Every dealt card resolves in the catalog, so no effect can silently
+      // fail to fire because its definition is missing.
+      for (const card of pool) expect(CARD_CATALOG.get(card.cardId)).toBeDefined();
+    }
+  });
+
+  it('replaces an illegal saved deck with the default rather than refusing the match', () => {
+    // A deck legal when saved can become illegal as the catalog changes, so
+    // the authoritative host validates at every match start, never on save
+    // alone, and degrades instead of blocking play.
+    const illegal = [{ cardId: 'forest_wolf', value: 3 as const }];
+    expect(deckForPlayer(illegal)).toBe(DEFAULT_DECK_LIST);
+    expect(deckForPlayer(undefined)).toBe(DEFAULT_DECK_LIST);
+    expect(deckForPlayer(DEFAULT_DECK_LIST)).toBe(DEFAULT_DECK_LIST);
+  });
+
+  it('reports the round clock in the snapshot, counting down and never negative', () => {
+    const { ctx } = makeCtx();
+    joinCardMinigameQueue(ctx, 1);
+    joinCardMinigameQueue(ctx, 2);
+    updateCardDuelQueue(ctx);
+    const match = cardDuelMatchFor(ctx, 1);
+    if (!match) throw new Error('expected a live match');
+    expect(buildCardMinigameInfo(ctx, 1).match?.secondsLeft).toBe(CARD_DUEL_ROUND_DEADLINE_S);
+    (ctx as unknown as { time: number }).time = match.roundDeadline - 10;
+    expect(buildCardMinigameInfo(ctx, 1).match?.secondsLeft).toBe(10);
+    (ctx as unknown as { time: number }).time = match.roundDeadline + 100;
+    expect(buildCardMinigameInfo(ctx, 1).match?.secondsLeft).toBe(0);
+  });
+
+  it('one clock covers both sides: it is 45 seconds and it refreshes per round', () => {
+    // The number itself is pinned because it is the whole disconnect policy
+    // too: there is no separate linkdead grace.
+    expect(CARD_DUEL_ROUND_DEADLINE_S).toBe(45);
   });
 
   it('best-of-CARD_DUEL_ROUNDS_TO_WIN: the match ends the instant a side reaches the pinned threshold, not sooner', () => {
@@ -501,16 +633,16 @@ describe('card_duel', () => {
     for (let i = 0; i < CARD_DUEL_ROUNDS_TO_WIN - 1; i++) {
       const m = cardDuelMatchFor(ctx, 1);
       if (!m) throw new Error('match ended early');
-      playCardInDuel(ctx, Math.max(...handValues(m.handA.hand)), 1);
-      playCardInDuel(ctx, Math.min(...handValues(m.handB.hand)), 2);
+      playCardInDuel(ctx, highestCard(m.state.a.cards.hand).iid, 1);
+      playCardInDuel(ctx, lowestCard(m.state.b.cards.hand).iid, 2);
     }
-    expect(cardDuelMatchFor(ctx, 1)?.roundsA).toBe(CARD_DUEL_ROUNDS_TO_WIN - 1);
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.roundWins).toBe(CARD_DUEL_ROUNDS_TO_WIN - 1);
     expect(cardDuelMatchFor(ctx, 1)).not.toBeNull();
     // The next A win reaches the threshold and ends the match.
     const m = cardDuelMatchFor(ctx, 1);
     if (!m) throw new Error('expected a live match');
-    playCardInDuel(ctx, Math.max(...handValues(m.handA.hand)), 1);
-    playCardInDuel(ctx, Math.min(...handValues(m.handB.hand)), 2);
+    playCardInDuel(ctx, highestCard(m.state.a.cards.hand).iid, 1);
+    playCardInDuel(ctx, lowestCard(m.state.b.cards.hand).iid, 2);
     expect(cardDuelMatchFor(ctx, 1)).toBeNull();
   });
 

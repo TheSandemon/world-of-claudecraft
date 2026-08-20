@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CARD_MASTER_NPC_ID } from '../src/sim/content/card_master';
 import { Sim } from '../src/sim/sim';
+import type { CardDuelMatch } from '../src/sim/social/card_duel';
 import type { SimEvent } from '../src/sim/types';
 import { groundHeight } from '../src/sim/world';
 import { cardOfValue, cardsOfValues } from './helpers/card_duel_fixtures';
@@ -42,6 +43,13 @@ function queueDuo(sim: Sim, aName = 'Aleph', bName = 'Bet') {
   return { a, b, events };
 }
 
+// Forces the round both sides will play: each seat's hand[0] becomes a card of
+// the given value, and the test then plays that exact instance.
+function forceHands(match: CardDuelMatch, aValue: number, bValue: number): void {
+  match.state.a.cards.hand[0] = cardOfValue(aValue);
+  match.state.b.cards.hand[0] = cardOfValue(bValue);
+}
+
 describe('Card Duel audio event wiring', () => {
   it('emits cardDuelMatchStart for both sides the tick they get matched', () => {
     const sim = makeWorld();
@@ -57,7 +65,7 @@ describe('Card Duel audio event wiring', () => {
     const sim = makeWorld();
     const { a } = queueDuo(sim);
     const match = sim.cardDuelMatchFor(a)!;
-    sim.playCardInDuel(match.handA.hand[0].value, a);
+    sim.playCardInDuel(match.state.a.cards.hand[0].iid, a);
     const drained = sim.tick();
     const played = drained.filter(
       (e): e is Extract<SimEvent, { type: 'cardPlayed' }> => e.type === 'cardPlayed',
@@ -74,10 +82,9 @@ describe('Card Duel audio event wiring', () => {
     const match = sim.cardDuelMatchFor(a)!;
     // Force a deterministic, unambiguous win/lose instead of trusting whatever
     // the shuffled starting hands happen to hold.
-    match.handA.hand[0] = cardOfValue(9);
-    match.handB.hand[0] = cardOfValue(3);
-    sim.playCardInDuel(9, a);
-    sim.playCardInDuel(3, b);
+    forceHands(match, 9, 3);
+    sim.playCardInDuel(match.state.a.cards.hand[0].iid, a);
+    sim.playCardInDuel(match.state.b.cards.hand[0].iid, b);
     const drained = sim.tick();
     const resolved = drained.filter(
       (e): e is Extract<SimEvent, { type: 'cardRoundResolved' }> => e.type === 'cardRoundResolved',
@@ -92,10 +99,9 @@ describe('Card Duel audio event wiring', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);
     const match = sim.cardDuelMatchFor(a)!;
-    match.handA.hand[0] = cardOfValue(5);
-    match.handB.hand[0] = cardOfValue(5);
-    sim.playCardInDuel(5, a);
-    sim.playCardInDuel(5, b);
+    forceHands(match, 5, 5);
+    sim.playCardInDuel(match.state.a.cards.hand[0].iid, a);
+    sim.playCardInDuel(match.state.b.cards.hand[0].iid, b);
     const resolved = sim
       .tick()
       .filter(
@@ -109,14 +115,13 @@ describe('Card Duel audio event wiring', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);
     const match = sim.cardDuelMatchFor(a)!;
-    match.handA.hand[0] = cardOfValue(7);
-    match.handB.hand[0] = cardOfValue(2);
+    forceHands(match, 7, 2);
     // Starve side A's deck so its post-round drawOne must reshuffle; leave
     // side B's deck alone as the negative control in the same round.
-    match.handA.deck = [];
-    match.handA.discard = cardsOfValues([1, 2, 3]);
-    sim.playCardInDuel(7, a);
-    sim.playCardInDuel(2, b);
+    match.state.a.cards.deck = [];
+    match.state.a.cards.discard = cardsOfValues([1, 2, 3]);
+    sim.playCardInDuel(match.state.a.cards.hand[0].iid, a);
+    sim.playCardInDuel(match.state.b.cards.hand[0].iid, b);
     const resolved = sim
       .tick()
       .filter(
@@ -133,10 +138,9 @@ describe('Card Duel audio event wiring', () => {
     // A wins both rounds straight to close the match (CARD_DUEL_ROUNDS_TO_WIN = 2).
     for (let round = 0; round < 2; round++) {
       const live = sim.cardDuelMatchFor(a)!;
-      live.handA.hand[0] = cardOfValue(9);
-      live.handB.hand[0] = cardOfValue(1);
-      sim.playCardInDuel(9, a);
-      sim.playCardInDuel(1, b);
+      forceHands(live, 9, 1);
+      sim.playCardInDuel(live.state.a.cards.hand[0].iid, a);
+      sim.playCardInDuel(live.state.b.cards.hand[0].iid, b);
     }
     const ended = sim
       .tick()
@@ -151,10 +155,9 @@ describe('Card Duel audio event wiring', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);
     const match = sim.cardDuelMatchFor(a)!;
-    match.handA.hand[0] = cardOfValue(9);
-    match.handB.hand[0] = cardOfValue(1);
-    sim.playCardInDuel(9, a);
-    sim.playCardInDuel(1, b);
+    forceHands(match, 9, 1);
+    sim.playCardInDuel(match.state.a.cards.hand[0].iid, a);
+    sim.playCardInDuel(match.state.b.cards.hand[0].iid, b);
     sim.tick(); // clear the round-resolve emits first
     sim.forfeitCardDuel(a);
     const ended = sim

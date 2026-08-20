@@ -5634,15 +5634,30 @@ export type SimEvent = { pid?: number } & (
   | { type: 'cardPlayed'; pid?: number }
   | {
       type: 'cardRoundResolved';
+      // The values the round was DECIDED on: base plus every effect that
+      // resolved. The printed numbers ride alongside as mineBase/theirsBase.
       mine: number;
       theirs: number;
       outcome: 'win' | 'lose' | 'push';
-      // True when this side's post-round draw emptied the deck and had to
-      // reshuffle the discard pile back in (see card_hand.ts drawOne).
+      // True when this side's post-round refill emptied the deck and had to
+      // reshuffle the discard pile back in (see card_duel/deck.ts refillHand).
       reshuffled: boolean;
+      // The printed face values, so the client can show the delta an effect
+      // applied without recomputing it. Added with the rules engine; absent on
+      // an event minted before it.
+      mineBase?: number;
+      theirsBase?: number;
       pid?: number;
     }
-  | { type: 'cardDuelMatchEnd'; won: boolean; pid?: number }
+  | {
+      type: 'cardDuelMatchEnd';
+      won: boolean;
+      // True when both clocks expired after at least one card had been played:
+      // a recorded result that credits nobody, distinct from the unrecorded
+      // void where no card was ever played. Absent means the old win/loss pair.
+      draw?: boolean;
+      pid?: number;
+    }
   | {
       type: 'heal2';
       sourceId: number;

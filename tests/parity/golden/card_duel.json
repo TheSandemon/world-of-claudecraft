@@ -6,15 +6,16 @@
   "coverage": [
     "Card Duel minigame: queue + matchmake at the Card Master",
     "createCardHand rng draw (match start, both sides)",
-    "drawOne rng draw (round resolution, both sides)"
+    "refillHand rng draws (round resolution, both sides)",
+    "mid-refill reshuffle (the deck runs dry partway through one refill)"
   ],
-  "draws": 6,
-  "drawDigest": "2ea58598",
+  "draws": 78,
+  "drawDigest": "cf1b35c9",
   "frames": [
     {
       "tick": 0,
       "time": 0,
-      "nextId": 997,
+      "nextId": 967,
       "state": "5bc471b0",
       "events": "741638a5",
       "rng": {
@@ -28,100 +29,100 @@
     {
       "tick": 5,
       "time": 0.25,
-      "nextId": 999,
-      "state": "1105dfd0",
-      "events": "2e9cd542",
+      "nextId": 969,
+      "state": "a037f703",
+      "events": "b2a674f9",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 10,
       "time": 0.5,
-      "nextId": 999,
-      "state": "44afc2fb",
+      "nextId": 969,
+      "state": "591e80c8",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 15,
       "time": 0.75,
-      "nextId": 999,
-      "state": "e7f4a8f1",
+      "nextId": 969,
+      "state": "4828d07e",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 20,
       "time": 1,
-      "nextId": 999,
-      "state": "f8b6786a",
-      "events": "7f81a8b0",
+      "nextId": 969,
+      "state": "ecfc2a31",
+      "events": "d595937a",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 25,
       "time": 1.25,
-      "nextId": 999,
-      "state": "3f73a985",
+      "nextId": 969,
+      "state": "b4ff4b36",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 30,
       "time": 1.5,
-      "nextId": 999,
-      "state": "259aa214",
+      "nextId": 969,
+      "state": "7fe657d7",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 35,
       "time": 1.75,
-      "nextId": 999,
-      "state": "25d30a4c",
+      "nextId": 969,
+      "state": "69868b5f",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 40,
       "time": 2,
-      "nextId": 999,
-      "state": "b05658d1",
+      "nextId": 969,
+      "state": "89dd5842",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 41,
       "time": 2.05,
-      "nextId": 999,
-      "state": "a3311dd8",
+      "nextId": 969,
+      "state": "a8fbb24f",
       "events": "741638a5",
       "rng": {
-        "draws": 6,
-        "digest": "2ea58598"
+        "draws": 78,
+        "digest": "cf1b35c9"
       },
       "label": "final",
       "players": [
@@ -152,12 +153,12 @@
               "worn_sword"
             ],
             "visited": [
-              "poi:eastbrook_vale:wolf_run"
+              "poi:eastbrook_vale:eastbrook"
             ]
           },
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 997,
+          "entityId": 967,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword",
@@ -211,12 +212,12 @@
               "spring_water"
             ],
             "visited": [
-              "poi:eastbrook_vale:wolf_run"
+              "poi:eastbrook_vale:eastbrook"
             ]
           },
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 998,
+          "entityId": 968,
           "equipment": {
             "chest": "apprentice_robe",
             "mainhand": "gnarled_staff"
@@ -259,7 +260,7 @@
               "name": "Battle Stance",
               "remaining": 3597.95,
               "school": "physical",
-              "sourceId": 997
+              "sourceId": 967
             }
           ],
           "blockChance": 0.05,
@@ -269,10 +270,10 @@
           "critChance": 0.06,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.06,
-          "fallStartY": 5.203283,
+          "fallStartY": 1.5,
           "fiveSecondRule": 101.05,
           "hp": 100,
-          "id": 997,
+          "id": 967,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
@@ -285,15 +286,15 @@
           "petMode": "defensive",
           "pos": {
             "x": 13,
-            "y": 5.203283,
+            "y": 1.5,
             "z": 2
           },
           "potionCooldownUntil": -1,
           "resourceType": "rage",
           "spawnPos": {
-            "x": -94,
-            "y": -2,
-            "z": -58
+            "x": 2,
+            "y": 1.5,
+            "z": -2
           },
           "spellPower": 5,
           "stats": {
@@ -319,10 +320,10 @@
           "critChance": 0.056,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.056,
-          "fallStartY": 5.203283,
+          "fallStartY": 1.5,
           "fiveSecondRule": 101.05,
           "hp": 54,
-          "id": 998,
+          "id": 968,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
@@ -334,16 +335,16 @@
           "petMode": "defensive",
           "pos": {
             "x": 13,
-            "y": 5.203283,
+            "y": 1.5,
             "z": 2
           },
           "potionCooldownUntil": -1,
           "resource": 195,
           "resourceType": "mana",
           "spawnPos": {
-            "x": -94,
-            "y": -2,
-            "z": -58
+            "x": 2,
+            "y": 1.5,
+            "z": -2
           },
           "spellPower": 13,
           "stats": {

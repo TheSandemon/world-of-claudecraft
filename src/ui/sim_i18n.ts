@@ -675,6 +675,7 @@ const baseEnTable = {
   'log.cardDuelForfeit': 'You forfeit the Card Duel.',
   'log.cardDuelOpponentForfeited': 'Your opponent forfeited the Card Duel. You win!',
   'log.cardDuelVoid': 'Your Card Duel is void: neither side played in time.',
+  'log.cardDuelDraw': 'Your Card Duel ends in a draw.',
   'error.cardDuelNotAtMaster': 'You must be at the Card Master to queue for a Card Duel.',
   'error.cardDuelNotInMatch': 'You are not in a Card Duel.',
   'error.cardDuelAlreadyPlayed': 'You already played a card this round.',
@@ -1045,6 +1046,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Te rindes en el Duelo de Cartas.',
     'log.cardDuelOpponentForfeited': 'Tu rival se rindió en el Duelo de Cartas. ¡Ganas!',
     'log.cardDuelVoid': 'Tu Duelo de Cartas queda anulado: ninguno de los dos jugó a tiempo.',
+    'log.cardDuelDraw': 'Tu Duelo de Cartas termina en empate.',
     'error.cardDuelNotAtMaster':
       'Debes estar junto al Maestro de Cartas para entrar en la cola del Duelo de Cartas.',
     'error.cardDuelNotInMatch': 'No estás en un Duelo de Cartas.',
@@ -1504,6 +1506,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Te rindes en el Duelo de Cartas.',
     'log.cardDuelOpponentForfeited': 'Tu rival se rindió en el Duelo de Cartas. ¡Ganas!',
     'log.cardDuelVoid': 'Tu Duelo de Cartas queda anulado: ninguno de los dos jugó a tiempo.',
+    'log.cardDuelDraw': 'Tu Duelo de Cartas termina en empate.',
     'error.cardDuelNotAtMaster':
       'Debes estar junto al Maestro de Cartas para entrar en la cola del Duelo de Cartas.',
     'error.cardDuelNotInMatch': 'No estás en un Duelo de Cartas.',
@@ -1970,6 +1973,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelOpponentForfeited':
       'Votre adversaire a abandonné le Duel de cartes. Vous gagnez !',
     'log.cardDuelVoid': "Votre Duel de cartes est annulé : aucun camp n'a joué à temps.",
+    'log.cardDuelDraw': 'Votre Duel de cartes se termine par une egalite.',
     'error.cardDuelNotAtMaster':
       'Vous devez vous trouver auprès du Maître des cartes pour rejoindre la file du Duel de cartes.',
     'error.cardDuelNotInMatch': 'Vous ne participez pas à un Duel de cartes.',
@@ -2439,6 +2443,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelOpponentForfeited':
       'Votre adversaire a abandonné le Duel de cartes. Vous gagnez !',
     'log.cardDuelVoid': "Votre Duel de cartes est annulé : aucun camp n'a joué à temps.",
+    'log.cardDuelDraw': 'Votre Duel de cartes se termine par une egalite.',
     'error.cardDuelNotAtMaster':
       'Vous devez vous trouver auprès du Maître des cartes pour rejoindre la file du Duel de cartes.',
     'error.cardDuelNotInMatch': 'Vous ne participez pas à un Duel de cartes.',
@@ -3104,6 +3109,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelOpponentForfeited':
       'Il tuo avversario ha abbandonato il Duello di Carte. Hai vinto!',
     'log.cardDuelVoid': 'Il tuo Duello di Carte è nullo: nessuno dei due ha giocato in tempo.',
+    'log.cardDuelDraw': 'Il tuo Duello di Carte finisce in parita.',
     'error.cardDuelNotAtMaster':
       'Devi trovarti dal Maestro delle Carte per accodarti a un Duello di Carte.',
     'error.cardDuelNotInMatch': 'Non sei in un Duello di Carte.',
@@ -3565,6 +3571,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelOpponentForfeited': 'Dein Gegner hat den Kartenkampf aufgegeben. Du gewinnst!',
     'log.cardDuelVoid':
       'Dein Kartenkampf ist null und nichtig: Keine Seite hat rechtzeitig gespielt.',
+    'log.cardDuelDraw': 'Dein Kartenduell endet unentschieden.',
     'error.cardDuelNotAtMaster':
       'Du musst beim Kartenmeister sein, um dich für den Kartenkampf einzureihen.',
     'error.cardDuelNotInMatch': 'Du befindest dich nicht in einem Kartenkampf.',
@@ -4016,6 +4023,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': '你认输退出了纸牌对决。',
     'log.cardDuelOpponentForfeited': '你的对手认输退出了纸牌对决。你赢了！',
     'log.cardDuelVoid': '你的纸牌对决已作废：双方均未在限时内出牌。',
+    'log.cardDuelDraw': '你的纸牌对决以平局结束。',
     'error.cardDuelNotAtMaster': '你必须前往牌局大师处才能加入纸牌对决队列。',
     'error.cardDuelNotInMatch': '你当前不在纸牌对决中。',
     'error.cardDuelAlreadyPlayed': '你本轮已经出过牌了。',
@@ -4462,6 +4470,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': '你在紙牌對決中認輸。',
     'log.cardDuelOpponentForfeited': '對手在紙牌對決中認輸。你獲勝！',
     'log.cardDuelVoid': '你的紙牌對決宣告無效：雙方均未在時限內出牌。',
+    'log.cardDuelDraw': '你的紙牌對決以平局結束。',
     'error.cardDuelNotAtMaster': '你必須在牌局大師旁邊才能加入紙牌對決隊列。',
     'error.cardDuelNotInMatch': '你目前不在任何紙牌對決中。',
     'error.cardDuelAlreadyPlayed': '你本局已出過牌了。',
@@ -4910,6 +4919,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelOpponentForfeited': '상대가 카드 대결을 기권했습니다. 승리!',
     'log.cardDuelVoid':
       '카드 대결이 무효 처리되었습니다: 제한 시간 안에 양쪽 모두 카드를 내지 않았습니다.',
+    'log.cardDuelDraw': '카드 듀얼이 무승부로 끝났습니다.',
     'error.cardDuelNotAtMaster': '카드 대결 대기열에 참가하려면 카드 마스터 곁에 있어야 합니다.',
     'error.cardDuelNotInMatch': '현재 카드 대결 중이 아닙니다.',
     'error.cardDuelAlreadyPlayed': '이번 라운드에 이미 카드를 냈습니다.',
@@ -5366,6 +5376,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'カードデュエルを棄権しました。',
     'log.cardDuelOpponentForfeited': '相手がカードデュエルを棄権しました。あなたの勝ちです！',
     'log.cardDuelVoid': 'カードデュエルは無効です：どちらも時間内にカードを出しませんでした。',
+    'log.cardDuelDraw': 'カードデュエルは引き分けに終わりました。',
     'error.cardDuelNotAtMaster':
       'カードデュエルのキューに参加するには、カードマスターのそばにいる必要があります。',
     'error.cardDuelNotInMatch': 'カードデュエル中ではありません。',
@@ -5840,6 +5851,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Você desiste do Duelo de Cartas.',
     'log.cardDuelOpponentForfeited': 'Seu oponente desistiu do Duelo de Cartas. Você vence!',
     'log.cardDuelVoid': 'Seu Duelo de Cartas é inválido: nenhum lado jogou a tempo.',
+    'log.cardDuelDraw': 'Seu Duelo de Cartas termina empatado.',
     'error.cardDuelNotAtMaster':
       'Você precisa estar perto do Mestre das Cartas para entrar na fila do Duelo de Cartas.',
     'error.cardDuelNotInMatch': 'Você não está em um Duelo de Cartas.',
@@ -6288,6 +6300,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Вы сдаётесь в карточной дуэли.',
     'log.cardDuelOpponentForfeited': 'Соперник сдался в карточной дуэли. Вы побеждаете!',
     'log.cardDuelVoid': 'Карточная дуэль аннулирована: ни одна из сторон не сыграла вовремя.',
+    'log.cardDuelDraw': 'Карточная дуэль завершилась вничью.',
     'error.cardDuelNotAtMaster':
       'Вы должны находиться рядом с Карточным мастером, чтобы встать в очередь.',
     'error.cardDuelNotInMatch': 'Вы не участвуете в карточной дуэли.',
@@ -6770,6 +6783,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Vzdáváš se Karetního souboje.',
     'log.cardDuelOpponentForfeited': 'Tvůj soupeř se vzdal Karetního souboje. Vyhráváš!',
     'log.cardDuelVoid': 'Tvůj Karetní souboj je neplatný: žádná strana nezahrála kartu včas.',
+    'log.cardDuelDraw': 'Tvůj Karetní souboj skončil remízou.',
     'error.cardDuelNotAtMaster':
       'Musíš být u Karetního mistra, abys mohl(a) vstoupit do fronty Karetního souboje.',
     'error.cardDuelNotInMatch': 'Nejsi v Karetním souboji.',
@@ -6928,6 +6942,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Je geeft het Kaartduel op.',
     'log.cardDuelOpponentForfeited': 'Je tegenstander heeft het Kaartduel opgegeven. Jij wint!',
     'log.cardDuelVoid': 'Je Kaartduel is ongeldig: geen van beide zijden speelde op tijd.',
+    'log.cardDuelDraw': 'Je Kaartduel eindigt in gelijkspel.',
     'error.cardDuelNotAtMaster':
       'Je moet bij de Kaartmeester zijn om je in te schrijven voor een Kaartduel.',
     'error.cardDuelNotInMatch': 'Je neemt niet deel aan een Kaartduel.',
@@ -7086,6 +7101,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelOpponentForfeited': 'Przeciwnik poddał się w Pojedynku Karcianym. Wygrywasz!',
     'log.cardDuelVoid':
       'Twój Pojedynek Karciany jest nieważny: żadna ze stron nie zagrała karty na czas.',
+    'log.cardDuelDraw': 'Twój Pojedynek Kart kończy się remisem.',
     'error.cardDuelNotAtMaster':
       'Musisz znajdować się przy Mistrzu Kart, by dołączyć do kolejki Pojedynku Karcianego.',
     'error.cardDuelNotInMatch': 'Nie bierzesz udziału w Pojedynku Karcianym.',
@@ -7243,6 +7259,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Kamu menyerah dari Duel Kartu.',
     'log.cardDuelOpponentForfeited': 'Lawanmu menyerah dari Duel Kartu. Kamu menang!',
     'log.cardDuelVoid': 'Duel Kartumu batal: tidak ada sisi yang memainkan kartu tepat waktu.',
+    'log.cardDuelDraw': 'Duel Kartumu berakhir seri.',
     'error.cardDuelNotAtMaster':
       'Kamu harus berada di dekat Ahli Kartu untuk masuk antrean Duel Kartu.',
     'error.cardDuelNotInMatch': 'Kamu tidak sedang dalam Duel Kartu.',
@@ -7399,6 +7416,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Kart Düellosundan çekildin.',
     'log.cardDuelOpponentForfeited': 'Rakibin Kart Düellosundan çekildi. Kazandın!',
     'log.cardDuelVoid': 'Kart Düellosu geçersiz sayıldı: hiçbir taraf zamanında kart oynamadı.',
+    'log.cardDuelDraw': 'Kart Düellon berabere bitti.',
     'error.cardDuelNotAtMaster':
       "Kart Düellosu sırasına girmek için Kart Ustası'nın yanında olmalısın.",
     'error.cardDuelNotInMatch': 'Bir Kart Düellosunda değilsin.',
@@ -7555,6 +7573,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Du ger upp kortduellen.',
     'log.cardDuelOpponentForfeited': 'Din motståndare gav upp kortduellen. Du vinner!',
     'log.cardDuelVoid': 'Din kortduell är ogiltig: ingen sida spelade i tid.',
+    'log.cardDuelDraw': 'Din kortduell slutar oavgjort.',
     'error.cardDuelNotAtMaster':
       'Du måste vara hos Kortmästaren för att ställa dig i kö för en kortduell.',
     'error.cardDuelNotInMatch': 'Du är inte i en kortduell.',
@@ -7710,6 +7729,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Bạn bỏ cuộc trong ván Đấu Bài.',
     'log.cardDuelOpponentForfeited': 'Đối thủ của bạn đã bỏ cuộc. Bạn thắng!',
     'log.cardDuelVoid': 'Ván Đấu Bài của bạn bị hủy: không bên nào đánh bài đúng hạn.',
+    'log.cardDuelDraw': 'Ván Đấu Bài của bạn kết thúc hòa.',
     'error.cardDuelNotAtMaster': 'Bạn phải đứng tại Bậc Thầy Bài để vào hàng chờ Đấu Bài.',
     'error.cardDuelNotInMatch': 'Bạn không đang trong ván Đấu Bài nào.',
     'error.cardDuelAlreadyPlayed': 'Bạn đã đánh bài trong hiệp này rồi.',
@@ -7865,6 +7885,7 @@ const BASE_DICT: Record<SupportedLanguage, Partial<Record<BaseSimMessageKey, str
     'log.cardDuelForfeit': 'Du giver op i Kortduellen.',
     'log.cardDuelOpponentForfeited': 'Din modstander gav op i Kortduellen. Du vinder!',
     'log.cardDuelVoid': 'Din Kortduel er ugyldig: ingen af siderne spillede i tide.',
+    'log.cardDuelDraw': 'Din Kortduel ender uafgjort.',
     'error.cardDuelNotAtMaster':
       'Du skal være hos Kortmesteren for at stille dig i kø til en Kortduel.',
     'error.cardDuelNotInMatch': 'Du er ikke i en Kortduel.',
@@ -12164,6 +12185,10 @@ const RULES: Rule[] = [
   {
     re: /^Your Card Duel is void: neither side played in time\.$/,
     build: () => tSim('log.cardDuelVoid'),
+  },
+  {
+    re: /^Your Card Duel ends in a draw\.$/,
+    build: () => tSim('log.cardDuelDraw'),
   },
   {
     re: /^You must be at the Card Master to queue for a Card Duel\.$/,

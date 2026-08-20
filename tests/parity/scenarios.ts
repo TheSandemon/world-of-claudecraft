@@ -4647,7 +4647,8 @@ function cardDuel(): Scenario {
     coverage: [
       'Card Duel minigame: queue + matchmake at the Card Master',
       'createCardHand rng draw (match start, both sides)',
-      'drawOne rng draw (round resolution, both sides)',
+      'refillHand rng draws (round resolution, both sides)',
+      'mid-refill reshuffle (the deck runs dry partway through one refill)',
     ],
     sampleEvery: 5,
     build: () => new Sim({ seed: 1010, playerClass: 'warrior', noPlayer: true }),
@@ -4662,8 +4663,18 @@ function cardDuel(): Scenario {
       rec.tick(1); // updateCardDuelQueue() matchmakes the pair (createCardHand x2)
       const match = sim.cardDuelMatchFor(a);
       if (match) {
-        sim.playCardInDuel(match.handA.hand[0].value, a);
-        sim.playCardInDuel(match.handB.hand[0].value, b); // resolves the round (drawOne x2)
+        // Force the case the refill rule is easy to get wrong: the deck runs
+        // dry PARTWAY THROUGH one refill, so the discard has to shuffle back in
+        // and the same refill continue. Each side keeps one card in the deck
+        // and sheds two from hand, so the post-round refill needs three draws
+        // from a one-card deck. Pure state movement, no rng, so the draw log
+        // below is entirely the engine's own.
+        for (const side of [match.state.a, match.state.b]) {
+          side.cards.discard.push(...side.cards.deck.splice(1));
+          side.cards.discard.push(...side.cards.hand.splice(2));
+        }
+        sim.playCardInDuel(match.state.a.cards.hand[0].iid, a);
+        sim.playCardInDuel(match.state.b.cards.hand[0].iid, b); // resolves the round
       }
       rec.tick(20 * 2);
     },

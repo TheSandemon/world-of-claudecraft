@@ -7741,8 +7741,11 @@ export class GameServer {
         sim.leaveCardDuelQueue(pid);
         break;
       case 'play_card':
-        if (typeof msg.value === 'number' && Number.isInteger(msg.value))
-          sim.playCardInDuel(msg.value, pid);
+        // A hand INSTANCE id, not a face value. The integer guard is the shape
+        // check; the sim owns the authority check, refusing an id the sender's
+        // own hand does not hold rather than resolving it to some card.
+        if (typeof msg.iid === 'number' && Number.isInteger(msg.iid))
+          sim.playCardInDuel(msg.iid, pid);
         break;
       case 'card_forfeit':
         sim.forfeitCardDuel(pid);

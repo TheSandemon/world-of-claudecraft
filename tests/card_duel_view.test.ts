@@ -2,6 +2,24 @@ import { describe, expect, it } from 'vitest';
 import { buildCardDuelView } from '../src/ui/card_duel_view';
 import type { CardMinigameInfo } from '../src/world_api';
 
+/** A wire card as the snapshot carries it: an instance handle, its catalog id,
+ *  and its face value. The value alone is not an identity (a hand can hold two
+ *  different cards of the same value), which is why the view keys on `iid`. */
+function wireCard(iid: number, value: number, cardId = `card_${value}`) {
+  return { iid, cardId, value };
+}
+
+/** The match fields every case below shares. */
+const matchDefaults = {
+  roundsToWin: 2,
+  round: 1,
+  secondsLeft: 45,
+  myCounters: {},
+  opponentCounters: {},
+  opponentRevealed: [],
+  opponentPlayedValues: [],
+};
+
 describe('card_duel_view', () => {
   it('idle state when not queued and not in a match', () => {
     const info: CardMinigameInfo = { queued: false, available: true, match: null };
@@ -34,12 +52,13 @@ describe('card_duel_view', () => {
       available: true,
       match: {
         opponent: { pid: 7, name: 'Aki' },
-        hand: [3, 8, 1, 5],
+        hand: [wireCard(11, 3), wireCard(12, 8), wireCard(13, 1), wireCard(14, 5)],
         deckCount: 12,
         discardCount: 2,
         myRounds: 1,
         opponentRounds: 0,
         waitingOnOpponent: false,
+        ...matchDefaults,
       },
     };
     const view = buildCardDuelView(info);
@@ -50,10 +69,10 @@ describe('card_duel_view', () => {
     expect(view.deckCount).toBe(12);
     expect(view.discardCount).toBe(2);
     expect(view.hand).toEqual([
-      { value: 3, playable: true },
-      { value: 8, playable: true },
-      { value: 1, playable: true },
-      { value: 5, playable: true },
+      { iid: 11, cardId: 'card_3', value: 3, playable: true },
+      { iid: 12, cardId: 'card_8', value: 8, playable: true },
+      { iid: 13, cardId: 'card_1', value: 1, playable: true },
+      { iid: 14, cardId: 'card_5', value: 5, playable: true },
     ]);
   });
 
@@ -63,12 +82,13 @@ describe('card_duel_view', () => {
       available: true,
       match: {
         opponent: { pid: 7, name: 'Aki' },
-        hand: [4, 9],
+        hand: [wireCard(21, 4), wireCard(22, 9)],
         deckCount: 10,
         discardCount: 4,
         myRounds: 0,
         opponentRounds: 1,
         waitingOnOpponent: true,
+        ...matchDefaults,
       },
     };
     const view = buildCardDuelView(info);
@@ -82,16 +102,39 @@ describe('card_duel_view', () => {
       available: true,
       match: {
         opponent: { pid: 2, name: 'Bo' },
-        hand: [6],
+        hand: [wireCard(31, 6)],
         deckCount: 15,
         discardCount: 4,
         myRounds: 0,
         opponentRounds: 0,
         waitingOnOpponent: false,
+        ...matchDefaults,
       },
     };
     // Both Sim.cardMinigameInfo and ClientWorld.cardMinigameInfo produce this
     // exact plain-data shape, so a single stub covers both hosts.
     expect(buildCardDuelView(info)).toEqual(buildCardDuelView({ ...info }));
+  });
+
+  it('carries the instance handle through, so two cards of one value stay distinct', () => {
+    // The case the value-keyed view could not express at all: a hand holding
+    // BOTH copies of a value. Playing one must name the exact card.
+    const info: CardMinigameInfo = {
+      queued: false,
+      available: true,
+      match: {
+        opponent: { pid: 2, name: 'Bo' },
+        hand: [wireCard(41, 3, 'forest_wolf'), wireCard(42, 3, 'bramble_sprite')],
+        deckCount: 15,
+        discardCount: 3,
+        myRounds: 0,
+        opponentRounds: 0,
+        waitingOnOpponent: false,
+        ...matchDefaults,
+      },
+    };
+    const view = buildCardDuelView(info);
+    expect(view.hand.map((c) => c.iid)).toEqual([41, 42]);
+    expect(new Set(view.hand.map((c) => c.cardId)).size).toBe(2);
   });
 });

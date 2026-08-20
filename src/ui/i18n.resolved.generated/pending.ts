@@ -352,7 +352,10 @@ export const pending: Record<string, readonly string[]> = {
     "cards.tribe.Mudfin",
     "cards.tribe.Spider",
     "cards.tribe.Spirit",
-    "cards.tribe.Undead"
+    "cards.tribe.Undead",
+    "guide.questsPage.cardMasterTitle",
+    "guide.questsPage.typeEscortBody",
+    "guide.questsPage.typeEscortTitle"
   ],
   "fr_CA": [
     "cards.appTitle",
@@ -467,7 +470,10 @@ export const pending: Record<string, readonly string[]> = {
     "cards.tribe.Mudfin",
     "cards.tribe.Spider",
     "cards.tribe.Spirit",
-    "cards.tribe.Undead"
+    "cards.tribe.Undead",
+    "guide.questsPage.cardMasterTitle",
+    "guide.questsPage.typeEscortBody",
+    "guide.questsPage.typeEscortTitle"
   ],
   "en_CA": [],
   "it_IT": [
@@ -583,7 +589,8 @@ export const pending: Record<string, readonly string[]> = {
     "cards.tribe.Mudfin",
     "cards.tribe.Spider",
     "cards.tribe.Spirit",
-    "cards.tribe.Undead"
+    "cards.tribe.Undead",
+    "guide.questsPage.cardMasterTitle"
   ],
   "de_DE": [
     "cards.appTitle",
@@ -1433,7 +1440,9 @@ export const pending: Record<string, readonly string[]> = {
     "cards.tribe.Mudfin",
     "cards.tribe.Spider",
     "cards.tribe.Spirit",
-    "cards.tribe.Undead"
+    "cards.tribe.Undead",
+    "guide.questsPage.cardMasterTitle",
+    "guide.questsPage.typeEscortBody"
   ],
   "sv_SE": [
     "cards.appTitle",

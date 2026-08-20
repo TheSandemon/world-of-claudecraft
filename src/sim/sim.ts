@@ -10645,8 +10645,8 @@ export class Sim {
     return cardDuelMod.cardDuelMatchFor(this.ctx, pid);
   }
 
-  playCardInDuel(cardValue: number, pid?: number): void {
-    cardDuelMod.playCardInDuel(this.ctx, cardValue, pid);
+  playCardInDuel(cardIid: number, pid?: number): void {
+    cardDuelMod.playCardInDuel(this.ctx, cardIid, pid);
   }
 
   // Player-issuable forfeit of a LIVE match (distinct from leaveCardDuelQueue,

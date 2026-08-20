@@ -4896,8 +4896,11 @@ export class ClientWorld implements IWorld {
   leaveCardDuelQueue(): void {
     this.cmd({ cmd: 'card_queue_leave' });
   }
-  playCardInDuel(cardValue: number): void {
-    this.cmd({ cmd: 'play_card', value: cardValue });
+  playCardInDuel(cardIid: number): void {
+    // `iid`, not the old `value`: the payload names a hand INSTANCE now, and a
+    // stale client still sending `value` is refused server-side rather than
+    // resolving to an arbitrary card of that number.
+    this.cmd({ cmd: 'play_card', iid: cardIid });
   }
   forfeitCardDuel(): void {
     this.cmd({ cmd: 'card_forfeit' });

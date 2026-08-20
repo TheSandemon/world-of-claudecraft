@@ -103,7 +103,7 @@ export class CardDuelWindow {
       const hand = view.hand
         .map(
           (card) =>
-            `<button type="button" class="cd-card" data-play="${card.value}" ${
+            `<button type="button" class="cd-card" data-play="${card.iid}" ${
               card.playable ? '' : 'disabled'
             } aria-label="${esc(t('cardDuel.playCardAria', { value: formatNumber(card.value, { maximumFractionDigits: 0 }) }))}">${formatNumber(card.value, { maximumFractionDigits: 0 })}</button>`,
         )
@@ -137,8 +137,10 @@ export class CardDuelWindow {
     el.querySelector('[data-forfeit]')?.addEventListener('click', () => world.forfeitCardDuel());
     el.querySelectorAll('[data-play]:not([disabled])').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const value = Number((btn as HTMLElement).dataset.play);
-        world.playCardInDuel(value);
+        // The INSTANCE id, not the face value: a hand can hold two different
+        // cards of the same value, so a value would be an ambiguous request.
+        const iid = Number((btn as HTMLElement).dataset.play);
+        world.playCardInDuel(iid);
       });
     });
   }
