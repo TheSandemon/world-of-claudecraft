@@ -13884,4 +13884,13 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'cards.tribe.Spider': '蜘蛛',
   'cards.tribe.Spirit': '精霊',
   'cards.tribe.Undead': 'アンデッド',
+  'cardDuel.clock': '残り{seconds}秒',
+  'cardDuel.clockAria': 'このラウンドの残り秒数：{seconds}',
+  'cardDuel.clockOut': '時間切れ',
+  'cardDuel.revealLose': 'このラウンドはあなたの負け',
+  'cardDuel.revealMine': 'あなたのカード',
+  'cardDuel.revealPush': 'このラウンドは引き分け',
+  'cardDuel.revealReshuffled': '捨て札が山札に混ぜ直されました。',
+  'cardDuel.revealTheirs': '相手のカード',
+  'cardDuel.revealWin': 'このラウンドはあなたの勝ち',
 };

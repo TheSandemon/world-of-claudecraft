@@ -7877,15 +7877,15 @@ export const ru_RU: EnTranslations = {
     "playCardAria": "Разыграть карту {value}",
     "waitingOnOpponent": "Ожидание карты соперника...",
     "yourTurn": "Разыграйте карту",
-    "clock": "{seconds}s left",
-    "clockAria": "Seconds left in this round: {seconds}",
-    "clockOut": "Time is up",
-    "revealMine": "You played",
-    "revealTheirs": "Opponent played",
-    "revealWin": "You win the round",
-    "revealLose": "You lose the round",
-    "revealPush": "The round is a push",
-    "revealReshuffled": "Your discard pile was shuffled back into your deck."
+    "clock": "Осталось {seconds} с",
+    "clockAria": "Секунд до конца раунда: {seconds}",
+    "clockOut": "Время вышло",
+    "revealMine": "Вы сыграли",
+    "revealTheirs": "Соперник сыграл",
+    "revealWin": "Вы выигрываете раунд",
+    "revealLose": "Вы проигрываете раунд",
+    "revealPush": "Раунд завершился вничью",
+    "revealReshuffled": "Ваша стопка сброса была замешана обратно в колоду."
   },
   "delveUi": {
     "board": {

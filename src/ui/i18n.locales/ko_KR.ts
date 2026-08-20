@@ -13883,4 +13883,13 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'cards.tribe.Spider': '거미',
   'cards.tribe.Spirit': '영혼',
   'cards.tribe.Undead': '언데드',
+  'cardDuel.clock': '{seconds}초 남음',
+  'cardDuel.clockAria': '이번 라운드 남은 초: {seconds}',
+  'cardDuel.clockOut': '시간 종료',
+  'cardDuel.revealLose': '이번 라운드 패배',
+  'cardDuel.revealMine': '내가 낸 카드',
+  'cardDuel.revealPush': '이번 라운드 무승부',
+  'cardDuel.revealReshuffled': '버린 카드 더미가 덱으로 다시 섞여 들어갔습니다.',
+  'cardDuel.revealTheirs': '상대가 낸 카드',
+  'cardDuel.revealWin': '이번 라운드 승리',
 };

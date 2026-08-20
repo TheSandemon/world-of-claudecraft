@@ -14063,4 +14063,13 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'cards.tribe.Spider': 'Паук',
   'cards.tribe.Spirit': 'Дух',
   'cards.tribe.Undead': 'Нежить',
+  'cardDuel.clock': 'Осталось {seconds} с',
+  'cardDuel.clockAria': 'Секунд до конца раунда: {seconds}',
+  'cardDuel.clockOut': 'Время вышло',
+  'cardDuel.revealLose': 'Вы проигрываете раунд',
+  'cardDuel.revealMine': 'Вы сыграли',
+  'cardDuel.revealPush': 'Раунд завершился вничью',
+  'cardDuel.revealReshuffled': 'Ваша стопка сброса была замешана обратно в колоду.',
+  'cardDuel.revealTheirs': 'Соперник сыграл',
+  'cardDuel.revealWin': 'Вы выигрываете раунд',
 };

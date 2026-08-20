@@ -7877,15 +7877,15 @@ export const ja_JP: EnTranslations = {
     "playCardAria": "{value}のカードを出す",
     "waitingOnOpponent": "相手のカードを待っています……",
     "yourTurn": "カードを出してください",
-    "clock": "{seconds}s left",
-    "clockAria": "Seconds left in this round: {seconds}",
-    "clockOut": "Time is up",
-    "revealMine": "You played",
-    "revealTheirs": "Opponent played",
-    "revealWin": "You win the round",
-    "revealLose": "You lose the round",
-    "revealPush": "The round is a push",
-    "revealReshuffled": "Your discard pile was shuffled back into your deck."
+    "clock": "残り{seconds}秒",
+    "clockAria": "このラウンドの残り秒数：{seconds}",
+    "clockOut": "時間切れ",
+    "revealMine": "あなたのカード",
+    "revealTheirs": "相手のカード",
+    "revealWin": "このラウンドはあなたの勝ち",
+    "revealLose": "このラウンドはあなたの負け",
+    "revealPush": "このラウンドは引き分け",
+    "revealReshuffled": "捨て札が山札に混ぜ直されました。"
   },
   "delveUi": {
     "board": {

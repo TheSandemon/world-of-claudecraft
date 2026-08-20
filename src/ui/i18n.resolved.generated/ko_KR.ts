@@ -7877,15 +7877,15 @@ export const ko_KR: EnTranslations = {
     "playCardAria": "{value} 카드 내기",
     "waitingOnOpponent": "상대의 카드를 기다리는 중...",
     "yourTurn": "카드를 내세요",
-    "clock": "{seconds}s left",
-    "clockAria": "Seconds left in this round: {seconds}",
-    "clockOut": "Time is up",
-    "revealMine": "You played",
-    "revealTheirs": "Opponent played",
-    "revealWin": "You win the round",
-    "revealLose": "You lose the round",
-    "revealPush": "The round is a push",
-    "revealReshuffled": "Your discard pile was shuffled back into your deck."
+    "clock": "{seconds}초 남음",
+    "clockAria": "이번 라운드 남은 초: {seconds}",
+    "clockOut": "시간 종료",
+    "revealMine": "내가 낸 카드",
+    "revealTheirs": "상대가 낸 카드",
+    "revealWin": "이번 라운드 승리",
+    "revealLose": "이번 라운드 패배",
+    "revealPush": "이번 라운드 무승부",
+    "revealReshuffled": "버린 카드 더미가 덱으로 다시 섞여 들어갔습니다."
   },
   "delveUi": {
     "board": {

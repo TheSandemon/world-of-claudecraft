@@ -7877,15 +7877,15 @@ export const zh_CN: EnTranslations = {
     "playCardAria": "打出 {value} 号牌",
     "waitingOnOpponent": "正在等待对手出牌……",
     "yourTurn": "出一张牌",
-    "clock": "{seconds}s left",
-    "clockAria": "Seconds left in this round: {seconds}",
-    "clockOut": "Time is up",
-    "revealMine": "You played",
-    "revealTheirs": "Opponent played",
-    "revealWin": "You win the round",
-    "revealLose": "You lose the round",
-    "revealPush": "The round is a push",
-    "revealReshuffled": "Your discard pile was shuffled back into your deck."
+    "clock": "剩余 {seconds} 秒",
+    "clockAria": "本回合剩余秒数：{seconds}",
+    "clockOut": "时间到",
+    "revealMine": "你出的牌",
+    "revealTheirs": "对手出的牌",
+    "revealWin": "你赢下本回合",
+    "revealLose": "你输掉本回合",
+    "revealPush": "本回合打平",
+    "revealReshuffled": "你的弃牌堆已重新洗回牌库。"
   },
   "delveUi": {
     "board": {

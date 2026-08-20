@@ -13601,4 +13601,13 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'cards.tribe.Spider': '蜘蛛',
   'cards.tribe.Spirit': '幽魂',
   'cards.tribe.Undead': '亡靈',
+  'cardDuel.clock': '剩餘 {seconds} 秒',
+  'cardDuel.clockAria': '本回合剩餘秒數：{seconds}',
+  'cardDuel.clockOut': '時間到',
+  'cardDuel.revealLose': '你輸掉本回合',
+  'cardDuel.revealMine': '你出的牌',
+  'cardDuel.revealPush': '本回合打平',
+  'cardDuel.revealReshuffled': '你的棄牌堆已重新洗回牌庫。',
+  'cardDuel.revealTheirs': '對手出的牌',
+  'cardDuel.revealWin': '你贏下本回合',
 };
