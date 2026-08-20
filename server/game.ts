@@ -143,6 +143,7 @@ import {
   buildDetectionCalibrationSnapshot,
   type DetectionCalibrationSnapshot,
 } from './calibration_snapshot';
+import { handleCardDuelCommand } from './card_duel_commands';
 import { RESTORE_ITEM_MAX_COUNT } from './character_professions';
 import { applyCharacterSaveFixups } from './character_save_fixups';
 import { ChatFilter } from './chat_filter';
@@ -7733,22 +7734,18 @@ export class GameServer {
         break;
       }
 
-      // Card Duel minigame (the Card Master NPC, docs: src/sim/social/card_duel.ts).
+      // The whole Card Duel command family (server/card_duel_commands.ts): the
+      // queue, the play, the forfeit, the named regulars, and the deck builder.
+      // Shape checks there, every authority check in the sim.
       case 'card_queue_join':
-        sim.joinCardDuelQueue(pid);
-        break;
       case 'card_queue_leave':
-        sim.leaveCardDuelQueue(pid);
-        break;
       case 'play_card':
-        // A hand INSTANCE id, not a face value. The integer guard is the shape
-        // check; the sim owns the authority check, refusing an id the sender's
-        // own hand does not hold rather than resolving it to some card.
-        if (typeof msg.iid === 'number' && Number.isInteger(msg.iid))
-          sim.playCardInDuel(msg.iid, pid);
-        break;
       case 'card_forfeit':
-        sim.forfeitCardDuel(pid);
+      case 'card_play_opponent':
+      case 'card_deck_save':
+      case 'card_deck_select':
+      case 'card_deck_delete':
+        handleCardDuelCommand(sim, msg, pid);
         break;
 
       // Dungeon Finder (docs/prd/dungeon-finder.md). Deliberately NOT in

@@ -14,12 +14,20 @@
 // Server-authoritative: rounds resolve here once both sides have played, never
 // client-side, and no effect is ever computed by a client.
 
-import { CARD_CATALOG, DEFAULT_DECK_LIST } from '../content/cards';
+import {
+  buildOpponentDeck,
+  CARD_CATALOG,
+  type CardOpponentDef,
+  DEFAULT_DECK_LIST,
+} from '../content/cards';
 import { cardMasterInRange } from '../instances/card_master';
 import {
+  activeDeckEntries,
+  botCommitDelayTicks,
   buildBoard,
   CARD_DUEL_ROUND_DEADLINE_S,
   CARD_DUEL_ROUNDS_TO_WIN,
+  type CardBotTier,
   type CardDeckEntry,
   type CardInstance,
   type CardMatchState,
@@ -60,6 +68,19 @@ export interface CardDuelMatch {
    * been WON; conflating the two is the likely bug here.
    */
   anyCardPlayed: boolean;
+  /**
+   * The computer opponent sitting in seat B, when this is a bot match. A bot
+   * match runs the SHIPPING code (same startCardDuelMatch, same resolve.ts);
+   * only the pairing step is bypassed.
+   */
+  bot: {
+    opponentId: string;
+    tier: CardBotTier;
+    /** ctx.tickCount at which the bot commits this round. Counted in TICKS,
+     *  never wall clock, so the offline Sim, the server, and the headless env
+     *  agree. */
+    commitAt: number;
+  } | null;
 }
 
 /** One card as the owning player's client sees it. */
@@ -80,6 +101,17 @@ export interface CardMinigameCard {
 // The IWorldCardMinigame read-surface shape (src/world_api/card_minigame.ts
 // imports this rather than sim depending on world_api, per the IWorld seam
 // direction: world_api reads sim types, never the reverse).
+/** The viewer's saved decks, for the builder. Names only: a deck's twenty
+ *  cards are sent when the builder asks to edit that deck, not on every
+ *  snapshot. */
+export interface CardMinigameDecks {
+  names: string[];
+  active: string;
+  /** The active deck's cards, so the builder opens on something real without
+   *  a second round trip. */
+  activeCards: string[];
+}
+
 export interface CardMinigameInfo {
   queued: boolean;
   // false when there is no other player in the world to ever pair against
@@ -87,6 +119,7 @@ export interface CardMinigameInfo {
   // hidden/disabled rather than let the player queue forever with no
   // feedback (finding: offline queue never resolves).
   available: boolean;
+  decks: CardMinigameDecks;
   match: {
     opponent: { pid: number; name: string };
     hand: CardMinigameCard[];
@@ -219,9 +252,18 @@ export function deckForPlayer(
   return DEFAULT_DECK_LIST;
 }
 
-function startCardDuelMatch(ctx: SimContext, a: number, b: number): void {
-  const deckA = deckForPlayer(undefined);
-  const deckB = deckForPlayer(undefined);
+/** Seats a match. Exported for the bots sibling, which starts one directly
+ *  against a named regular rather than off the queue. */
+export function startCardDuelMatch(
+  ctx: SimContext,
+  a: number,
+  b: number,
+  opponent?: CardOpponentDef,
+): void {
+  const deckA = deckForPlayer(activeDeckEntries(ctx.players.get(a)?.cards, CARD_CATALOG));
+  const deckB = opponent
+    ? deckForPlayer(buildOpponentDeck(opponent.favours))
+    : deckForPlayer(activeDeckEntries(ctx.players.get(b)?.cards, CARD_CATALOG));
   const match: CardDuelMatch = {
     a,
     b,
@@ -231,6 +273,13 @@ function startCardDuelMatch(ctx: SimContext, a: number, b: number): void {
     ),
     roundDeadline: ctx.time + CARD_DUEL_ROUND_DEADLINE_S,
     anyCardPlayed: false,
+    bot: opponent
+      ? {
+          opponentId: opponent.id,
+          tier: opponent.difficulty,
+          commitAt: ctx.tickCount + botCommitDelayTicks(opponent.difficulty, ctx.rng),
+        }
+      : null,
   };
   ctx.cardDuels.set(a, match);
   ctx.cardDuels.set(b, match);
@@ -352,7 +401,9 @@ export function playCardInDuel(ctx: SimContext, cardIid: number, pid?: number): 
   }
 }
 
-function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
+/** Resolves the round both seats have committed to. Exported for the bots
+ *  sibling, whose commit can be the second of the two. */
+export function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
   const playedA = match.state.a.playedThisRound as CardInstance;
   const playedB = match.state.b.playedThisRound as CardInstance;
   const res = resolveCardRound(match.state, CARD_CATALOG, ctx.rng, {
@@ -363,6 +414,9 @@ function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
     },
   });
   match.roundDeadline = ctx.time + CARD_DUEL_ROUND_DEADLINE_S;
+  if (match.bot) {
+    match.bot.commitAt = ctx.tickCount + botCommitDelayTicks(match.bot.tier, ctx.rng);
+  }
   for (const pid of [match.a, match.b]) {
     const isA = pid === match.a;
     const mine = isA ? res.aValue : res.bValue;
@@ -397,7 +451,11 @@ function endCardDuelMatch(ctx: SimContext, match: CardDuelMatch, winnerPid: numb
   const loserPid = winnerPid === match.a ? match.b : match.a;
   const winnerMeta = ctx.players.get(winnerPid);
   const loserMeta = ctx.players.get(loserPid);
-  if (winnerMeta) ctx.bumpDeedStat(winnerMeta, 'cardDuelsWon', 1);
+  // A bot match credits NO PvP progress. `pvp_card_duel_first_win` is a pvp
+  // deed reading cardDuelsWon, so crediting a win over a Novice would make the
+  // deed a thirty-second formality and the category a lie. Bot-specific
+  // rewards, if they are ever wanted, take their own stat and their own deeds.
+  if (winnerMeta && !match.bot) ctx.bumpDeedStat(winnerMeta, 'cardDuelsWon', 1);
   // Distinct fully-literal messages for the no-opponent-meta arm (the real
   // edge case named by review: the opponent's meta is gone because they left
   // mid-match, e.g. removePlayer ran between their last card and this round
@@ -454,7 +512,8 @@ function forfeitMatch(ctx: SimContext, match: CardDuelMatch, forfeiterPid: numbe
   ctx.cardDuels.delete(match.a);
   ctx.cardDuels.delete(match.b);
   const winnerMeta = ctx.players.get(winnerPid);
-  if (winnerMeta) ctx.bumpDeedStat(winnerMeta, 'cardDuelsWon', 1);
+  // Same anti-farm rule on the forfeit path: a bot match credits nothing.
+  if (winnerMeta && !match.bot) ctx.bumpDeedStat(winnerMeta, 'cardDuelsWon', 1);
   if (ctx.players.has(forfeiterPid)) {
     ctx.emit({
       type: 'log',
@@ -541,6 +600,17 @@ export function leaveCardMinigameEntirely(ctx: SimContext, pid: number): void {
   forfeitMatch(ctx, match, pid);
 }
 
+function wireDecks(ctx: SimContext, pid: number): CardMinigameDecks {
+  const saved = ctx.players.get(pid)?.cards;
+  if (!saved) return { names: [], active: '', activeCards: [] };
+  const names = Object.keys(saved.decks).sort();
+  return {
+    names,
+    active: saved.activeDeck,
+    activeCards: [...(saved.decks[saved.activeDeck] ?? [])],
+  };
+}
+
 function wireCard(card: CardInstance): CardMinigameCard {
   return { iid: card.iid, cardId: card.cardId, value: card.value };
 }
@@ -573,10 +643,12 @@ function wireOwnCard(card: CardInstance, state: CardMatchState, seat: CardSeat):
 // leaves the server, so no client tampering can recover it.
 export function buildCardMinigameInfo(ctx: SimContext, pid: number): CardMinigameInfo {
   const match = cardDuelMatchFor(ctx, pid);
+  const decks = wireDecks(ctx, pid);
   if (!match) {
     return {
       queued: isQueuedForCardMinigame(ctx, pid),
       available: cardMinigameAvailable(ctx, pid),
+      decks,
       match: null,
     };
   }
@@ -591,6 +663,7 @@ export function buildCardMinigameInfo(ctx: SimContext, pid: number): CardMinigam
   return {
     queued: false,
     available: true,
+    decks,
     match: {
       opponent: { pid: oppPid, name: oppMeta?.name ?? '' },
       hand: me.cards.hand.map((card) => wireOwnCard(card, match.state, isA ? 'a' : 'b')),

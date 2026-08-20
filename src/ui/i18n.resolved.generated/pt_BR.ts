@@ -7001,6 +7001,28 @@ export const pt_BR: EnTranslations = {
       "nythraxis_broodling": "When revealed, give the opponent {amount} Dread.",
       "vale_champion": "If this loses, draw {amount} cards."
     },
+    "opponent": {
+      "dockhand_pell": {
+        "name": "Pell",
+        "title": "Dockhand",
+        "greeting": "Mind the mud. It bites back down my way."
+      },
+      "gravedigger_ossa": {
+        "name": "Ossa",
+        "title": "Gravedigger",
+        "greeting": "Nothing I bury stays buried for long."
+      },
+      "huntsman_bregg": {
+        "name": "Bregg",
+        "title": "Huntsman",
+        "greeting": "One wolf is a nuisance. Six is a hunt."
+      },
+      "the_card_master": {
+        "name": "The Card Master",
+        "title": "Keeper of the Table",
+        "greeting": "Sit. Everyone gets the same twenty cards. Show me which ones you chose."
+      }
+    },
     "tribe": {
       "Beast": "Beast",
       "Human": "Human",
@@ -7886,6 +7908,30 @@ export const pt_BR: EnTranslations = {
     "revealLose": "You lose the round",
     "revealPush": "The round is a push",
     "revealReshuffled": "Your discard pile was shuffled back into your deck."
+  },
+  "cardDeck": {
+    "title": "Deck Builder",
+    "close": "Close",
+    "defaultName": "New Deck",
+    "rule": "A deck is twenty cards: two at every value from one to ten, and no card twice.",
+    "nameLabel": "Deck name",
+    "progress": "{filled} of {required} slots filled",
+    "rowTitle": "Value {value}",
+    "emptySlot": "Empty value {value} slot",
+    "save": "Save deck",
+    "delete": "Discard deck",
+    "open": "Decks",
+    "openAria": "Open the deck builder"
+  },
+  "cardOpponents": {
+    "heading": "Play a regular",
+    "sitDown": "Sit down against {name}",
+    "tier": {
+      "novice": "Novice",
+      "steady": "Steady",
+      "sharp": "Sharp",
+      "master": "Master"
+    }
   },
   "delveUi": {
     "board": {

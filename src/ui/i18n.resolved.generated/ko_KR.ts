@@ -7001,6 +7001,28 @@ export const ko_KR: EnTranslations = {
       "nythraxis_broodling": "공개될 때 상대에게 공포 {amount}개를 부여합니다.",
       "vale_champion": "이 카드가 패배하면 카드 {amount}장을 뽑습니다."
     },
+    "opponent": {
+      "dockhand_pell": {
+        "name": "펠",
+        "title": "부두 인부",
+        "greeting": "진흙을 조심하시오. 우리 쪽 진흙은 물어뜯거든."
+      },
+      "gravedigger_ossa": {
+        "name": "오사",
+        "title": "무덤 파는 사람",
+        "greeting": "내가 묻은 것은 오래 누워 있지 않아."
+      },
+      "huntsman_bregg": {
+        "name": "브레그",
+        "title": "사냥꾼",
+        "greeting": "늑대 한 마리는 골칫거리지. 여섯이면 사냥이고."
+      },
+      "the_card_master": {
+        "name": "카드 마스터",
+        "title": "테이블의 관리인",
+        "greeting": "앉으시오. 누구나 같은 스무 장을 받소. 그대가 고른 카드를 보여 주시오."
+      }
+    },
     "tribe": {
       "Beast": "야수",
       "Human": "인간",
@@ -7886,6 +7908,30 @@ export const ko_KR: EnTranslations = {
     "revealLose": "이번 라운드 패배",
     "revealPush": "이번 라운드 무승부",
     "revealReshuffled": "버린 카드 더미가 덱으로 다시 섞여 들어갔습니다."
+  },
+  "cardDeck": {
+    "title": "덱 빌더",
+    "close": "닫기",
+    "defaultName": "새 덱",
+    "rule": "덱은 스무 장입니다. 1부터 10까지 값마다 두 장씩이며, 같은 카드는 넣을 수 없습니다.",
+    "nameLabel": "덱 이름",
+    "progress": "{required}칸 중 {filled}칸 채움",
+    "rowTitle": "값 {value}",
+    "emptySlot": "값 {value} 빈 칸",
+    "save": "덱 저장",
+    "delete": "덱 삭제",
+    "open": "덱",
+    "openAria": "덱 빌더 열기"
+  },
+  "cardOpponents": {
+    "heading": "단골과 대결",
+    "sitDown": "{name}와 대결하기",
+    "tier": {
+      "novice": "초보",
+      "steady": "안정",
+      "sharp": "예리",
+      "master": "달인"
+    }
   },
   "delveUi": {
     "board": {

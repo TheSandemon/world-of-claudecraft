@@ -11,6 +11,7 @@ export * from './bot';
 export * from './conditions';
 export * from './deck';
 export * from './deck_rules';
+export * from './deck_storage';
 export * from './effects';
 export * from './expressions';
 export * from './match_state';

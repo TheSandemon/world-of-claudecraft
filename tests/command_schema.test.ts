@@ -65,8 +65,11 @@ const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 // six vcup_* send + dispatch pairs (docs/design/eastbrook-revamp/master-plan.md);
 // the Proving Shore tutorial adds its one start_tutorial pair back on top, and
 // the v0.40.0 sync merge brings the release side's one new pair with it.
-const EXPECTED_SEND_COUNT = 199;
-const EXPECTED_DISPATCH_COUNT = 212;
+// The Card Duel deck builder and the named regulars then add four send +
+// dispatch pairs (card_play_opponent, card_deck_save, card_deck_select,
+// card_deck_delete). Both numbers were read off a suite run.
+const EXPECTED_SEND_COUNT = 203;
+const EXPECTED_DISPATCH_COUNT = 216;
 const EXPECTED_DISPATCH_ONLY_COUNT = 13;
 
 // The chat sub-channel routing switch (server/game.ts `switch

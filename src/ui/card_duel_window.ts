@@ -7,7 +7,7 @@
 // through IWorld + injected callbacks. It holds no Sim reference and reaches
 // into Hud only through its deps.
 
-import { CARD_CATALOG } from '../sim/content/cards';
+import { CARD_CATALOG, CARD_OPPONENTS } from '../sim/content/cards';
 import type { IWorld } from '../world_api';
 import { buildCardDuelView, type CardDuelViewModel } from './card_duel_view';
 import { buildCardFaceModel, cardFaceHtml } from './cards';
@@ -19,6 +19,9 @@ import { svgIcon } from './ui_icons';
 export interface CardDuelWindowDeps {
   root(): HTMLElement;
   world(): IWorld;
+  /** Opens the deck builder. Injected rather than reached for, so this window
+   *  still knows nothing about Hud. */
+  openDeckBuilder(): void;
   closeOthers(): void;
   captureFocus(): HTMLElement | null;
   restoreFocus(target: HTMLElement | null): void;
@@ -177,9 +180,17 @@ export class CardDuelWindow {
   private html(view: CardDuelViewModel): string {
     let body = '';
     if (view.state === 'unavailable') {
-      body = `<div class="cd-status">${esc(t('cardDuel.unavailable'))}</div>`;
+      // No human to pair with, but the regulars are always at the table: the
+      // queue gate never takes the whole minigame away from a lone player.
+      body =
+        `<div class="cd-status">${esc(t('cardDuel.unavailable'))}</div>` +
+        this.regularsHtml() +
+        this.deckButtonHtml();
     } else if (view.state === 'idle') {
-      body = `<button type="button" class="cd-action-btn" data-join aria-label="${esc(t('cardDuel.joinAria'))}">${esc(t('cardDuel.join'))}</button>`;
+      body =
+        `<button type="button" class="cd-action-btn" data-join aria-label="${esc(t('cardDuel.joinAria'))}">${esc(t('cardDuel.join'))}</button>` +
+        this.regularsHtml() +
+        this.deckButtonHtml();
     } else if (view.state === 'queued') {
       body =
         `<div class="cd-status">${esc(t('cardDuel.queued'))}</div>` +
@@ -236,11 +247,39 @@ export class CardDuelWindow {
     );
   }
 
+  /** The sit-down list. Always offered, online or offline. */
+  private regularsHtml(): string {
+    const rows = CARD_OPPONENTS.map((opponent) => {
+      const name = t(`cards.opponent.${opponent.nameId}.name` as never);
+      const title = t(`cards.opponent.${opponent.nameId}.title` as never);
+      const tier = t(`cardOpponents.tier.${opponent.difficulty}` as never);
+      return (
+        `<button type="button" class="cd-regular" data-opponent="${esc(opponent.id)}" aria-label="${esc(t('cardOpponents.sitDown', { name }))}">` +
+        `<span class="cd-regular-name">${esc(name)}</span>` +
+        `<span class="cd-regular-title">${esc(title)}</span>` +
+        `<span class="cd-regular-tier">${esc(tier)}</span>` +
+        `</button>`
+      );
+    }).join('');
+    return `<div class="cd-regulars"><h3 class="cd-regulars-title">${esc(t('cardOpponents.heading'))}</h3>${rows}</div>`;
+  }
+
+  private deckButtonHtml(): string {
+    return `<button type="button" class="cd-action-btn" data-decks aria-label="${esc(t('cardDeck.openAria'))}">${esc(t('cardDeck.open'))}</button>`;
+  }
+
   private wire(el: HTMLElement, world: IWorld): void {
     el.querySelector('[data-close]')?.addEventListener('click', () => this.close());
     el.querySelector('[data-join]')?.addEventListener('click', () => world.joinCardDuelQueue());
     el.querySelector('[data-leave]')?.addEventListener('click', () => world.leaveCardDuelQueue());
     el.querySelector('[data-forfeit]')?.addEventListener('click', () => world.forfeitCardDuel());
+    el.querySelector('[data-decks]')?.addEventListener('click', () => this.deps.openDeckBuilder());
+    el.querySelectorAll('[data-opponent]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.opponent ?? '';
+        world.startCardDuelAgainstOpponent(id);
+      });
+    });
     el.querySelectorAll('[data-play]:not([disabled])').forEach((btn) => {
       btn.addEventListener('click', () => {
         // The INSTANCE id, not the face value: a hand can hold two different

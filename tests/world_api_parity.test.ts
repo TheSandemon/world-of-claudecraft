@@ -206,6 +206,10 @@ export const IWORLD_MEMBERS = [
   { name: 'joinCardDuelQueue', kind: 'method' },
   { name: 'leaveCardDuelQueue', kind: 'method' },
   { name: 'playCardInDuel', kind: 'method' },
+  { name: 'startCardDuelAgainstOpponent', kind: 'method' },
+  { name: 'saveCardDeck', kind: 'method' },
+  { name: 'selectCardDeck', kind: 'method' },
+  { name: 'deleteCardDeck', kind: 'method' },
   { name: 'forfeitCardDuel', kind: 'method' },
   { name: 'marketInfo', kind: 'data' },
   { name: 'marketCollectPending', kind: 'data' },
@@ -603,6 +607,10 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
     // removing cupInfo (data) plus the cup methods, and the tutorial greeting
     // adds startTutorial (IWorldQuests, a method). The merged tree carries
     // both arms.
+    // The Card Duel deck builder and the named regulars then add
+    // startCardDuelAgainstOpponent, saveCardDeck, selectCardDeck and
+    // deleteCardDeck (IWorldCardMinigame methods) plus the deck data on
+    // cardMinigameInfo.
     //
     // NOTE for the next merge, four syncs run now: BOTH sides of this pin move
     // it independently every cycle. Twice git merged identical numbers with no
@@ -612,9 +620,9 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
     // even when the total agrees. Only running the suite says what these
     // numbers really are; never reconcile them by arithmetic in the diff (the
     // numbers below were set from a suite run, not from this narrative).
-    expect(IWORLD_MEMBERS.length).toBe(323);
+    expect(IWORLD_MEMBERS.length).toBe(326);
     expect(DATA_MEMBERS.length).toBe(85);
-    expect(METHOD_MEMBERS.length).toBe(238);
+    expect(METHOD_MEMBERS.length).toBe(241);
   });
   it('has no duplicate member names', () => {
     const names = IWORLD_MEMBERS.map((m) => m.name);
@@ -701,6 +709,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'deedsLeaderboard',
       'deedsRarity',
       'deedsRecent',
+      'deleteCardDeck',
       'deleteLoadout',
       'deliverCommissionOrder',
       'delveBuyShopItem',
@@ -885,8 +894,10 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'riftFloor',
       'salvageItem',
       'saveActionBarLayout',
+      'saveCardDeck',
       'saveLoadout',
       'searchCharacters',
+      'selectCardDeck',
       'selectTalentRow',
       'sellAllJunk',
       'sellItem',
@@ -911,6 +922,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'sortInventory',
       'spinDailyReward',
       'startAutoAttack',
+      'startCardDuelAgainstOpponent',
       'startTutorial',
       'stationPlacements',
       'stopAutoAttack',
@@ -1093,6 +1105,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'deedsLeaderboard',
       'deedsRarity',
       'deedsRecent',
+      'deleteCardDeck',
       'deleteLoadout',
       'deliverCommissionOrder',
       'delveBuyShopItem',
@@ -1229,8 +1242,10 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'riftEventMsRemaining',
       'salvageItem',
       'saveActionBarLayout',
+      'saveCardDeck',
       'saveLoadout',
       'searchCharacters',
+      'selectCardDeck',
       'selectTalentRow',
       'sellAllJunk',
       'sellItem',
@@ -1254,6 +1269,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'sortInventory',
       'spinDailyReward',
       'startAutoAttack',
+      'startCardDuelAgainstOpponent',
       'startTutorial',
       'stopAutoAttack',
       'submitLootRoll',
@@ -1584,6 +1600,10 @@ const FACET_CARD_MINIGAME = [
   'leaveCardDuelQueue',
   'playCardInDuel',
   'forfeitCardDuel',
+  'startCardDuelAgainstOpponent',
+  'saveCardDeck',
+  'selectCardDeck',
+  'deleteCardDeck',
 ] as const satisfies readonly (keyof IWorldCardMinigame)[];
 type _ExhaustCardMinigame = AssertNever<
   Exclude<keyof IWorldCardMinigame, (typeof FACET_CARD_MINIGAME)[number]>
@@ -1887,8 +1907,8 @@ describe('W1: aggregate IWorld member set equals the disjoint union of the facet
 
   it('the facet union equals the pinned IWORLD_MEMBERS set', () => {
     const union = Object.values(FACET_MEMBER_ARRAYS).flatMap((arr) => [...arr]);
-    expect(union.length, 'union size before dedup (catches a duplicated member)').toBe(323);
-    expect(new Set(union).size, 'union size after dedup (catches a duplicated member)').toBe(323);
+    expect(union.length, 'union size before dedup (catches a duplicated member)').toBe(327);
+    expect(new Set(union).size, 'union size after dedup (catches a duplicated member)').toBe(327);
     const sortedUnion = [...union].sort();
     const pinned = IWORLD_MEMBERS.map((m) => m.name).sort();
     expect(sortedUnion).toEqual(pinned);

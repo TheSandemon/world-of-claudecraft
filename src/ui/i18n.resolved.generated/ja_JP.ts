@@ -7001,6 +7001,28 @@ export const ja_JP: EnTranslations = {
       "nythraxis_broodling": "公開時、相手に恐怖を{amount}与える。",
       "vale_champion": "このカードが負けた場合、カードを{amount}枚引く。"
     },
+    "opponent": {
+      "dockhand_pell": {
+        "name": "ペル",
+        "title": "港湾人足",
+        "greeting": "泥に気をつけな。うちの辺りじゃ泥が噛みついてくる。"
+      },
+      "gravedigger_ossa": {
+        "name": "オッサ",
+        "title": "墓掘り",
+        "greeting": "わたしが埋めたものは、どれも長くは眠らない。"
+      },
+      "huntsman_bregg": {
+        "name": "ブレッグ",
+        "title": "狩人",
+        "greeting": "狼一匹なら厄介ごと。六匹なら狩りだ。"
+      },
+      "the_card_master": {
+        "name": "カードマスター",
+        "title": "卓の番人",
+        "greeting": "座りたまえ。誰もが同じ二十枚を持つ。君が選んだ札を見せてもらおう。"
+      }
+    },
     "tribe": {
       "Beast": "野獣",
       "Human": "人間",
@@ -7886,6 +7908,30 @@ export const ja_JP: EnTranslations = {
     "revealLose": "このラウンドはあなたの負け",
     "revealPush": "このラウンドは引き分け",
     "revealReshuffled": "捨て札が山札に混ぜ直されました。"
+  },
+  "cardDeck": {
+    "title": "デッキビルダー",
+    "close": "閉じる",
+    "defaultName": "新しいデッキ",
+    "rule": "デッキは二十枚です。一から十まで各値二枚ずつで、同じカードは入れられません。",
+    "nameLabel": "デッキ名",
+    "progress": "{required}枠中{filled}枠が埋まりました",
+    "rowTitle": "値{value}",
+    "emptySlot": "値{value}の空き枠",
+    "save": "デッキを保存",
+    "delete": "デッキを破棄",
+    "open": "デッキ",
+    "openAria": "デッキビルダーを開く"
+  },
+  "cardOpponents": {
+    "heading": "常連と対戦",
+    "sitDown": "{name}と対戦する",
+    "tier": {
+      "novice": "初心者",
+      "steady": "堅実",
+      "sharp": "鋭敏",
+      "master": "達人"
+    }
   },
   "delveUi": {
     "board": {

@@ -149,6 +149,7 @@ const FANOUT_ARMS: readonly string[] = [
   'this.mailboxWindow.relocalize|',
   'this.socialWindow.relocalize|',
   'this.cardDuelWindow.relocalize|',
+  'this.deckBuilderWindow.relocalize|',
   'this.spellbookWindow.relocalize|',
   'this.barEditorWindow.relocalize|',
   'this.lockpickController.relocalize|',
@@ -258,9 +259,24 @@ const ANSWERED: readonly AnsweredSurface[] = [
   },
   {
     file: 'card_duel_window.ts',
-    memos: ['lastSig'],
+    // `lastClock` is the SECOND memo, and it needs its own answer rather than
+    // inheriting this one: it compares the RESOLVED clock string, so a locale
+    // change moves the comparison and the clock repaints by itself, the
+    // write-elision behavior rather than the signature behavior. The
+    // relocalize arm below still covers it, because clearing lastSig rebuilds
+    // the subtree and resets the clock memo with it.
+    memos: ['lastClock', 'lastSig'],
     answer: 'this.cardDuelWindow.relocalize',
-    why: 'the duel view model: state, card values, round counts (#2529)',
+    why: 'the duel view model: state, card faces, round counts (#2529)',
+  },
+  {
+    file: 'deck_builder_window.ts',
+    memos: ['lastSig'],
+    answer: 'this.deckBuilderWindow.relocalize',
+    // Its signature is over the DRAFT, so a locale change alone can never move
+    // it: the rule line, the row titles and every card name would keep the old
+    // language until the player happened to edit a slot.
+    why: 'the deck rule line, the value row titles and the card names on every face',
   },
   {
     file: 'deeds_window.ts',

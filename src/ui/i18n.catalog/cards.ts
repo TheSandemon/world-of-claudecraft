@@ -137,6 +137,31 @@ export const cardsStrings = {
     vale_champion: 'If this loses, draw {amount} cards.',
   },
 
+  // The Card Master's regulars (src/sim/content/cards/opponents.ts). Each is a
+  // content record, so a new one is a data change plus three strings here.
+  opponent: {
+    dockhand_pell: {
+      name: 'Pell',
+      title: 'Dockhand',
+      greeting: 'Mind the mud. It bites back down my way.',
+    },
+    gravedigger_ossa: {
+      name: 'Ossa',
+      title: 'Gravedigger',
+      greeting: 'Nothing I bury stays buried for long.',
+    },
+    huntsman_bregg: {
+      name: 'Bregg',
+      title: 'Huntsman',
+      greeting: 'One wolf is a nuisance. Six is a hunt.',
+    },
+    the_card_master: {
+      name: 'The Card Master',
+      title: 'Keeper of the Table',
+      greeting: 'Sit. Everyone gets the same twenty cards. Show me which ones you chose.',
+    },
+  },
+
   // Tribe names, shown on the card face and in the deck builder filters.
   tribe: {
     Beast: 'Beast',

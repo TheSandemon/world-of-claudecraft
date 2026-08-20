@@ -16,6 +16,7 @@ function liveInfo(over: Partial<NonNullable<CardMinigameInfo['match']>> = {}): C
   return {
     queued: false,
     available: true,
+    decks: noDecks,
     match: {
       opponent: { pid: 2, name: 'Bo' },
       hand: [
@@ -56,6 +57,7 @@ function makeWindow() {
     root: () => root,
     // The window only reads the card-minigame facet off IWorld.
     world: () => world as never,
+    openDeckBuilder() {},
     closeOthers() {},
     captureFocus: () => null,
     restoreFocus() {},
@@ -69,6 +71,9 @@ function makeWindow() {
     },
   };
 }
+
+/** No saved decks: the state a character starts in. */
+const noDecks = { names: [], active: '', activeCards: [] };
 
 describe('card duel window clock and reveal', () => {
   beforeEach(() => {

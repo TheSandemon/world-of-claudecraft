@@ -7001,6 +7001,28 @@ export const en_XA: EnTranslations = {
       "nythraxis_broodling": "[Ŵĥéñ ŕéʋéáļéð, ĝíʋé ţĥé óþþóñéñţ {amount} Ðŕéáð.]",
       "vale_champion": "[Íƒ ţĥíš ļóšéš, ðŕáŵ {amount} çáŕðš.]"
     },
+    "opponent": {
+      "dockhand_pell": {
+        "name": "[Þéļļ]",
+        "title": "[Ðóçķĥáñð]",
+        "greeting": "[Ɱíñð ţĥé ɱúð. Íţ ƀíţéš ƀáçķ ðóŵñ ɱý ŵáý.]"
+      },
+      "gravedigger_ossa": {
+        "name": "[Óššá]",
+        "title": "[Ĝŕáʋéðíĝĝéŕ]",
+        "greeting": "[Ñóţĥíñĝ Í ƀúŕý šţáýš ƀúŕíéð ƒóŕ ļóñĝ.]"
+      },
+      "huntsman_bregg": {
+        "name": "[Ɓŕéĝĝ]",
+        "title": "[Ĥúñţšɱáñ]",
+        "greeting": "[Óñé ŵóļƒ íš á ñúíšáñçé. Šíẋ íš á ĥúñţ.]"
+      },
+      "the_card_master": {
+        "name": "[Ţĥé Çáŕð Ɱášţéŕ]",
+        "title": "[Ķééþéŕ óƒ ţĥé Ţáƀļé]",
+        "greeting": "[Šíţ. Éʋéŕýóñé ĝéţš ţĥé šáɱé ţŵéñţý çáŕðš. Šĥóŵ ɱé ŵĥíçĥ óñéš ýóú çĥóšé.]"
+      }
+    },
     "tribe": {
       "Beast": "[Ɓéášţ]",
       "Human": "[Ĥúɱáñ]",
@@ -7886,6 +7908,30 @@ export const en_XA: EnTranslations = {
     "revealLose": "[Ýóú ļóšé ţĥé ŕóúñð]",
     "revealPush": "[Ţĥé ŕóúñð íš á þúšĥ]",
     "revealReshuffled": "[Ýóúŕ ðíšçáŕð þíļé ŵáš šĥúƒƒļéð ƀáçķ íñţó ýóúŕ ðéçķ.]"
+  },
+  "cardDeck": {
+    "title": "[Ðéçķ Ɓúíļðéŕ]",
+    "close": "[Çļóšé]",
+    "defaultName": "[Ñéŵ Ðéçķ]",
+    "rule": "[Á ðéçķ íš ţŵéñţý çáŕðš: ţŵó áţ éʋéŕý ʋáļúé ƒŕóɱ óñé ţó ţéñ, áñð ñó çáŕð ţŵíçé.]",
+    "nameLabel": "[Ðéçķ ñáɱé]",
+    "progress": "[{filled} óƒ {required} šļóţš ƒíļļéð]",
+    "rowTitle": "[Ʋáļúé {value}]",
+    "emptySlot": "[Éɱþţý ʋáļúé {value} šļóţ]",
+    "save": "[Šáʋé ðéçķ]",
+    "delete": "[Ðíšçáŕð ðéçķ]",
+    "open": "[Ðéçķš]",
+    "openAria": "[Óþéñ ţĥé ðéçķ ƀúíļðéŕ]"
+  },
+  "cardOpponents": {
+    "heading": "[Þļáý á ŕéĝúļáŕ]",
+    "sitDown": "[Šíţ ðóŵñ áĝáíñšţ {name}]",
+    "tier": {
+      "novice": "[Ñóʋíçé]",
+      "steady": "[Šţéáðý]",
+      "sharp": "[Šĥáŕþ]",
+      "master": "[Ɱášţéŕ]"
+    }
   },
   "delveUi": {
     "board": {

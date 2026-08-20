@@ -18,4 +18,13 @@ export interface IWorldCardMinigame {
   // leaves the matchmaking queue): the player-issuable escape from a match
   // whose opponent has gone idle.
   forfeitCardDuel(): void;
+  /** Sits down against one of the Card Master's named regulars. This does NOT
+   *  join the matchmaking queue: it starts a match directly, which is what
+   *  makes the minigame playable in a single-player world. */
+  startCardDuelAgainstOpponent(opponentId: string): void;
+  /** Saves (or replaces) one named deck. The server re-validates the shape. */
+  saveCardDeck(name: string, cardIds: readonly string[]): void;
+  /** Chooses which saved deck the next match deals. */
+  selectCardDeck(name: string): void;
+  deleteCardDeck(name: string): void;
 }

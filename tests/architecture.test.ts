@@ -307,6 +307,8 @@ const UI_PURE_CORES = [
   // The card face: one pure core behind the hand, the reveal stage, and a
   // collection cell (src/ui/cards/).
   'src/ui/cards/card_face_view.ts',
+  // The deck builder's row model: ten value rows, two slots each.
+  'src/ui/deck_builder_view.ts',
   'src/ui/claudium_launcher_balance_core.ts',
   'src/ui/claudium_view.ts',
   'src/ui/woc_store_view.ts',

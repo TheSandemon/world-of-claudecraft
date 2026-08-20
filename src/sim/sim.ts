@@ -145,6 +145,7 @@ import { ensureWarriorStance } from './combat/warrior_stances';
 // moved to social/fiesta.ts with that logic; sim.ts keeps only the type used by
 // the PlayerMeta interface + the power-up catalog the fiestaMatchInfo accessor reads.
 import { type AugmentSpecial, type AugmentTier, POWERUPS_BY_ID } from './content/augments';
+import { CARD_CATALOG } from './content/cards';
 import { applyTalentMods } from './content/classes';
 import { DEFAULT_MOUNT, type MountKey } from './content/mounts';
 import { GATHERING_PROFESSION_IDS, type GatheringProfessionId } from './content/professions';
@@ -665,8 +666,17 @@ import { clearAfkOnMove } from './social/away';
 import * as bgMod from './social/battleground';
 import * as bgOutcomesMod from './social/battleground_outcomes';
 import * as bgProposalMod from './social/battleground_proposal';
+import {
+  type CardDeckState,
+  emptyCardDeckState,
+  type SavedCardDecks,
+  sanitizeCardDeckState,
+  serializeCardDeckState,
+} from './minigames/card_duel';
 import type { CardDuelMatch } from './social/card_duel';
 import * as cardDuelMod from './social/card_duel';
+import * as cardDeckCmd from './social/card_deck_commands';
+import * as cardDuelBots from './social/card_duel_bots';
 import * as duelMod from './social/duel';
 // A4: Protect Yumi (formats yumi3/yumi5); match logic in social/yumi.ts, reached
 // via ctx callbacks + the two hostility arms in isHostileTo/isFriendlyTo.
@@ -1672,6 +1682,10 @@ export interface PlayerMeta {
   // marks, capped recent. Item ownership stays on deedStats.itemsDiscovered;
   // this field is omit-empty on serialize and never a second full discovery set.
   reliquary: ReliquaryState;
+  // Saved Card Duel decks (src/sim/minigames/card_duel/deck_storage.ts).
+  // Omit-empty on serialize, so a character who never opened the deck builder
+  // stays byte-equal to before the system existed.
+  cards: CardDeckState;
 }
 
 // Away-from-keyboard / do-not-disturb presence. `afk` still delivers whispers
@@ -1936,6 +1950,9 @@ export interface CharacterState {
   // The Reliquary (JSONB; optional, written only when non-empty so pre-system
   // saves load cleanly and stay byte-equal until the system engages).
   reliquary?: SavedReliquaryState;
+  // Saved Card Duel decks (same omit-empty rule). Absent means a fresh
+  // character, who plays the default deck.
+  cards?: SavedCardDecks;
 }
 
 export interface PetState {
@@ -3106,6 +3123,7 @@ export class Sim {
       activeBorder: null,
       renown: 0,
       reliquary: freshReliquaryState(),
+      cards: emptyCardDeckState(),
     };
     // A fresh character sets out provisioned (class-defined starter rations);
     // a saved character loads its own bags from savedState below.
@@ -3524,6 +3542,9 @@ export class Sim {
       }
       meta.deedStats = restoreDeedStats(s.deedStats);
       meta.reliquary = restoreReliquaryState(s.reliquary);
+      // The ONE Card Duel deck load path: a deck that stopped being legal as
+      // the catalog changed is dropped here rather than reaching a match.
+      meta.cards = sanitizeCardDeckState(s.cards, CARD_CATALOG);
       deedsMod.unionLegacyMilestones(meta);
       deedsMod.recomputeRenown(meta);
       // The saved title re-applies through the same validator the setter
@@ -4343,6 +4364,12 @@ export class Sim {
       ...(() => {
         const reliquary = serializeReliquaryState(meta.reliquary);
         return reliquary ? { reliquary } : {};
+      })(),
+      // Saved decks: absent while the player has built none, so a character
+      // who never opened the builder stays byte-equal to a pre-system save.
+      ...(() => {
+        const cards = serializeCardDeckState(meta.cards);
+        return cards ? { cards } : {};
       })(),
     };
     return sanitizeRemovedZone1Content(state).state;
@@ -6321,6 +6348,7 @@ export class Sim {
     this.updateDuels();
     lap?.('duels');
     this.updateCardDuelQueue();
+    this.updateCardDuelBots();
     this.updateCardDuelDeadlines();
     lap?.('cardDuel');
     this.updateArena();
@@ -10625,6 +10653,10 @@ export class Sim {
     cardDuelMod.updateCardDuelQueue(this.ctx);
   }
 
+  private updateCardDuelBots(): void {
+    cardDuelBots.updateCardDuelBots(this.ctx);
+  }
+
   private updateCardDuelDeadlines(): void {
     cardDuelMod.updateCardDuelDeadlines(this.ctx);
   }
@@ -10639,6 +10671,22 @@ export class Sim {
 
   isQueuedForCardMinigame(pid: number): boolean {
     return cardDuelMod.isQueuedForCardMinigame(this.ctx, pid);
+  }
+
+  startCardDuelAgainstOpponent(opponentId: string, pid?: number): void {
+    cardDuelBots.startCardDuelAgainstOpponent(this.ctx, opponentId, pid);
+  }
+
+  saveCardDeck(name: string, cardIds: readonly string[], pid?: number): void {
+    cardDeckCmd.saveCardDeck(this.ctx, name, cardIds, pid);
+  }
+
+  selectCardDeck(name: string, pid?: number): void {
+    cardDeckCmd.selectCardDeck(this.ctx, name, pid);
+  }
+
+  deleteCardDeck(name: string, pid?: number): void {
+    cardDeckCmd.deleteCardDeck(this.ctx, name, pid);
   }
 
   cardDuelMatchFor(pid: number): CardDuelMatch | null {

@@ -7001,6 +7001,28 @@ export const zh_CN: EnTranslations = {
       "nythraxis_broodling": "展示时，使对手获得 {amount} 层恐惧。",
       "vale_champion": "若此牌落败，抽 {amount} 张牌。"
     },
+    "opponent": {
+      "dockhand_pell": {
+        "name": "佩尔",
+        "title": "码头工",
+        "greeting": "小心泥地。在我那一带，泥是会咬人的。"
+      },
+      "gravedigger_ossa": {
+        "name": "奥萨",
+        "title": "掘墓人",
+        "greeting": "我埋下的东西，没有一样能安分躺着。"
+      },
+      "huntsman_bregg": {
+        "name": "布雷格",
+        "title": "猎手",
+        "greeting": "一头狼只是麻烦。六头狼就是一场狩猎。"
+      },
+      "the_card_master": {
+        "name": "纸牌大师",
+        "title": "牌桌的守护者",
+        "greeting": "坐吧。每个人拿到的都是同样的二十张牌。让我看看你选了哪些。"
+      }
+    },
     "tribe": {
       "Beast": "野兽",
       "Human": "人类",
@@ -7886,6 +7908,30 @@ export const zh_CN: EnTranslations = {
     "revealLose": "你输掉本回合",
     "revealPush": "本回合打平",
     "revealReshuffled": "你的弃牌堆已重新洗回牌库。"
+  },
+  "cardDeck": {
+    "title": "牌组编辑器",
+    "close": "关闭",
+    "defaultName": "新牌组",
+    "rule": "一副牌组是二十张：一到十每个数值各两张，且没有重复的牌。",
+    "nameLabel": "牌组名称",
+    "progress": "已填 {filled} / {required} 个槽位",
+    "rowTitle": "数值 {value}",
+    "emptySlot": "数值 {value} 的空槽位",
+    "save": "保存牌组",
+    "delete": "删除牌组",
+    "open": "牌组",
+    "openAria": "打开牌组编辑器"
+  },
+  "cardOpponents": {
+    "heading": "与常客对局",
+    "sitDown": "与 {name} 对局",
+    "tier": {
+      "novice": "新手",
+      "steady": "稳健",
+      "sharp": "敏锐",
+      "master": "大师"
+    }
   },
   "delveUi": {
     "board": {

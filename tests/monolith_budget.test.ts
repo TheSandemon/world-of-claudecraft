@@ -296,6 +296,9 @@ const MONOLITHS: MonolithRow[] = [
     // routeEvents into the guild board window's live REST read (the
     // noticeboard_guilds event transform is deleted). Exact count, zero
     // slack.
+    // Then the Card Duel command family (the queue, the play, the forfeit,
+    // the regulars, the deck builder) lands in
+    // server/card_duel_commands.ts, leaving game.ts the dispatch arm.
     ceiling: 10645,
     seam: 'a sibling server module; see the hot-path seams in server/CLAUDE.md',
   },

@@ -5425,6 +5425,169 @@
     }
   }
 
+  /* The Card Master's regulars: always offered, online or offline, because a
+     lone player must still be able to sit down and play. */
+  .cd-regulars {
+    margin: 8px 0;
+  }
+  .cd-regulars-title {
+    margin: 0 0 4px;
+    font-family: var(--title-font);
+    font-size: 12px;
+    color: #887c5c;
+  }
+  .cd-regular {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    width: 100%;
+    min-height: 40px;
+    margin-bottom: 4px;
+    padding: 6px 8px;
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    background: #ffffff10;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: var(--cursor-point);
+  }
+  .cd-regular:hover {
+    background: #ffffff20;
+  }
+  .cd-regular-name {
+    font-family: var(--title-font);
+    font-size: 13px;
+    color: var(--gold);
+  }
+  .cd-regular-title {
+    flex: 1 1 auto;
+    font-size: 11px;
+    color: #cfc7b0;
+  }
+  .cd-regular-tier {
+    font-size: 11px;
+    color: #887c5c;
+  }
+
+  /* ---------- the deck builder (src/ui/deck_builder_window.ts) ---------- */
+  /* Ten value rows, two slots each: the layout IS the rule, so a player never
+     has to be told the constraint in an error message. */
+  #deck-builder-window {
+    width: min(720px, 92%);
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .db-body {
+    padding: 8px;
+  }
+  .db-rule {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: #cfc7b0;
+  }
+  .db-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .db-name {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #887c5c;
+  }
+  .db-name input {
+    min-height: 32px;
+    padding: 4px 6px;
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    background: #00000055;
+    color: inherit;
+    font: inherit;
+  }
+  .db-progress {
+    flex: 1 1 auto;
+    font-size: 12px;
+    color: var(--gold);
+  }
+  .db-save,
+  .db-delete,
+  .db-saved {
+    min-height: 40px;
+    padding: 6px 10px;
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    background: #ffffff10;
+    color: inherit;
+    font: inherit;
+    cursor: var(--cursor-point);
+  }
+  .db-save:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .db-saved-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .db-active {
+    border-color: var(--color-stat-bonus);
+  }
+  .db-row {
+    padding: 6px 0;
+    border-top: 1px solid #ffffff18;
+  }
+  .db-row-title {
+    margin: 0 0 4px;
+    font-family: var(--title-font);
+    font-size: 12px;
+    color: #887c5c;
+  }
+  .db-row-complete .db-row-title {
+    color: var(--color-stat-bonus);
+  }
+  .db-slots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .db-slot {
+    display: block;
+  }
+  .db-slot-empty {
+    width: 68px;
+    height: 96px;
+    border: 1px dashed #887c5c;
+    border-radius: 5px;
+  }
+  .db-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .db-option {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: var(--cursor-point);
+  }
+  /* Taken cards stay visible rather than disappearing: seeing which of the
+     value's cards you already chose is the point of the row. */
+  .db-chosen {
+    opacity: 0.5;
+  }
+  .db-chosen .cf-frame {
+    border-style: dashed;
+  }
+
   /* ---------- the card face (src/ui/cards) ---------- */
   /* One component, three sizes. Only the size variant differs; the markup and
      the painter are shared by the hand, the reveal stage, and a collection

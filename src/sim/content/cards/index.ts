@@ -54,3 +54,9 @@ export const DEFAULT_DECK_LIST: readonly CardDeckEntry[] = CARD_VALUES.flatMap((
 );
 
 export { LAUNCH_CARDS } from './launch_set';
+export {
+  buildOpponentDeck,
+  CARD_OPPONENTS,
+  type CardOpponentDef,
+  cardOpponentById,
+} from './opponents';

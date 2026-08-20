@@ -20,28 +20,31 @@ const matchDefaults = {
   opponentPlayedValues: [],
 };
 
+/** No saved decks: the state a character starts in. */
+const noDecks = { names: [], active: '', activeCards: [] };
+
 describe('card_duel_view', () => {
   it('idle state when not queued and not in a match', () => {
-    const info: CardMinigameInfo = { queued: false, available: true, match: null };
+    const info: CardMinigameInfo = { queued: false, available: true, decks: noDecks, match: null };
     const view = buildCardDuelView(info);
     expect(view.state).toBe('idle');
     expect(view.hand).toEqual([]);
   });
 
   it('queued state when waiting in the matchmaking queue', () => {
-    const info: CardMinigameInfo = { queued: true, available: true, match: null };
+    const info: CardMinigameInfo = { queued: true, available: true, decks: noDecks, match: null };
     const view = buildCardDuelView(info);
     expect(view.state).toBe('queued');
   });
 
   it('unavailable state when no other player exists to ever pair against (offline)', () => {
-    const info: CardMinigameInfo = { queued: false, available: false, match: null };
+    const info: CardMinigameInfo = { queued: false, available: false, decks: noDecks, match: null };
     const view = buildCardDuelView(info);
     expect(view.state).toBe('unavailable');
   });
 
   it('queued wins over unavailable if somehow both (queued takes priority)', () => {
-    const info: CardMinigameInfo = { queued: true, available: false, match: null };
+    const info: CardMinigameInfo = { queued: true, available: false, decks: noDecks, match: null };
     const view = buildCardDuelView(info);
     expect(view.state).toBe('queued');
   });
@@ -50,6 +53,7 @@ describe('card_duel_view', () => {
     const info: CardMinigameInfo = {
       queued: false,
       available: true,
+      decks: noDecks,
       match: {
         opponent: { pid: 7, name: 'Aki' },
         hand: [wireCard(11, 3), wireCard(12, 8), wireCard(13, 1), wireCard(14, 5)],
@@ -80,6 +84,7 @@ describe('card_duel_view', () => {
     const info: CardMinigameInfo = {
       queued: false,
       available: true,
+      decks: noDecks,
       match: {
         opponent: { pid: 7, name: 'Aki' },
         hand: [wireCard(21, 4), wireCard(22, 9)],
@@ -100,6 +105,7 @@ describe('card_duel_view', () => {
     const info: CardMinigameInfo = {
       queued: false,
       available: true,
+      decks: noDecks,
       match: {
         opponent: { pid: 2, name: 'Bo' },
         hand: [wireCard(31, 6)],
@@ -122,6 +128,7 @@ describe('card_duel_view', () => {
     const info: CardMinigameInfo = {
       queued: false,
       available: true,
+      decks: noDecks,
       match: {
         opponent: { pid: 2, name: 'Bo' },
         hand: [wireCard(41, 3, 'forest_wolf'), wireCard(42, 3, 'bramble_sprite')],

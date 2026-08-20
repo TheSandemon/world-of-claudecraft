@@ -458,12 +458,18 @@ function openCardDuel(): { win: CardDuelWindow; root: HTMLElement } {
     root: () => root,
     world: () =>
       ({
-        cardMinigameInfo: { queued: false, inQueue: 0, match: null },
+        cardMinigameInfo: {
+          queued: false,
+          available: true,
+          decks: { names: [], active: '', activeCards: [] },
+          match: null,
+        },
         joinCardDuelQueue: noop,
         leaveCardDuelQueue: noop,
         forfeitCardDuel: noop,
         playCardInDuel: noop,
       }) as unknown as IWorld,
+    openDeckBuilder: noop,
     closeOthers: noop,
     captureFocus: () => null,
     restoreFocus: noop,

@@ -1602,7 +1602,12 @@ export class ClientWorld implements IWorld {
   lifetimeHonor = 0;
   // --- IWorldCardMinigame: Card Duel queue/match state, mirrored from the
   // snapshot self (`s.cardDuel`, delta-omitted). ---
-  cardMinigameInfo: CardMinigameInfo = { queued: false, available: true, match: null };
+  cardMinigameInfo: CardMinigameInfo = {
+    queued: false,
+    available: true,
+    decks: { names: [], active: '', activeCards: [] },
+    match: null,
+  };
   // --- IWorldSocialGraph: persistent friends/blocks/guild, set ONLY by the
   // `social`/`socialpos` frames (there is no `s.social` snapshot field). ---
   socialInfo: SocialInfo | null = null;
@@ -4896,6 +4901,22 @@ export class ClientWorld implements IWorld {
   leaveCardDuelQueue(): void {
     this.cmd({ cmd: 'card_queue_leave' });
   }
+  startCardDuelAgainstOpponent(opponentId: string): void {
+    this.cmd({ cmd: 'card_play_opponent', opponentId });
+  }
+
+  saveCardDeck(name: string, cardIds: readonly string[]): void {
+    this.cmd({ cmd: 'card_deck_save', name, cardIds: [...cardIds] });
+  }
+
+  selectCardDeck(name: string): void {
+    this.cmd({ cmd: 'card_deck_select', name });
+  }
+
+  deleteCardDeck(name: string): void {
+    this.cmd({ cmd: 'card_deck_delete', name });
+  }
+
   playCardInDuel(cardIid: number): void {
     // `iid`, not the old `value`: the payload names a hand INSTANCE now, and a
     // stale client still sending `value` is refused server-side rather than

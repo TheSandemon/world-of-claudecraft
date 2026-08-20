@@ -7001,6 +7001,28 @@ export const ru_RU: EnTranslations = {
       "nythraxis_broodling": "При раскрытии соперник получает {amount} Ужаса.",
       "vale_champion": "Если эта карта проигрывает, возьмите {amount} карты."
     },
+    "opponent": {
+      "dockhand_pell": {
+        "name": "Пелл",
+        "title": "Докер",
+        "greeting": "Берегись грязи. В моих краях она кусается."
+      },
+      "gravedigger_ossa": {
+        "name": "Осса",
+        "title": "Могильщик",
+        "greeting": "Ничто из того, что я хороню, не лежит в земле долго."
+      },
+      "huntsman_bregg": {
+        "name": "Брегг",
+        "title": "Охотник",
+        "greeting": "Один волк это досада. Шесть это уже охота."
+      },
+      "the_card_master": {
+        "name": "Мастер карт",
+        "title": "Хранитель стола",
+        "greeting": "Садись. У всех одни и те же двадцать карт. Покажи, какие выбрал ты."
+      }
+    },
     "tribe": {
       "Beast": "Зверь",
       "Human": "Человек",
@@ -7886,6 +7908,30 @@ export const ru_RU: EnTranslations = {
     "revealLose": "Вы проигрываете раунд",
     "revealPush": "Раунд завершился вничью",
     "revealReshuffled": "Ваша стопка сброса была замешана обратно в колоду."
+  },
+  "cardDeck": {
+    "title": "Конструктор колод",
+    "close": "Закрыть",
+    "defaultName": "Новая колода",
+    "rule": "Колода это двадцать карт: по две на каждое значение от одного до десяти, без повторов.",
+    "nameLabel": "Название колоды",
+    "progress": "Заполнено слотов: {filled} из {required}",
+    "rowTitle": "Значение {value}",
+    "emptySlot": "Пустой слот значения {value}",
+    "save": "Сохранить колоду",
+    "delete": "Удалить колоду",
+    "open": "Колоды",
+    "openAria": "Открыть конструктор колод"
+  },
+  "cardOpponents": {
+    "heading": "Сыграть с завсегдатаем",
+    "sitDown": "Сесть за стол против {name}",
+    "tier": {
+      "novice": "Новичок",
+      "steady": "Уверенный",
+      "sharp": "Проницательный",
+      "master": "Мастер"
+    }
   },
   "delveUi": {
     "board": {

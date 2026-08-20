@@ -1152,6 +1152,34 @@ export const en = {
     revealPush: 'The round is a push',
     revealReshuffled: 'Your discard pile was shuffled back into your deck.',
   },
+  // The deck builder (src/ui/deck_builder_window.ts). The layout is what
+  // explains the deck rule; `rule` states it once in words for a screen
+  // reader and for anyone who wants it said plainly.
+  cardDeck: {
+    title: 'Deck Builder',
+    close: 'Close',
+    defaultName: 'New Deck',
+    rule: 'A deck is twenty cards: two at every value from one to ten, and no card twice.',
+    nameLabel: 'Deck name',
+    progress: '{filled} of {required} slots filled',
+    rowTitle: 'Value {value}',
+    emptySlot: 'Empty value {value} slot',
+    save: 'Save deck',
+    delete: 'Discard deck',
+    open: 'Decks',
+    openAria: 'Open the deck builder',
+  },
+  // The Card Master's regulars: the sit-down list on the Card Duel window.
+  cardOpponents: {
+    heading: 'Play a regular',
+    sitDown: 'Sit down against {name}',
+    tier: {
+      novice: 'Novice',
+      steady: 'Steady',
+      sharp: 'Sharp',
+      master: 'Master',
+    },
+  },
   delveUi: {
     board: {
       title: 'Delve Board',
