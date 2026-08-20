@@ -19,6 +19,12 @@ import { CARD_VALUES } from './types';
 export const DECK_SIZE = 20;
 export const STARTING_HAND_SIZE = 4;
 
+// The hand is refilled back to this size after every round, so no effect can
+// quietly starve a player of choices by discarding or drawing out of turn
+// (docs/prd/card-duel-v2.md section 6.2). Same number as the starting hand:
+// they are the same rule seen at two moments.
+export const HAND_SIZE = STARTING_HAND_SIZE;
+
 /** Copies of each value a legal deck holds (two of every value 1 to 10). */
 export const COPIES_PER_VALUE = 2;
 
@@ -131,4 +137,34 @@ export function playCardByInstance(state: CardHandState, iid: number): CardInsta
   const [card] = state.hand.splice(idx, 1);
   state.discard.push(card);
   return card;
+}
+
+/** What a refill did, so the caller can play the (rarer) shuffle cue and fire
+ *  an onDraw trigger per card that actually arrived. */
+export interface CardRefillResult {
+  drawn: CardInstance[];
+  reshuffled: boolean;
+}
+
+// Refills a hand back to HAND_SIZE, one draw at a time. The reshuffle can
+// happen MID-REFILL (the deck runs dry on the second of three needed draws),
+// and the refill continues through it in the same operation: that is the case a
+// naive single-draw implementation gets wrong. If deck plus discard cannot fill
+// the hand, the player simply plays with fewer cards rather than the loop
+// spinning.
+export function refillHand(
+  rng: { next(): number },
+  state: CardHandState,
+  size: number = HAND_SIZE,
+): CardRefillResult {
+  const drawn: CardInstance[] = [];
+  let reshuffled = false;
+  while (state.hand.length < size) {
+    if (state.deck.length === 0 && state.discard.length === 0) break;
+    const before = state.hand.length;
+    if (drawOne(rng, state)) reshuffled = true;
+    if (state.hand.length === before) break;
+    drawn.push(state.hand[state.hand.length - 1]);
+  }
+  return { drawn, reshuffled };
 }

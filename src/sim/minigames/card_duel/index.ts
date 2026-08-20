@@ -6,5 +6,12 @@
 // Import from this barrel, not from the modules directly, unless you are
 // inside the folder. See ./CLAUDE.md for what belongs here.
 
+export * from './conditions';
 export * from './deck';
+export * from './effects';
+export * from './expressions';
+export * from './match_state';
+export * from './modifiers';
+export * from './resolve';
+export * from './selectors';
 export * from './types';

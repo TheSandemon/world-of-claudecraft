@@ -366,11 +366,21 @@ export interface CardInstance {
   readonly value: CardValue;
 }
 
-/** A modifier parked on a card or a player by a resolved effect. */
+/** A modifier parked by a resolved effect, waiting for the card it rides to
+ *  reach the board. Effects whose duration ends this round are applied
+ *  immediately and never parked. */
 export interface CardModifier {
-  /** Which card instance it rides, or null for a player-scoped modifier. */
+  /** Creation order, for a stable sort that never depends on array order. */
+  readonly id: number;
+  /** Whose card it rides. */
+  readonly seat: CardSeat;
+  /** The specific instance it waits for, or null for "the next card matching
+   *  `match`". */
   readonly iid: HandInstanceId | null;
   readonly source: CardId;
+  /** Amounts are RESOLVED at parking time (the state that authored the
+   *  modifier is the state it was priced against), so this always holds
+   *  constants. */
   readonly effect: CardEffectDefinition;
   readonly duration: CardDuration;
   readonly stackMode: CardStackMode;
@@ -378,6 +388,8 @@ export interface CardModifier {
   readonly createdRound: number;
   /** For 'nextCard' modifiers: the filter the receiving card must match. */
   readonly match?: CardMatchFilter;
+  /** Set once an 'untilTriggered' modifier has been spent. */
+  consumed: boolean;
 }
 
 /** One played card, recorded for history queries. */
