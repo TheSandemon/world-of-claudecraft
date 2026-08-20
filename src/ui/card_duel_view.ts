@@ -15,6 +15,10 @@ export interface CardDuelHandCardView {
   cardId: string;
   value: number;
   playable: boolean;
+  /** Rules-text numbers the sim resolved against the live match, so a scaling
+   *  card states what it would actually apply. Absent for a card with no
+   *  placeholders to fill. */
+  textValues?: Record<string, number>;
 }
 
 // 'unavailable': no other player is present to ever pair against (the
@@ -60,6 +64,7 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
       cardId: card.cardId,
       value: card.value,
       playable: !m.waitingOnOpponent,
+      ...(card.textValues ? { textValues: { ...card.textValues } } : {}),
     })),
     deckCount: m.deckCount,
     discardCount: m.discardCount,

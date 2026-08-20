@@ -7876,7 +7876,16 @@ export const de_DE: EnTranslations = {
     "counts": "Deck: {deck} · Ablagestapel: {discard}",
     "playCardAria": "Die Karte {value} ausspielen",
     "waitingOnOpponent": "Warte auf die Karte deines Gegners...",
-    "yourTurn": "Karte ausspielen"
+    "yourTurn": "Karte ausspielen",
+    "clock": "{seconds}s left",
+    "clockAria": "Seconds left in this round: {seconds}",
+    "clockOut": "Time is up",
+    "revealMine": "You played",
+    "revealTheirs": "Opponent played",
+    "revealWin": "You win the round",
+    "revealLose": "You lose the round",
+    "revealPush": "The round is a push",
+    "revealReshuffled": "Your discard pile was shuffled back into your deck."
   },
   "delveUi": {
     "board": {

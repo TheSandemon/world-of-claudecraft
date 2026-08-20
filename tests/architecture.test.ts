@@ -304,6 +304,9 @@ const UI_PURE_CORES = [
   'src/ui/hud/vendor/train_learn_core.ts',
   'src/ui/hud/vendor/unbind_view.ts',
   'src/ui/card_duel_view.ts',
+  // The card face: one pure core behind the hand, the reveal stage, and a
+  // collection cell (src/ui/cards/).
+  'src/ui/cards/card_face_view.ts',
   'src/ui/claudium_launcher_balance_core.ts',
   'src/ui/claudium_view.ts',
   'src/ui/woc_store_view.ts',

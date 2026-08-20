@@ -7876,7 +7876,16 @@ export const ko_KR: EnTranslations = {
     "counts": "덱: {deck} · 버린 카드: {discard}",
     "playCardAria": "{value} 카드 내기",
     "waitingOnOpponent": "상대의 카드를 기다리는 중...",
-    "yourTurn": "카드를 내세요"
+    "yourTurn": "카드를 내세요",
+    "clock": "{seconds}s left",
+    "clockAria": "Seconds left in this round: {seconds}",
+    "clockOut": "Time is up",
+    "revealMine": "You played",
+    "revealTheirs": "Opponent played",
+    "revealWin": "You win the round",
+    "revealLose": "You lose the round",
+    "revealPush": "The round is a push",
+    "revealReshuffled": "Your discard pile was shuffled back into your deck."
   },
   "delveUi": {
     "board": {

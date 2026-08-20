@@ -5325,7 +5325,7 @@
 
   /* ---------- card duel (the Card Master minigame) ---------- */
   #card-duel-window {
-    width: 320px;
+    width: 340px;
   }
   .cd-body {
     padding: 8px;
@@ -5349,23 +5349,272 @@
     margin: 8px 0;
     flex-wrap: wrap;
   }
-  .cd-card {
-    width: 40px;
-    height: 56px;
-    border-radius: 4px;
-    border: 1px solid var(--gold);
-    background: #ffffff10;
-    color: inherit;
+  /* The round clock. Actionable information, so it is painted at every
+     graphics tier and on every device: no tier, no media query, and no hover
+     may hide or delay it. */
+  .cd-clock {
     font-family: var(--title-font);
-    font-size: 18px;
+    font-size: 13px;
+    color: var(--gold);
+    margin: 2px 0 4px;
+  }
+  .cd-clock-low {
+    color: var(--color-craft-full);
+  }
+
+  /* The reveal stage: at most two moving cards, the cheapest framing for the
+     most important moment. It NARRATES a round the snapshot has already
+     painted underneath, so dropping its motion never delays a number. */
+  .cd-reveal {
+    display: none;
+    gap: 8px;
+    align-items: center;
+    padding: 6px;
+    border-radius: 6px;
+    background: #ffffff08;
+  }
+  .cd-reveal.cd-reveal-play {
+    display: flex;
+    flex-wrap: wrap;
+    animation: cd-reveal-in 220ms ease-out;
+  }
+  .cd-reveal-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 54px;
+  }
+  .cd-reveal-label {
+    font-size: 10px;
+    color: #887c5c;
+  }
+  .cd-reveal-value {
+    font-family: var(--title-font);
+    font-size: 20px;
+    color: var(--gold);
+  }
+  .cd-reveal-base {
+    font-size: 10px;
+    color: #887c5c;
+    text-decoration: line-through;
+  }
+  .cd-reveal-outcome {
+    font-family: var(--title-font);
+    font-size: 13px;
+    color: #ddd;
+  }
+  .cd-reveal[data-outcome="win"] .cd-reveal-outcome {
+    color: var(--color-stat-bonus);
+  }
+  .cd-reveal[data-outcome="lose"] .cd-reveal-outcome {
+    color: var(--mkt-name-legendary);
+  }
+  .cd-reveal-note {
+    flex-basis: 100%;
+    font-size: 10px;
+    color: #887c5c;
+  }
+  @keyframes cd-reveal-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* ---------- the card face (src/ui/cards) ---------- */
+  /* One component, three sizes. Only the size variant differs; the markup and
+     the painter are shared by the hand, the reveal stage, and a collection
+     cell. Animation is transform/opacity only, so no frame forces layout. */
+  .cf {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
     cursor: var(--cursor-point);
   }
-  .cd-card:hover:not(:disabled) {
-    background: #ffffff20;
+  .cf-frame {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--gold);
+    border-radius: 5px;
+    background: #ffffff10;
+    overflow: hidden;
+    transition: transform 120ms ease-out;
   }
-  .cd-card:disabled {
+  .cf-playable:hover .cf-frame {
+    transform: translateY(-2px);
+  }
+  .cf-locked {
     opacity: 0.45;
     cursor: default;
+  }
+  .cf-silenced .cf-frame {
+    border-style: dashed;
+  }
+  .cf-revealed .cf-frame {
+    box-shadow: inset 0 0 0 1px var(--mkt-name-rare);
+  }
+  .cf-art {
+    display: block;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    object-fit: cover;
+  }
+  /* The procedural face: a card with no commissioned painting still reads as a
+     card, keyed on its tribe, rather than as a blank rectangle. */
+  .cf-art-procedural {
+    background:
+      radial-gradient(circle at 50% 35%, #ffffff18, transparent 60%),
+      linear-gradient(160deg, #2a3242, #161c26);
+  }
+  .cf-art-procedural[data-tribe="Beast"] {
+    background: linear-gradient(160deg, #3b3320, #191509);
+  }
+  .cf-art-procedural[data-tribe="Undead"] {
+    background: linear-gradient(160deg, #23342b, #0d1712);
+  }
+  .cf-art-procedural[data-tribe="Spider"] {
+    background: linear-gradient(160deg, #2e2436, #140f19);
+  }
+  .cf-art-procedural[data-tribe="Human"] {
+    background: linear-gradient(160deg, #2c3242, #12161f);
+  }
+  .cf-art-procedural[data-tribe="Dragon"] {
+    background: linear-gradient(160deg, #3d2620, #170c09);
+  }
+  .cf-corner {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+  }
+  .cf-value {
+    font-family: var(--title-font);
+    font-size: 17px;
+    color: var(--gold);
+    text-shadow: 0 1px 2px #000;
+  }
+  .cf-base {
+    font-size: 10px;
+    color: #cfc7b0;
+    text-decoration: line-through;
+    text-shadow: 0 1px 2px #000;
+  }
+  /* The modifier strip: what the effects did, right now. Never tiered, never
+     hover-gated, never animated into existence. */
+  .cf-delta {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    font-family: var(--title-font);
+    font-size: 12px;
+    text-shadow: 0 1px 2px #000;
+  }
+  .cf-delta-up {
+    color: var(--color-stat-bonus);
+  }
+  .cf-delta-down {
+    color: var(--mkt-name-legendary);
+  }
+  .cf-plate {
+    padding: 2px 4px;
+    background: #00000055;
+  }
+  .cf-name {
+    font-family: var(--title-font);
+    font-size: 10px;
+    color: #e8e2d2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cf-tribes {
+    font-size: 9px;
+    color: #887c5c;
+  }
+  .cf-tribe-sep {
+    padding: 0 2px;
+  }
+  .cf-rules {
+    display: none;
+    padding: 3px 4px;
+    font-size: 10px;
+    line-height: 1.3;
+    color: #cfc7b0;
+    background: #00000066;
+  }
+  /* Rarity frames reuse the shipped quality colors rather than minting a
+     second color vocabulary for cards. */
+  .cf-rarity-common .cf-frame {
+    border-color: var(--gold);
+  }
+  .cf-rarity-uncommon .cf-frame {
+    border-color: var(--mkt-name-uncommon);
+  }
+  .cf-rarity-rare .cf-frame {
+    border-color: var(--mkt-name-rare);
+  }
+  .cf-rarity-epic .cf-frame {
+    border-color: var(--mkt-name-epic);
+  }
+  .cf-rarity-legendary .cf-frame {
+    border-color: var(--mkt-name-legendary);
+  }
+
+  .cf-size-hand {
+    width: 68px;
+    height: 96px;
+  }
+  .cf-size-stage {
+    width: 108px;
+    height: 152px;
+  }
+  .cf-size-stage .cf-value {
+    font-size: 22px;
+  }
+  .cf-size-stage .cf-rules,
+  .cf-size-cell .cf-rules {
+    display: block;
+  }
+  .cf-size-cell {
+    width: 132px;
+    height: 196px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cf-frame {
+      transition: none;
+    }
+    .cf-playable:hover .cf-frame {
+      transform: none;
+    }
+    .cd-reveal.cd-reveal-play {
+      animation: none;
+    }
+  }
+
+  /* The lowest graphics preset drops motion the same way, and shows exactly
+     the same numbers at exactly the same moment. */
+  :root[data-fx-level="low"] .cf-frame {
+    transition: none;
+  }
+  :root[data-fx-level="low"] .cf-playable:hover .cf-frame {
+    transform: none;
+  }
+  :root[data-fx-level="low"] .cd-reveal.cd-reveal-play {
+    animation: none;
   }
   .cd-counts {
     font-size: 11px;

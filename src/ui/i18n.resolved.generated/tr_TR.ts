@@ -7876,7 +7876,16 @@ export const tr_TR: EnTranslations = {
     "counts": "Deste: {deck} · Atılan: {discard}",
     "playCardAria": "{value} kartını oyna",
     "waitingOnOpponent": "Rakibinin kartı bekleniyor...",
-    "yourTurn": "Kart oyna"
+    "yourTurn": "Kart oyna",
+    "clock": "{seconds}s left",
+    "clockAria": "Seconds left in this round: {seconds}",
+    "clockOut": "Time is up",
+    "revealMine": "You played",
+    "revealTheirs": "Opponent played",
+    "revealWin": "You win the round",
+    "revealLose": "You lose the round",
+    "revealPush": "The round is a push",
+    "revealReshuffled": "Your discard pile was shuffled back into your deck."
   },
   "delveUi": {
     "board": {

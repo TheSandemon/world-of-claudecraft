@@ -125,6 +125,9 @@ const MONOLITHS: MonolithRow[] = [
     // relocalize wiring (the window itself lives in
     // src/ui/hud/guild_board/). Then down one at the controller-tutorial
     // merge. Exact count, zero slack.
+    // Card Duel rebase onto release/v0.41.0: the duel window and deck
+    // builder live in src/ui/cards/, so hud.ts only gains the thin open,
+    // close and relocalize wiring. Exact count, zero slack.
     ceiling: 18488,
     seam: 'pure view core + thin painter on PainterHost (src/ui/CLAUDE.md)',
   },

@@ -178,6 +178,7 @@ import { blockLandingLogKey } from './block_landing_feedback_core';
 import { BootcampOverlay } from './bootcamp';
 import { CalendarWindow } from './calendar_window';
 import { CardDuelWindow } from './card_duel_window';
+import { applyCardRoundFeedback } from './cards/card_round_feedback';
 import { CastBarPainter, type CastBarPaintInput } from './cast_bar_painter';
 import { charBagsPaired } from './char_bags_pairing_core';
 import { charSheetRefreshSig } from './char_sheet_sig_core';
@@ -12886,9 +12887,7 @@ export class Hud {
           audio.cardPlay();
           break;
         case 'cardRoundResolved':
-          audio.cardReveal();
-          if (ev.outcome === 'push') audio.cardRoundPush();
-          if (ev.reshuffled) audio.cardShuffle();
+          applyCardRoundFeedback(ev, audio, this.cardDuelWindow);
           break;
         case 'cardDuelMatchEnd':
           if (ev.won) audio.duelEnd();

@@ -7772,5 +7772,32 @@
     body.mobile-touch #fiesta-augments .fa-cat {
       font-size: 9px;
     }
+
+    /* Card Duel: the hand grows to a real touch target and the rules text
+       comes out of hiding, because a phone has no hover to reveal it with.
+       Every number the face shows is the same one the desktop face shows, at
+       the same moment: this is layout, never information. */
+    body.mobile-touch .cf-size-hand {
+      width: 84px;
+      height: 122px;
+    }
+    body.mobile-touch .cf-size-hand .cf-value {
+      font-size: 20px;
+    }
+    body.mobile-touch .cf-size-hand .cf-name {
+      font-size: 12px;
+    }
+    body.mobile-touch .cf-size-hand .cf-tribes {
+      font-size: 11px;
+    }
+    body.mobile-touch .cd-hand {
+      gap: 8px;
+    }
+    body.mobile-touch .cd-clock {
+      font-size: 15px;
+    }
+    body.mobile-touch .cd-reveal-value {
+      font-size: 24px;
+    }
   }
 }

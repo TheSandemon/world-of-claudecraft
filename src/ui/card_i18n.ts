@@ -42,3 +42,17 @@ export function cardRulesText(
   const model = resolveCardText(def, live);
   return t(`cards.text.${model.textId}` as TranslationKey, model.values);
 }
+
+/**
+ * The same sentence, filled from values the SERVER already resolved against
+ * the live match. The online client holds only its own projection, never the
+ * match state a scaling effect reads, so those numbers arrive on the wire
+ * rather than being re-derived here (and re-derived wrongly, as zero).
+ */
+export function cardRulesTextFrom(
+  def: CardDefinition,
+  values: Readonly<Record<string, number>>,
+): string {
+  if (def.textId === '') return t('cards.noRulesText');
+  return t(`cards.text.${def.textId}` as TranslationKey, values);
+}

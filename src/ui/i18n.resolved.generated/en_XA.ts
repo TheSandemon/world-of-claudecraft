@@ -7876,7 +7876,16 @@ export const en_XA: EnTranslations = {
     "counts": "[Ðéçķ: {deck} · Ðíšçáŕð: {discard}]",
     "playCardAria": "[Þļáý ţĥé {value} çáŕð]",
     "waitingOnOpponent": "[Ŵáíţíñĝ óñ ýóúŕ óþþóñéñţ'š çáŕð...]",
-    "yourTurn": "[Þļáý á çáŕð]"
+    "yourTurn": "[Þļáý á çáŕð]",
+    "clock": "[{seconds}š ļéƒţ]",
+    "clockAria": "[Šéçóñðš ļéƒţ íñ ţĥíš ŕóúñð: {seconds}]",
+    "clockOut": "[Ţíɱé íš úþ]",
+    "revealMine": "[Ýóú þļáýéð]",
+    "revealTheirs": "[Óþþóñéñţ þļáýéð]",
+    "revealWin": "[Ýóú ŵíñ ţĥé ŕóúñð]",
+    "revealLose": "[Ýóú ļóšé ţĥé ŕóúñð]",
+    "revealPush": "[Ţĥé ŕóúñð íš á þúšĥ]",
+    "revealReshuffled": "[Ýóúŕ ðíšçáŕð þíļé ŵáš šĥúƒƒļéð ƀáçķ íñţó ýóúŕ ðéçķ.]"
   },
   "delveUi": {
     "board": {

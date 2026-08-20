@@ -17,6 +17,7 @@
 import { CARD_CATALOG, DEFAULT_DECK_LIST } from '../content/cards';
 import { cardMasterInRange } from '../instances/card_master';
 import {
+  buildBoard,
   CARD_DUEL_ROUND_DEADLINE_S,
   CARD_DUEL_ROUNDS_TO_WIN,
   type CardDeckEntry,
@@ -27,6 +28,7 @@ import {
   createMatchState,
   playCardByInstance,
   resolveCardRound,
+  resolveCardTextValues,
   validateDeck,
 } from '../minigames/card_duel';
 import type { SimContext } from '../sim_context';
@@ -65,6 +67,14 @@ export interface CardMinigameCard {
   iid: number;
   cardId: string;
   value: number;
+  /**
+   * The numbers this card's rules sentence needs, resolved against the LIVE
+   * match. Sent for the viewer's own hand so a scaling card ("+1 for every two
+   * Beasts you have played") states what it would actually apply right now,
+   * rather than the client re-deriving it from match state it deliberately
+   * does not have. Absent for a card with no placeholders to fill.
+   */
+  textValues?: Record<string, number>;
 }
 
 // The IWorldCardMinigame read-surface shape (src/world_api/card_minigame.ts
@@ -535,6 +545,23 @@ function wireCard(card: CardInstance): CardMinigameCard {
   return { iid: card.iid, cardId: card.cardId, value: card.value };
 }
 
+/** A card in the viewer's OWN hand, with its rules-text numbers priced against
+ *  the live match so the face states what it would really apply. */
+function wireOwnCard(card: CardInstance, state: CardMatchState, seat: CardSeat): CardMinigameCard {
+  const def = CARD_CATALOG.get(card.cardId);
+  if (!def || def.effects.length === 0) return wireCard(card);
+  const values = resolveCardTextValues(def, {
+    state,
+    board: buildBoard(state, CARD_CATALOG),
+    catalog: CARD_CATALOG,
+    seat,
+    thisCard: card,
+  });
+  return Object.keys(values).length === 0
+    ? wireCard(card)
+    : { ...wireCard(card), textValues: values };
+}
+
 // IWorldCardMinigame read surface: the local/queried player's queue/match
 // snapshot. Lives here (not on the sim.ts coordinator) because it needs
 // nothing from Sim's private state, matching the six thin delegates directly
@@ -566,7 +593,7 @@ export function buildCardMinigameInfo(ctx: SimContext, pid: number): CardMinigam
     available: true,
     match: {
       opponent: { pid: oppPid, name: oppMeta?.name ?? '' },
-      hand: me.cards.hand.map(wireCard),
+      hand: me.cards.hand.map((card) => wireOwnCard(card, match.state, isA ? 'a' : 'b')),
       deckCount: me.cards.deck.length,
       discardCount: me.cards.discard.length,
       myRounds: me.roundWins,
