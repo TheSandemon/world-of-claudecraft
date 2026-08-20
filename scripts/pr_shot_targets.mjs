@@ -3998,7 +3998,7 @@ export const TARGETS = [
       'ui/card_duel',
       'sim/social/card_duel',
       'sim/content/card_master',
-      'sim/minigames/card_hand',
+      'sim/minigames/card_duel',
     ],
     // Teleport next to the Card Master (Eastbrook zone1, {13, 2}) so joinCardDuelQueue's
     // range gate passes, then open the Card Duel window directly (idle state: this target

@@ -3,6 +3,7 @@ import { CARD_MASTER_NPC_ID } from '../src/sim/content/card_master';
 import { Sim } from '../src/sim/sim';
 import type { SimEvent } from '../src/sim/types';
 import { groundHeight } from '../src/sim/world';
+import { cardOfValue, cardsOfValues } from './helpers/card_duel_fixtures';
 
 // Card Duel had zero audio events before this change (only generic 'log'
 // text). Drives the real sim end-to-end and asserts the new typed events
@@ -56,7 +57,7 @@ describe('Card Duel audio event wiring', () => {
     const sim = makeWorld();
     const { a } = queueDuo(sim);
     const match = sim.cardDuelMatchFor(a)!;
-    sim.playCardInDuel(match.handA.hand[0], a);
+    sim.playCardInDuel(match.handA.hand[0].value, a);
     const drained = sim.tick();
     const played = drained.filter(
       (e): e is Extract<SimEvent, { type: 'cardPlayed' }> => e.type === 'cardPlayed',
@@ -73,8 +74,8 @@ describe('Card Duel audio event wiring', () => {
     const match = sim.cardDuelMatchFor(a)!;
     // Force a deterministic, unambiguous win/lose instead of trusting whatever
     // the shuffled starting hands happen to hold.
-    match.handA.hand[0] = 9;
-    match.handB.hand[0] = 3;
+    match.handA.hand[0] = cardOfValue(9);
+    match.handB.hand[0] = cardOfValue(3);
     sim.playCardInDuel(9, a);
     sim.playCardInDuel(3, b);
     const drained = sim.tick();
@@ -91,8 +92,8 @@ describe('Card Duel audio event wiring', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);
     const match = sim.cardDuelMatchFor(a)!;
-    match.handA.hand[0] = 5;
-    match.handB.hand[0] = 5;
+    match.handA.hand[0] = cardOfValue(5);
+    match.handB.hand[0] = cardOfValue(5);
     sim.playCardInDuel(5, a);
     sim.playCardInDuel(5, b);
     const resolved = sim
@@ -108,12 +109,12 @@ describe('Card Duel audio event wiring', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);
     const match = sim.cardDuelMatchFor(a)!;
-    match.handA.hand[0] = 7;
-    match.handB.hand[0] = 2;
+    match.handA.hand[0] = cardOfValue(7);
+    match.handB.hand[0] = cardOfValue(2);
     // Starve side A's deck so its post-round drawOne must reshuffle; leave
     // side B's deck alone as the negative control in the same round.
     match.handA.deck = [];
-    match.handA.discard = [1, 2, 3];
+    match.handA.discard = cardsOfValues([1, 2, 3]);
     sim.playCardInDuel(7, a);
     sim.playCardInDuel(2, b);
     const resolved = sim
@@ -132,8 +133,8 @@ describe('Card Duel audio event wiring', () => {
     // A wins both rounds straight to close the match (CARD_DUEL_ROUNDS_TO_WIN = 2).
     for (let round = 0; round < 2; round++) {
       const live = sim.cardDuelMatchFor(a)!;
-      live.handA.hand[0] = 9;
-      live.handB.hand[0] = 1;
+      live.handA.hand[0] = cardOfValue(9);
+      live.handB.hand[0] = cardOfValue(1);
       sim.playCardInDuel(9, a);
       sim.playCardInDuel(1, b);
     }
@@ -150,8 +151,8 @@ describe('Card Duel audio event wiring', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);
     const match = sim.cardDuelMatchFor(a)!;
-    match.handA.hand[0] = 9;
-    match.handB.hand[0] = 1;
+    match.handA.hand[0] = cardOfValue(9);
+    match.handB.hand[0] = cardOfValue(1);
     sim.playCardInDuel(9, a);
     sim.playCardInDuel(1, b);
     sim.tick(); // clear the round-resolve emits first

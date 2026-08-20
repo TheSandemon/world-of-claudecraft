@@ -16,7 +16,7 @@ import {
   createCardHand,
   drawOne,
   playCard as playCardFromHand,
-} from '../minigames/card_hand';
+} from '../minigames/card_duel';
 import type { SimContext } from '../sim_context';
 import {
   type CardDuelQueue,
@@ -152,8 +152,8 @@ function startCardDuelMatch(ctx: SimContext, a: number, b: number): void {
   const match: CardDuelMatch = {
     a,
     b,
-    handA: createCardHand(ctx.rng),
-    handB: createCardHand(ctx.rng),
+    handA: createCardHand(ctx.rng, 'a'),
+    handB: createCardHand(ctx.rng, 'b'),
     playedA: null,
     playedB: null,
     roundsA: 0,
@@ -273,8 +273,8 @@ export function playCardInDuel(ctx: SimContext, cardValue: number, pid?: number)
     ctx.error(r.meta.entityId, "You don't hold that card.");
     return;
   }
-  if (isA) match.playedA = played;
-  else match.playedB = played;
+  if (isA) match.playedA = played.value;
+  else match.playedB = played.value;
   ctx.emit({ type: 'cardPlayed', pid: r.meta.entityId });
   if (match.playedA !== null && match.playedB !== null) {
     resolveRound(ctx, match);
@@ -472,7 +472,7 @@ export function buildCardMinigameInfo(ctx: SimContext, pid: number): CardMinigam
     available: true,
     match: {
       opponent: { pid: oppPid, name: oppMeta?.name ?? '' },
-      hand: myHand.hand.slice(),
+      hand: myHand.hand.map((c) => c.value),
       deckCount: myHand.deck.length,
       discardCount: myHand.discard.length,
       myRounds: isA ? match.roundsA : match.roundsB,

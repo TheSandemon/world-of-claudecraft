@@ -4662,8 +4662,8 @@ function cardDuel(): Scenario {
       rec.tick(1); // updateCardDuelQueue() matchmakes the pair (createCardHand x2)
       const match = sim.cardDuelMatchFor(a);
       if (match) {
-        sim.playCardInDuel(match.handA.hand[0], a);
-        sim.playCardInDuel(match.handB.hand[0], b); // resolves the round (drawOne x2)
+        sim.playCardInDuel(match.handA.hand[0].value, a);
+        sim.playCardInDuel(match.handB.hand[0].value, b); // resolves the round (drawOne x2)
       }
       rec.tick(20 * 2);
     },

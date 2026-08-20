@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CARD_MASTER_NPC_ID } from '../src/sim/content/card_master';
 import { Sim } from '../src/sim/sim';
 import { groundHeight } from '../src/sim/world';
+import { handValues } from './helpers/card_duel_fixtures';
 
 // Sim-level coverage for cardMinigameInfoFor (sim.ts, delegating to
 // buildCardMinigameInfo in src/sim/social/card_duel.ts): the IWorldCardMinigame
@@ -98,8 +99,8 @@ describe('Sim.cardMinigameInfoFor', () => {
     // perspective-flip bug (B-side hand leaking into A's view) would fail this.
     const rawMatch = sim.cardDuelMatchFor(a);
     if (!rawMatch) throw new Error('expected a live match on the sim');
-    expect(infoA.match.hand.slice().sort()).toEqual(rawMatch.handA.hand.slice().sort());
-    expect(infoB.match.hand.slice().sort()).toEqual(rawMatch.handB.hand.slice().sort());
+    expect(infoA.match.hand.slice().sort()).toEqual(handValues(rawMatch.handA.hand).sort());
+    expect(infoB.match.hand.slice().sort()).toEqual(handValues(rawMatch.handB.hand).sort());
     // And A's view must NOT equal B's actual hand (unless coincidentally
     // identical multiset, which the deck's two-of-each shuffle makes
     // exceedingly unlikely for a 4-card starting hand from the same seed
