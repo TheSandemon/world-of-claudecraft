@@ -16,5 +16,6 @@ export * from './match_state';
 export * from './modifiers';
 export * from './resolve';
 export * from './rules';
+export * from './text';
 export * from './selectors';
 export * from './types';

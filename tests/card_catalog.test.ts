@@ -1,0 +1,134 @@
+import { describe, expect, it } from 'vitest';
+import { CARD_CATALOG, CARDS, cardById, cardsOfValue } from '../src/sim/content/cards';
+import { BASIC_CARD_DEFINITIONS } from '../src/sim/minigames/card_duel/basic_catalog';
+import { COPIES_PER_VALUE } from '../src/sim/minigames/card_duel/deck';
+import { EFFECT_PRIORITY } from '../src/sim/minigames/card_duel/resolve';
+import { resolveCardText, staticCardContext } from '../src/sim/minigames/card_duel/text';
+import { CARD_TRIBES, CARD_VALUES } from '../src/sim/minigames/card_duel/types';
+import { cardsStrings } from '../src/ui/i18n.catalog/cards';
+
+const names = cardsStrings.name as Record<string, string>;
+const texts = cardsStrings.text as Record<string, string>;
+const tribeNames = cardsStrings.tribe as Record<string, string>;
+
+/** Every {placeholder} an English sentence reads. */
+function placeholders(sentence: string): string[] {
+  return [...sentence.matchAll(/\{([a-zA-Z][a-zA-Z0-9]*)\}/g)].map((m) => m[1]).sort();
+}
+
+describe('card catalog', () => {
+  it('every card id is unique and stable', () => {
+    const ids = CARDS.map((def) => def.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    // Id order is sorted, so any walk of the catalog is deterministic across
+    // hosts rather than depending on module authoring order.
+    expect([...ids].sort()).toEqual(ids);
+  });
+
+  it('offers at least COPIES_PER_VALUE distinct cards at every value', () => {
+    // The deck rule is two cards per value with no repeats, so a value with
+    // fewer than two authored cards makes a legal deck unbuildable.
+    for (const value of CARD_VALUES) {
+      const pool = cardsOfValue(value);
+      expect(pool.length, `value ${value} has ${pool.length} cards`).toBeGreaterThanOrEqual(
+        COPIES_PER_VALUE,
+      );
+    }
+  });
+
+  it('every card names a real tribe and a sane rarity', () => {
+    for (const def of CARDS) {
+      for (const tribe of def.tribes) expect(CARD_TRIBES).toContain(tribe);
+      expect(new Set(def.tribes).size).toBe(def.tribes.length);
+      expect(['common', 'uncommon', 'rare', 'epic', 'legendary']).toContain(def.rarity);
+      expect(CARD_VALUES).toContain(def.value);
+    }
+  });
+
+  it('every card has an English name and rules sentence in the catalog', () => {
+    for (const def of CARDS) {
+      expect(names[def.nameId], `${def.id} has no cards.name.${def.nameId}`).toBeTypeOf('string');
+      expect(texts[def.textId], `${def.id} has no cards.text.${def.textId}`).toBeTypeOf('string');
+      expect(names[def.nameId].length).toBeGreaterThan(0);
+      expect(texts[def.textId].length).toBeGreaterThan(0);
+    }
+  });
+
+  it('the catalog carries no orphan name or text entry', () => {
+    const nameIds = new Set(CARDS.map((def) => def.nameId));
+    const textIds = new Set(CARDS.map((def) => def.textId));
+    for (const key of Object.keys(names)) expect(nameIds.has(key), `orphan name ${key}`).toBe(true);
+    for (const key of Object.keys(texts)) expect(textIds.has(key), `orphan text ${key}`).toBe(true);
+  });
+
+  it('every tribe has a localized name', () => {
+    for (const tribe of CARD_TRIBES) expect(tribeNames[tribe]).toBeTypeOf('string');
+    expect(Object.keys(tribeNames).sort()).toEqual([...CARD_TRIBES].sort());
+  });
+
+  it('every {placeholder} in a rules sentence is a value the card can actually supply', () => {
+    const ctx = staticCardContext(CARD_CATALOG);
+    for (const def of CARDS) {
+      const wanted = placeholders(texts[def.textId]);
+      const supplied = Object.keys(resolveCardText(def, ctx).values).sort();
+      for (const name of wanted) {
+        expect(
+          supplied,
+          `${def.id}: text reads {${name}} but its effects supply [${supplied.join(', ')}]`,
+        ).toContain(name);
+      }
+    }
+  });
+
+  it('resolves a scaling card text to its live number, not its formula', () => {
+    const packAlpha = cardById('pack_alpha');
+    expect(packAlpha).toBeDefined();
+    const ctx = staticCardContext(CARD_CATALOG);
+    // Before any Beast has been played the bonus really is zero, and the
+    // tooltip contract says show the value that would apply.
+    expect(resolveCardText(packAlpha!, ctx).values.amount).toBe(0);
+  });
+
+  it('states a reduction as a positive number, so the sentence owns the sign', () => {
+    const hexer = cardById('sableweb_hexer');
+    expect(hexer).toBeDefined();
+    expect(texts.sableweb_hexer).toContain('-{amount}');
+    expect(resolveCardText(hexer!, staticCardContext(CARD_CATALOG)).values.amount).toBe(3);
+  });
+
+  it('every authored effect uses a primitive the resolver has a priority for', () => {
+    for (const def of CARDS) {
+      for (const effect of def.effects) {
+        expect(
+          EFFECT_PRIORITY[effect.effect.type],
+          `${def.id} uses ${effect.effect.type} with no resolution priority`,
+        ).toBeTypeOf('number');
+      }
+    }
+  });
+
+  it('a card that parks a buff on a future card declares a duration that outlives the round', () => {
+    for (const def of CARDS) {
+      for (const effect of def.effects) {
+        if (effect.target?.type !== 'nextCard') continue;
+        expect(
+          effect.duration,
+          `${def.id} parks on a next card without saying how long it lasts`,
+        ).toBeDefined();
+      }
+    }
+  });
+
+  it('the basics sit behind the authored catalog and never shadow a real card', () => {
+    for (const basic of BASIC_CARD_DEFINITIONS) {
+      expect(CARD_CATALOG.get(basic.id)?.id).toBe(basic.id);
+      expect(CARDS.some((def) => def.id === basic.id)).toBe(false);
+    }
+    for (const def of CARDS) expect(CARD_CATALOG.get(def.id)).toBe(def);
+  });
+
+  it('resolves an unknown (retired) card id to undefined rather than throwing', () => {
+    expect(CARD_CATALOG.get('a_card_that_was_retired')).toBeUndefined();
+    expect(cardById('a_card_that_was_retired')).toBeUndefined();
+  });
+});

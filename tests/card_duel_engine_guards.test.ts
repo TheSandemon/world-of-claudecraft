@@ -20,6 +20,15 @@ import { tsFilesUnder } from './helpers/ts_files_under';
 //     place, which is exactly the order-dependence the engine promises not to
 //     have.
 
+const CONTENT_DIR = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'src',
+  'sim',
+  'content',
+  'cards',
+);
+
 const ENGINE_DIR = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
@@ -83,6 +92,17 @@ describe('card_duel engine guards', () => {
       const clash = priorities.get(EFFECT_PRIORITY[type]);
       expect(clash, `${type} shares a priority with ${clash}`).toBeUndefined();
       priorities.set(EFFECT_PRIORITY[type], type);
+    }
+  });
+
+  it('never spells the client card-art path: the sim owns ids, the client owns paths', () => {
+    for (const { file, full } of [...tsFilesUnder(ENGINE_DIR), ...tsFilesUnder(CONTENT_DIR)]) {
+      // Comments stripped first: the types.ts docblock legitimately NAMES the
+      // client path when explaining why the sim only carries the id.
+      const code = stripComments(readFileSync(full, 'utf8'));
+      expect(code.includes('/ui/cards/'), `${file} hard-codes the client card art path`).toBe(
+        false,
+      );
     }
   });
 
