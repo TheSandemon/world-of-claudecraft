@@ -55,6 +55,11 @@ export const cardsStrings = {
     steps: '{count} effects resolved.',
     overflow: 'Resolution hit the step ceiling and the round was decided on current values.',
     empty: 'No rounds played yet.',
+    // What the shared stage calls the result. The in-game table says "you";
+    // this one has two seats at it and neither of them is the reader.
+    verdictA: 'Seat A wins the round',
+    verdictB: 'Seat B wins the round',
+    verdictPush: 'The round is a push',
   },
 
   result: {
@@ -176,6 +181,14 @@ export const cardsStrings = {
     Spirit: 'Spirit',
     Dragon: 'Dragon',
     Bandit: 'Bandit',
+  },
+
+  // Counter names (src/sim/minigames/card_duel/), shown as tokens on the duel
+  // table. The sim-side key is an id, never text: every counter a shipped card
+  // can put on a side needs a name here (pinned by tests/card_catalog.test.ts).
+  counter: {
+    Web: 'Web',
+    Dread: 'Dread',
   },
 
   card: {

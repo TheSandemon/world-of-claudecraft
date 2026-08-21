@@ -62,6 +62,7 @@ describe('card_duel_view', () => {
         myRounds: 1,
         opponentRounds: 0,
         waitingOnOpponent: false,
+        opponentCommitted: false,
         ...matchDefaults,
       },
     };
@@ -93,6 +94,7 @@ describe('card_duel_view', () => {
         myRounds: 0,
         opponentRounds: 1,
         waitingOnOpponent: true,
+        opponentCommitted: false,
         ...matchDefaults,
       },
     };
@@ -114,6 +116,7 @@ describe('card_duel_view', () => {
         myRounds: 0,
         opponentRounds: 0,
         waitingOnOpponent: false,
+        opponentCommitted: false,
         ...matchDefaults,
       },
     };
@@ -137,6 +140,7 @@ describe('card_duel_view', () => {
         myRounds: 0,
         opponentRounds: 0,
         waitingOnOpponent: false,
+        opponentCommitted: false,
         ...matchDefaults,
       },
     };

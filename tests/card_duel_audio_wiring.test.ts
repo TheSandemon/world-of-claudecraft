@@ -25,18 +25,19 @@ describe('Card Duel audio wiring in hud.ts', () => {
     expect(caseBody('cardPlayed')).toContain('audio.cardPlay();');
   });
 
-  it('always reveals, and layers push/shuffle on top rather than replacing it', () => {
+  it('hands a resolved round to the shared feedback module, audio and all', () => {
+    // The round's three cues no longer fire here. They ride the BEATS of the
+    // round theater (the reveal sound when the cards turn, the push sound on
+    // the verdict, the shuffle when the hand refills), so the audio surface is
+    // handed down with the event rather than played at the switch. The cue
+    // mapping itself is pinned where it now lives: tests/duel_beats_core and
+    // tests/duel_theater for the timeline, tests/card_round_feedback for the
+    // closed-window fallback that still plays all three at once.
     const body = caseBody('cardRoundResolved');
-    expect(body).toContain('audio.cardReveal();');
-    expect(body).toContain("if (ev.outcome === 'push') audio.cardRoundPush();");
-    expect(body).toContain('if (ev.reshuffled) audio.cardShuffle();');
-    // Reveal must be unconditional (comes before the two conditional layers),
-    // not gated behind either outcome check.
-    const revealIndex = body.indexOf('audio.cardReveal();');
-    const pushIndex = body.indexOf('audio.cardRoundPush();');
-    const shuffleIndex = body.indexOf('audio.cardShuffle();');
-    expect(revealIndex).toBeLessThan(pushIndex);
-    expect(revealIndex).toBeLessThan(shuffleIndex);
+    expect(body).toContain('applyCardRoundFeedback(ev, audio, this.cardWindows.cardDuel)');
+    // And the switch arm plays nothing itself: a cue fired here as well as on
+    // its beat would double every sound.
+    expect(body).not.toContain('audio.card');
   });
 
   it('reuses duelEnd for a match win and arenaLoss for a match loss, not new recordings', () => {

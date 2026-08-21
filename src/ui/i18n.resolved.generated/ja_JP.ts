@@ -6930,7 +6930,10 @@ export const ja_JP: EnTranslations = {
       "reshuffled": "捨て札が山札に混ぜ直されました。",
       "steps": "効果を{count}件処理しました。",
       "overflow": "処理が上限に達したため、このラウンドは現在の値で判定されました。",
-      "empty": "まだラウンドは行われていません。"
+      "empty": "まだラウンドは行われていません。",
+      "verdictA": "A席がこのラウンドに勝利",
+      "verdictB": "B席がこのラウンドに勝利",
+      "verdictPush": "このラウンドは引き分け"
     },
     "result": {
       "winA": "A席が対戦に勝ちました。",
@@ -7036,6 +7039,10 @@ export const ja_JP: EnTranslations = {
       "Spirit": "精霊",
       "Dragon": "ドラゴン",
       "Bandit": "盗賊"
+    },
+    "counter": {
+      "Web": "Web",
+      "Dread": "恐怖"
     },
     "card": {
       "valueLabel": "値{value}",
@@ -7907,7 +7914,21 @@ export const ja_JP: EnTranslations = {
     "revealWin": "このラウンドはあなたの勝ち",
     "revealLose": "このラウンドはあなたの負け",
     "revealPush": "このラウンドは引き分け",
-    "revealReshuffled": "捨て札が山札に混ぜ直されました。"
+    "revealReshuffled": "捨て札が山札に混ぜ直されました。",
+    "youSeat": "You",
+    "commitLocked": "確定済み",
+    "commitChoosing": "選択中",
+    "waitingBoth": "両者がカードを選んでいます",
+    "waitingThem": "相手のカードを待っています",
+    "waitingMe": "相手の準備が整いました",
+    "waitingReveal": "ラウンドを公開しています",
+    "pipsAria": "{name}：{total}ラウンド中{won}勝",
+    "counterAria": "{name}: {count}",
+    "revealedHeading": "見えている相手の手札",
+    "pileDeck": "Deck: {count}",
+    "pileDiscard": "捨て札：{count}",
+    "stageIdle": "テーブルにカードはありません",
+    "announce": "あなたは{mine}、相手は{theirs}を出しました。{outcome}"
   },
   "cardDeck": {
     "title": "デッキビルダー",

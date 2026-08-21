@@ -1,0 +1,1063 @@
+/* cards.css: the whole Card Duel visual grammar in one sheet: the duel window
+   shell, the duel table, the round theater, the deck builder, and the card
+   face. Moved out of components.css (which is a named extraction target) so
+   that the ONE place a Card Duel surface is styled is the one place both
+   consumers can load it.
+
+   Both consumers, deliberately. The in-game window loads it through the
+   index.css barrel in @layer components, exactly where these rules lived
+   before. The standalone playtest slice (src/cards/, the /cards route) imports
+   it directly alongside tokens.css: the slice composes the REAL rules engine
+   and the REAL card face, so styling it from a lookalike sheet would let the
+   thing playtesters look at drift away from the thing players get. It still
+   loads none of the rest of the HUD.
+
+   The grammar, stated once so every rule below can be read against it:
+
+     POSITION is ownership.  The opponent is the top band and the top stage
+                             slot, the player is the bottom ones, always.
+     SHAPE is category.      Rounds won are pips, a counter is a token, a pile
+                             is a stack, a card is a card.
+     COLOR is state.         Gold is the player's own and the winner's; the
+                             stat-bonus green is a value going up; the
+                             legendary orange is a value coming down; the
+                             craft-full amber is the clock running out.
+     MOTION is causality.    Every animation answers where a thing came from,
+                             what changed it, or which of two things won. No
+                             motion here is decoration, which is why dropping
+                             all of it costs no information at all.
+
+   FAIRNESS. Every number a player acts on (the clock, the value plates, the
+   card values, the modifier deltas, the pips) paints at every graphics tier,
+   on every device, with no hover requirement and no animation delay. The tier
+   rules at the bottom of this file touch transitions and animations only. The
+   ONE bounded exception is the stage's own deal beat: the two cards of an
+   ALREADY DECIDED round stay face-down for 260ms while they land. That
+   narrates a finished round, never a pending decision, the pips and the hand
+   underneath have already moved, and any of the three motion authorities
+   collapses it to zero. */
+@layer components {
+  /* ---------- card duel (the Card Master minigame) ---------- */
+  /* Wider than the old 340px: the table is now a real board (two seat bands, a
+     stage where the cards meet, a clock, a hand) rather than three lines of
+     prose, and a board that has to wrap reads worse than one that fits. */
+  #card-duel-window {
+    width: 380px;
+    /* The table is a tall board (two seat bands, a stage, a clock, a hand), so
+       it scrolls inside itself rather than running off a short desktop
+       viewport. The mobile sheet sets its own placement in hud.mobile.css. */
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+  .cd-body {
+    padding: 8px;
+  }
+  .cd-status {
+    font-size: 12px;
+    margin: 4px 0;
+    color: var(--color-text-light);
+  }
+  .cd-counts {
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .cd-action-btn {
+    display: block;
+    width: 100%;
+    min-height: 40px;
+    padding: 8px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    cursor: var(--cursor-point);
+    background: #ffffff10;
+    color: inherit;
+    font-family: var(--ui-font);
+  }
+  .cd-action-btn:hover {
+    background: #ffffff20;
+  }
+
+  /* The Card Master's regulars: always offered, online or offline, because a
+     lone player must still be able to sit down and play. */
+  .cd-regulars {
+    margin: 8px 0;
+  }
+  .cd-regulars-title {
+    margin: 0 0 4px;
+    font-family: var(--title-font);
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+  .cd-regular {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    width: 100%;
+    min-height: 40px;
+    margin-bottom: 4px;
+    padding: 6px 8px;
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-sm);
+    background: #ffffff10;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: var(--cursor-point);
+  }
+  .cd-regular:hover {
+    background: #ffffff20;
+  }
+  .cd-regular-name {
+    font-family: var(--title-font);
+    font-size: 13px;
+    color: var(--gold);
+  }
+  .cd-regular-title {
+    flex: 1 1 auto;
+    font-size: 11px;
+    color: var(--color-text-light);
+  }
+  .cd-regular-tier {
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+
+  /* ---------- the duel table (src/ui/cards/duel_table_markup.ts) ---------- */
+  /* What a match reads like BETWEEN reveals. Every block here is fed by the
+     snapshot and is correct the instant it arrives. */
+  .dt {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* A seat band: who, whether they have committed, their score, their
+     counters. The two bands are identical in structure and mirrored in tone,
+     so the player can compare them without reading either. */
+  .dt-seat {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: var(--radius-sm);
+    background: #ffffff08;
+  }
+  .dt-seat-mine {
+    /* The player's own band carries the gold edge; the opponent's a plain
+       one. One glance answers "which of these is me". */
+    border-left: 3px solid var(--gold);
+  }
+  .dt-seat-theirs {
+    border-left: 3px solid var(--color-text-muted);
+  }
+  .dt-seat-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-family: var(--title-font);
+    font-size: 13px;
+    color: var(--gold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dt-seat-theirs .dt-seat-name {
+    color: var(--color-text-light);
+  }
+
+  /* The commit lamp: the answer to "why is nothing happening". A seat still
+     choosing breathes; a seat locked in is a steady filled dot. The TEXT says
+     the same thing beside it, so the lamp is never the only carrier. */
+  .dt-commit {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .dt-lamp {
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--color-text-muted);
+    border-radius: 50%;
+  }
+  .dt-seat[data-commit="choosing"] .dt-lamp {
+    animation: dt-breathe 1.6s ease-in-out infinite;
+    animation-play-state: var(--fx-ambient-anim, running);
+  }
+  .dt-seat[data-commit="locked"] .dt-lamp {
+    border-color: var(--color-stat-bonus);
+    background: var(--color-stat-bonus);
+  }
+  .dt-seat[data-commit="locked"] .dt-commit {
+    color: var(--color-stat-bonus);
+  }
+
+  /* The score, as a track. Two pips means best of three; the track states the
+     match length without a sentence about it. */
+  .dt-pips {
+    display: inline-flex;
+    gap: 3px;
+  }
+  .dt-pip {
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+    transform: rotate(45deg);
+  }
+  .dt-pip-on {
+    border-color: var(--gold);
+    background: var(--gold);
+  }
+
+  /* Counters (Web, Dread) as physical tokens on the board rather than a line
+     of text nobody reads. Each keeps its own color so the same counter is the
+     same color on both sides of the table. */
+  .dt-tokens {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .dt-token {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    padding: 1px 5px;
+    border: 1px solid var(--color-text-muted);
+    border-radius: 9px;
+    font-size: 10px;
+    color: var(--color-text-light);
+  }
+  .dt-token-count {
+    font-family: var(--title-font);
+    font-size: 12px;
+  }
+  .dt-token[data-counter="Web"] {
+    border-color: var(--color-debuff-nature);
+    color: var(--color-debuff-nature);
+  }
+  .dt-token[data-counter="Dread"] {
+    border-color: var(--color-debuff-shadow);
+    color: var(--color-debuff-shadow);
+  }
+
+  /* The clock. A ring that drains plus the seconds in figures: the ring is
+     read at a glance and the number is read exactly, and neither is ever
+     tiered, delayed, or hover-gated, because a round is racing this. */
+  .dt-clock {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dt-clock-ring {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    /* A conic sweep is the cheapest correct drain: one custom property, no
+       extra element, no per-second layout. */
+    background: conic-gradient(var(--gold) calc(var(--dt-clock-ratio, 1) * 360deg), #ffffff1a 0);
+    mask: radial-gradient(circle, transparent 55%, #000 57%);
+  }
+  .dt-clock-ring[data-band="urgent"] {
+    background: conic-gradient(
+      var(--color-craft-full) calc(var(--dt-clock-ratio, 1) * 360deg),
+      #ffffff1a 0
+    );
+    animation: dt-pulse 1s ease-in-out infinite;
+    animation-play-state: var(--fx-ambient-anim, running);
+  }
+  .dt-clock-ring[data-band="out"] {
+    background: var(--mkt-name-legendary);
+  }
+  .dt-clock-num {
+    font-family: var(--title-font);
+    font-size: 13px;
+    color: var(--gold);
+  }
+  .dt-clock-ring[data-band="urgent"] ~ .dt-clock-num,
+  .dt-clock-ring[data-band="out"] ~ .dt-clock-num {
+    color: var(--color-craft-full);
+  }
+
+  /* Whose card the round is on, said in words beside the two lamps that show
+     it. One short line, in one fixed place, every round. */
+  .dt-waiting {
+    min-height: 15px;
+    font-size: 12px;
+    color: var(--color-text-light);
+  }
+
+  .dt-hand {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 2px 0;
+  }
+
+  /* The two piles, as stacks that carry their own counts. A deck running low
+     is a thing a player should SEE getting shorter. */
+  .dt-piles {
+    display: inline-flex;
+    gap: 10px;
+  }
+  .dt-pile {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .dt-pile-stack {
+    width: 12px;
+    height: 16px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+    box-shadow:
+      2px -2px 0 -1px var(--gold-dim),
+      4px -4px 0 -2px var(--gold-dim);
+  }
+  .dt-pile[data-pile="discard"] .dt-pile-stack {
+    border-style: dashed;
+  }
+  .dt-pile-count {
+    font-family: var(--title-font);
+    font-size: 12px;
+    color: var(--color-text-light);
+  }
+
+  /* Opponent cards a reveal effect entitled this viewer to see. Shown as
+     cards, because that is what they are. */
+  .dt-revealed {
+    padding: 4px 6px;
+    border: 1px dashed var(--mkt-name-rare);
+    border-radius: var(--radius-sm);
+  }
+  .dt-revealed-title {
+    margin-bottom: 4px;
+    font-size: 11px;
+    color: var(--mkt-name-rare);
+  }
+  .dt-revealed-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* The screen-reader line for a resolved round. Off-screen rather than
+     display:none, which would take it away from the reader too. */
+  .dt-announce {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ---------- the round theater (src/ui/cards/duel_beats_core.ts) ---------- */
+  /* One resolved round, played out as beats. Every rule in this section is
+     selected by the data-beat attribute the theater writes, and every one of
+     them is transform or opacity only, so no beat costs a layout pass and the
+     whole section can be switched off without moving a single number. */
+  .dt-stage {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    /* Card width, and left-aligned with the hand below it: a stage as wide as
+       its container is mostly empty field, and a centered one would sit off
+       the axis every other row on the table shares. */
+    max-width: 340px;
+    padding: 6px;
+    border-radius: var(--radius-md);
+    background: radial-gradient(ellipse at 50% 50%, #ffffff10, #00000030 70%);
+  }
+  .dt-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .dt-slot-label {
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+  /* The card and its face-down back share one box, so the flip is a pair of
+     scale animations on two stacked children rather than a 3D transform. */
+  .dt-slot-card {
+    position: relative;
+    width: 96px;
+    height: 148px;
+    /* The card is what dims when it loses; its VALUE PLATE, one row below,
+       never does. */
+    transition: opacity 120ms ease-out;
+  }
+  .dt-slot-card .cf-size-stage {
+    width: 96px;
+    height: 148px;
+  }
+  .dt-slot-card .cf-size-stage .cf-value {
+    font-size: 19px;
+  }
+  .dt-back {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--gold-dim);
+    border-radius: 5px;
+    background:
+      repeating-linear-gradient(45deg, #ffffff0e 0 4px, transparent 4px 8px),
+      linear-gradient(160deg, var(--panel-base, #17242c), #0a1116);
+  }
+  .dt-slot-empty .dt-back {
+    border-style: dashed;
+    opacity: 0.5;
+  }
+
+  /* The value plate: what the comparison used, with the printed value and the
+     signed delta beside it whenever an effect moved it. Same size and same
+     place every round, because at the clash these two plates are the whole
+     comparison. */
+  .dt-plate {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .dt-plate-value {
+    font-family: var(--title-font);
+    font-size: 20px;
+    color: var(--gold);
+  }
+  .dt-plate-base {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+  }
+  .dt-chip {
+    font-family: var(--title-font);
+    font-size: 12px;
+  }
+  .dt-chip-up {
+    color: var(--color-stat-bonus);
+  }
+  .dt-chip-down {
+    color: var(--mkt-name-legendary);
+  }
+
+  .dt-clash {
+    position: relative;
+    width: 100%;
+    height: 10px;
+  }
+  .dt-spark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 2px;
+    margin: -1px 0 0 -30px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0;
+  }
+  .dt-verdict {
+    font-family: var(--title-font);
+    font-size: 14px;
+    color: var(--color-text-light);
+  }
+  .dt-verdict-idle {
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .dt-stage[data-outcome="win"] .dt-verdict {
+    color: var(--color-stat-bonus);
+  }
+  .dt-stage[data-outcome="lose"] .dt-verdict {
+    color: var(--mkt-name-legendary);
+  }
+  .dt-note {
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+
+  /* Beat 1, deal: the two cards arrive from their owner's side of the table,
+     face-down. Where a card came from is the first thing the eye is told. */
+  .dt-stage[data-beat="deal"] .dt-slot-theirs,
+  .dt-stage[data-beat="deal"] .dt-slot-mine {
+    animation: dt-land 240ms ease-out;
+  }
+  .dt-stage[data-beat="deal"] .dt-slot-mine {
+    animation-name: dt-land-up;
+  }
+  /* Face-down until the reveal beat. The only delayed thing in the whole
+     table, bounded at one beat, and only ever over a round that is already
+     decided (see the FAIRNESS note in this file's header). */
+  .dt-stage[data-beat="idle"] .cf,
+  .dt-stage[data-beat="deal"] .cf {
+    opacity: 0;
+  }
+  .dt-stage[data-beat="idle"] .dt-plate,
+  .dt-stage[data-beat="deal"] .dt-plate,
+  .dt-stage[data-beat="idle"] .dt-verdict:not(.dt-verdict-idle),
+  .dt-stage[data-beat="deal"] .dt-verdict {
+    opacity: 0;
+  }
+
+  /* Beat 2, reveal: both backs turn at once. Simultaneous, because
+     simultaneous hidden selection is the game. */
+  .dt-stage[data-beat="reveal"] .dt-back,
+  .dt-stage[data-beat="shift"] .dt-back,
+  .dt-stage[data-beat="clash"] .dt-back,
+  .dt-stage[data-beat="verdict"] .dt-back,
+  .dt-stage[data-beat="settle"] .dt-back {
+    opacity: 0;
+  }
+  .dt-stage[data-beat="reveal"] .dt-back {
+    animation: dt-flip-out 160ms ease-in forwards;
+  }
+  .dt-stage[data-beat="reveal"] .cf {
+    animation: dt-flip-in 200ms 120ms ease-out backwards;
+  }
+
+  /* Beat 3, shift: the effects land. The delta chip pops onto the plate it
+     moved, so a value that changed says WHY beside itself. */
+  .dt-stage[data-beat="reveal"] .dt-chip,
+  .dt-stage[data-beat="reveal"] .dt-plate-base {
+    opacity: 0;
+  }
+  .dt-stage[data-beat="shift"] .dt-chip {
+    animation: dt-chip-in 260ms ease-out;
+  }
+  .dt-stage[data-beat="shift"] .dt-plate-value {
+    animation: dt-tick 260ms ease-out;
+  }
+
+  /* Beat 4, clash: the two cards lean into each other and strike. */
+  .dt-stage[data-beat="clash"] .dt-slot-theirs {
+    animation: dt-lunge-down 220ms ease-in-out;
+  }
+  .dt-stage[data-beat="clash"] .dt-slot-mine {
+    animation: dt-lunge-up 220ms ease-in-out;
+  }
+  .dt-stage[data-beat="clash"] .dt-spark {
+    animation: dt-spark 260ms ease-out;
+  }
+
+  /* Beat 5, verdict: the winner surges and keeps a steady gold edge; the
+     loser recoils and dims. The edge is a STATIC state, so a player who has
+     collapsed every animation still sees which card won. */
+  .dt-stage[data-beat="idle"] .dt-verdict:not(.dt-verdict-idle),
+  .dt-stage[data-beat="deal"] .dt-verdict,
+  .dt-stage[data-beat="reveal"] .dt-verdict,
+  .dt-stage[data-beat="shift"] .dt-verdict,
+  .dt-stage[data-beat="clash"] .dt-verdict {
+    opacity: 0;
+  }
+  .dt-stage[data-beat="verdict"] .dt-verdict {
+    animation: dt-verdict-in 240ms ease-out;
+  }
+  .dt-stage[data-outcome="win"][data-beat="verdict"] .dt-slot-mine .dt-slot-card,
+  .dt-stage[data-outcome="win"][data-beat="settle"] .dt-slot-mine .dt-slot-card,
+  .dt-stage[data-outcome="lose"][data-beat="verdict"] .dt-slot-theirs .dt-slot-card,
+  .dt-stage[data-outcome="lose"][data-beat="settle"] .dt-slot-theirs .dt-slot-card {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  .dt-stage[data-outcome="win"][data-beat="verdict"] .dt-slot-theirs .dt-slot-card,
+  .dt-stage[data-outcome="win"][data-beat="settle"] .dt-slot-theirs .dt-slot-card,
+  .dt-stage[data-outcome="lose"][data-beat="verdict"] .dt-slot-mine .dt-slot-card,
+  .dt-stage[data-outcome="lose"][data-beat="settle"] .dt-slot-mine .dt-slot-card {
+    opacity: 0.55;
+  }
+
+  @keyframes dt-land {
+    from {
+      opacity: 0;
+      transform: translateY(-14px);
+    }
+  }
+  @keyframes dt-land-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  @keyframes dt-flip-out {
+    to {
+      opacity: 0;
+      transform: scaleX(0.02);
+    }
+  }
+  @keyframes dt-flip-in {
+    from {
+      opacity: 0;
+      transform: scaleX(0.02);
+    }
+  }
+  @keyframes dt-chip-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(1.5);
+    }
+  }
+  @keyframes dt-tick {
+    50% {
+      transform: scale(1.22);
+    }
+  }
+  @keyframes dt-lunge-down {
+    50% {
+      transform: translateY(7px);
+    }
+  }
+  @keyframes dt-lunge-up {
+    50% {
+      transform: translateY(-7px);
+    }
+  }
+  @keyframes dt-spark {
+    30% {
+      opacity: 1;
+      transform: scaleX(1.5);
+    }
+    to {
+      opacity: 0;
+      transform: scaleX(2);
+    }
+  }
+  @keyframes dt-verdict-in {
+    from {
+      opacity: 0;
+      transform: scale(0.86);
+    }
+  }
+  @keyframes dt-breathe {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @keyframes dt-pulse {
+    50% {
+      transform: scale(1.12);
+    }
+  }
+
+  /* ---------- the deck builder (src/ui/deck_builder_window.ts) ---------- */
+  /* Ten value rows, two slots each: the layout IS the rule, so a player never
+     has to be told the constraint in an error message. */
+  #deck-builder-window {
+    width: min(720px, 92%);
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .db-body {
+    padding: 8px;
+  }
+  .db-rule {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: var(--color-text-light);
+  }
+  .db-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .db-name {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .db-name input {
+    min-height: 32px;
+    padding: 4px 6px;
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-sm);
+    background: #00000055;
+    color: inherit;
+    font: inherit;
+  }
+  .db-progress {
+    flex: 1 1 auto;
+    font-size: 12px;
+    color: var(--gold);
+  }
+  .db-save,
+  .db-delete,
+  .db-saved {
+    min-height: 40px;
+    padding: 6px 10px;
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-sm);
+    background: #ffffff10;
+    color: inherit;
+    font: inherit;
+    cursor: var(--cursor-point);
+  }
+  .db-save:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .db-saved-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .db-active {
+    border-color: var(--color-stat-bonus);
+  }
+  .db-row {
+    padding: 6px 0;
+    border-top: 1px solid #ffffff18;
+  }
+  .db-row-title {
+    margin: 0 0 4px;
+    font-family: var(--title-font);
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+  .db-row-complete .db-row-title {
+    color: var(--color-stat-bonus);
+  }
+  .db-slots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .db-slot {
+    display: block;
+  }
+  .db-slot-empty {
+    width: 68px;
+    height: 96px;
+    border: 1px dashed var(--color-text-muted);
+    border-radius: 5px;
+  }
+  .db-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .db-option {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: var(--cursor-point);
+  }
+  /* Taken cards stay visible rather than disappearing: seeing which of the
+     value's cards you already chose is the point of the row. */
+  .db-chosen {
+    opacity: 0.5;
+  }
+  .db-chosen .cf-frame {
+    border-style: dashed;
+  }
+
+  /* ---------- the card face (src/ui/cards) ---------- */
+  /* One component, three sizes. Only the size variant differs; the markup and
+     the consumer are shared by the hand, the stage, and a collection cell.
+     Animation is transform/opacity only, so no frame forces layout. */
+  .cf {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: var(--cursor-point);
+  }
+  .cf-frame {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--gold);
+    border-radius: 5px;
+    background: #ffffff10;
+    overflow: hidden;
+    transition: transform 120ms ease-out;
+  }
+  .cf-playable:hover .cf-frame {
+    transform: translateY(-2px);
+  }
+  /* A playable card also says so at rest: the hover lift is a desktop-only
+     affordance and a touch player never sees it. */
+  .cf-playable .cf-frame {
+    box-shadow: 0 0 0 1px #ffffff22;
+  }
+  .cf-locked {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .cf-silenced .cf-frame {
+    border-style: dashed;
+  }
+  .cf-revealed .cf-frame {
+    box-shadow: inset 0 0 0 1px var(--mkt-name-rare);
+  }
+  .cf-art {
+    display: block;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    object-fit: cover;
+  }
+  /* The procedural face: a card with no commissioned painting still reads as a
+     card, keyed on its tribe, rather than as a blank rectangle. */
+  .cf-art-procedural {
+    background:
+      radial-gradient(circle at 50% 35%, #ffffff18, transparent 60%),
+      linear-gradient(160deg, #2a3242, #161c26);
+  }
+  .cf-art-procedural[data-tribe="Beast"] {
+    background: linear-gradient(160deg, #3b3320, #191509);
+  }
+  .cf-art-procedural[data-tribe="Undead"] {
+    background: linear-gradient(160deg, #23342b, #0d1712);
+  }
+  .cf-art-procedural[data-tribe="Spider"] {
+    background: linear-gradient(160deg, #2e2436, #140f19);
+  }
+  .cf-art-procedural[data-tribe="Human"] {
+    background: linear-gradient(160deg, #2c3242, #12161f);
+  }
+  .cf-art-procedural[data-tribe="Dragon"] {
+    background: linear-gradient(160deg, #3d2620, #170c09);
+  }
+  .cf-corner {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+  }
+  .cf-value {
+    font-family: var(--title-font);
+    font-size: 17px;
+    color: var(--gold);
+    text-shadow: 0 1px 2px #000;
+  }
+  .cf-base {
+    font-size: 10px;
+    color: var(--color-text-light);
+    text-decoration: line-through;
+    text-shadow: 0 1px 2px #000;
+  }
+  /* The modifier strip: what the effects did, right now. Never tiered, never
+     hover-gated, never animated into existence. */
+  .cf-delta {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    font-family: var(--title-font);
+    font-size: 12px;
+    text-shadow: 0 1px 2px #000;
+  }
+  .cf-delta-up {
+    color: var(--color-stat-bonus);
+  }
+  .cf-delta-down {
+    color: var(--mkt-name-legendary);
+  }
+  .cf-plate {
+    padding: 2px 4px;
+    background: #00000055;
+  }
+  .cf-name {
+    font-family: var(--title-font);
+    font-size: 10px;
+    color: var(--color-text-light);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cf-tribes {
+    font-size: 9px;
+    color: var(--color-text-muted);
+  }
+  .cf-tribe-sep {
+    padding: 0 2px;
+  }
+  .cf-rules {
+    display: none;
+    padding: 3px 4px;
+    font-size: 10px;
+    line-height: 1.3;
+    color: var(--color-text-light);
+    background: #00000066;
+  }
+  /* Rarity frames reuse the shipped quality colors rather than minting a
+     second color vocabulary for cards. */
+  .cf-rarity-common .cf-frame {
+    border-color: var(--gold);
+  }
+  .cf-rarity-uncommon .cf-frame {
+    border-color: var(--mkt-name-uncommon);
+  }
+  .cf-rarity-rare .cf-frame {
+    border-color: var(--mkt-name-rare);
+  }
+  .cf-rarity-epic .cf-frame {
+    border-color: var(--mkt-name-epic);
+  }
+  .cf-rarity-legendary .cf-frame {
+    border-color: var(--mkt-name-legendary);
+  }
+
+  .cf-size-hand {
+    width: 68px;
+    height: 96px;
+  }
+  .cf-size-stage {
+    width: 108px;
+    height: 152px;
+  }
+  .cf-size-stage .cf-value {
+    font-size: 22px;
+  }
+  .cf-size-stage .cf-rules,
+  .cf-size-cell .cf-rules {
+    display: block;
+  }
+  .cf-size-cell {
+    width: 132px;
+    height: 196px;
+  }
+
+  /* ---------- card duel touch layout ---------- */
+  /* Authored here rather than in hud.mobile.css because the standalone /cards
+     playtest slice loads this sheet and none of the HUD ones, and a table that
+     only worked on a phone in the shipped client would be a table playtesters
+     could not check on a phone. The window PLACEMENT on mobile stays in
+     hud.mobile.css with every other window.
+
+     THREE triggers, and the third is the load-bearing one: a phone running the
+     game client is in LANDSCAPE (the client's own orientation gate refuses
+     portrait), so it is not narrow, it is SHORT. A short viewport is exactly
+     when a stacked stage stops fitting, so it gets the side-by-side one. */
+  @media (pointer: coarse), (max-width: 30rem), (max-height: 32rem) {
+    /* The stage goes side by side: vertical space is the scarce thing on a
+       phone, and the two seat bands still carry the top/bottom ownership. */
+    .dt-stage {
+      /* Two cards wide rather than one, but still bounded: a full-width stage
+         on a landscape phone parks the two cards being compared at opposite
+         ends of the screen. */
+      max-width: 300px;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+    .dt-slot-theirs {
+      order: 1;
+    }
+    .dt-slot-mine {
+      order: 2;
+    }
+    .dt-clash {
+      grid-column: 1 / -1;
+      order: 0;
+      height: 0;
+    }
+    .dt-verdict {
+      grid-column: 1 / -1;
+      order: 3;
+    }
+    .dt-note {
+      grid-column: 1 / -1;
+      order: 4;
+    }
+    .dt-stage[data-beat="clash"] .dt-slot-theirs {
+      animation-name: dt-lunge-right;
+    }
+    .dt-stage[data-beat="clash"] .dt-slot-mine {
+      animation-name: dt-lunge-left;
+    }
+    /* A landscape phone is about 430px tall, and the HAND is the part a player
+       has to reach. The stage keeps both faces (which cards clashed is the
+       story) but sheds its rules sentences and a third of its height: the
+       rules of a card that has already been played are the least actionable
+       text on the table, and the same sentence is on the hand card below for
+       anything still playable. */
+    .dt-slot-card,
+    .dt-slot-card .cf-size-stage {
+      width: 74px;
+      height: 106px;
+    }
+    .dt-slot-card .cf-size-stage .cf-rules {
+      display: none;
+    }
+    .dt-slot-card .cf-size-stage .cf-value {
+      font-size: 16px;
+    }
+    /* The hand becomes one rail that scrolls rather than a block that wraps to
+       three rows and pushes the table off the screen. */
+    .dt-hand {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+    }
+    .dt-hand .cf {
+      flex: 0 0 auto;
+      scroll-snap-align: center;
+    }
+    /* A card is also the tap target, so it takes the touch floor. */
+    .cf-size-hand {
+      width: 76px;
+      height: 108px;
+    }
+  }
+  @keyframes dt-lunge-right {
+    50% {
+      transform: translateX(7px);
+    }
+  }
+  @keyframes dt-lunge-left {
+    50% {
+      transform: translateX(-7px);
+    }
+  }
+
+  /* ---------- card duel motion tiers ---------- */
+  /* Reduced motion and the lowest graphics preset each drop the motion, and
+     ONLY the motion. Nothing below hides, delays, or dims a number: the beats
+     collapse in JavaScript too (duel_theater_host.ts reads the same three
+     authorities), so a collapsed table lands on the settled picture at once
+     rather than sitting through a silent two seconds. */
+  @media (prefers-reduced-motion: reduce) {
+    .cf-frame {
+      transition: none;
+    }
+    .cf-playable:hover .cf-frame {
+      transform: none;
+    }
+    .dt-stage *,
+    .dt-lamp,
+    .dt-clock-ring {
+      animation: none;
+    }
+  }
+
+  :root[data-fx-level="low"] .cf-frame {
+    transition: none;
+  }
+  :root[data-fx-level="low"] .cf-playable:hover .cf-frame {
+    transform: none;
+  }
+  :root[data-fx-level="low"] .dt-stage *,
+  :root[data-fx-level="low"] .dt-lamp,
+  :root[data-fx-level="low"] .dt-clock-ring {
+    animation: none;
+  }
+}

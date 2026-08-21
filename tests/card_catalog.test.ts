@@ -10,6 +10,25 @@ import { cardsStrings } from '../src/ui/i18n.catalog/cards';
 const names = cardsStrings.name as Record<string, string>;
 const texts = cardsStrings.text as Record<string, string>;
 const tribeNames = cardsStrings.tribe as Record<string, string>;
+const counterNames = cardsStrings.counter as Record<string, string>;
+
+/** Every counter key any shipped card can put on a side. Walks the effect
+ *  trees rather than a hand-kept list, so a new counter is caught the day it
+ *  is authored. */
+function authoredCounters(): string[] {
+  const found = new Set<string>();
+  const walk = (node: unknown): void => {
+    if (node === null || typeof node !== 'object') return;
+    const record = node as Record<string, unknown>;
+    if (typeof record.counter === 'string') found.add(record.counter);
+    for (const value of Object.values(record)) {
+      if (Array.isArray(value)) for (const item of value) walk(item);
+      else walk(value);
+    }
+  };
+  for (const def of CARDS) walk(def);
+  return [...found].sort();
+}
 
 /** Every {placeholder} an English sentence reads. */
 function placeholders(sentence: string): string[] {
@@ -59,6 +78,17 @@ describe('card catalog', () => {
     const textIds = new Set(CARDS.map((def) => def.textId));
     for (const key of Object.keys(names)) expect(nameIds.has(key), `orphan name ${key}`).toBe(true);
     for (const key of Object.keys(texts)) expect(textIds.has(key), `orphan text ${key}`).toBe(true);
+  });
+
+  it('every counter a card can place has a localized name, and none is orphaned', () => {
+    // The duel table shows counters as tokens, so an unnamed counter is a
+    // token with no label rather than a silently missing line of text.
+    const authored = authoredCounters();
+    expect(authored.length).toBeGreaterThan(0);
+    for (const counter of authored) {
+      expect(counterNames[counter], `counter ${counter} has no name`).toBeTypeOf('string');
+    }
+    expect(Object.keys(counterNames).sort()).toEqual(authored);
   });
 
   it('every tribe has a localized name', () => {

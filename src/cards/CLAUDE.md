@@ -19,14 +19,22 @@ viewport composes the real `Sim` and `Renderer` rather than a lookalike.
 A drifted harness is worse than no harness. If you find yourself writing a
 comparison, a draw rule, or an effect here, it belongs in the engine.
 
+**The same rule now covers how it LOOKS.** `app.ts` builds its hands, seat
+bands, stage and piles out of `src/ui/cards/`, and `styles.css` imports
+`src/styles/tokens.css` plus `src/styles/cards.css` rather than restyling any
+of it. A table that looked different from the in-game table could not be used
+to judge how the in-game table reads. What stays local is only what a
+world-less page needs on top: the page frame, the seed and opponent controls,
+and the round log. It still loads none of the rest of the HUD.
+
 ## Shape
 
 | File | What it is |
 |---|---|
 | `slice_core.ts` | pure, DOM-free session state over the engine; what the tests drive |
-| `app.ts` | thin DOM consumer: paints `slice_core` state, routes clicks |
+| `app.ts` | thin DOM consumer: paints `slice_core` state, routes clicks, owns the pacing |
 | `main.ts` | entry: loads the locale, mounts the table |
-| `styles.css` | slice-local styling; deliberately does NOT load the HUD sheets |
+| `styles.css` | the page frame, controls and log; imports the REAL card sheet |
 
 The split is the repo's usual pure-core plus thin-consumer recipe, so the
 session logic is testable in plain Node (`tests/cards_slice_core.test.ts`) and
@@ -38,6 +46,21 @@ the DOM half stays paint-only.
 playtesters get a URL. That means **every player-visible string is a `t()` key**
 in `src/ui/i18n.catalog/cards.ts`, exactly like the guide and the editor. It is
 a playtest tool, not a dev-only scratchpad.
+
+## Pacing lives here, never in the model
+
+In the shipped game a round takes as long as two humans take. Here both seats
+can be computer opponents that decide in the same microsecond, so a whole match
+used to resolve between two frames and the log was the only evidence anything
+had happened. `app.ts` therefore owns three timing decisions the window does
+not need: a bot visibly thinks before committing (`BOT_THINK_MS`), the next
+round's bots wait for the finished round to be told, and "Run to end"
+deliberately skips both.
+
+The MODEL is never delayed by any of it. `slice_core` resolves the instant both
+seats are in, the board repaints from the resolved state, and the theater
+narrates over it, exactly as in game. Timing constants belong in `app.ts`;
+`slice_core.ts` stays a pure model with no notion of time.
 
 ## Determinism
 

@@ -121,7 +121,14 @@ export interface CardMinigameInfo {
   available: boolean;
   decks: CardMinigameDecks;
   match: {
-    opponent: { pid: number; name: string };
+    /**
+     * `name` is a PLAYER name and is empty for one of the Card Master's
+     * regulars, which has no player meta at all. `opponentId` is the content
+     * id of that regular, present only for a bot match: the sim stays
+     * language-agnostic, so the client resolves the display name from the id
+     * (src/ui/card_i18n.ts) rather than receiving English on the wire.
+     */
+    opponent: { pid: number; name: string; opponentId?: string };
     hand: CardMinigameCard[];
     deckCount: number;
     discardCount: number;
@@ -132,6 +139,13 @@ export interface CardMinigameInfo {
     waitingOnOpponent: boolean;
     /** Seconds left on this round's clock, floored at zero. */
     secondsLeft: number;
+    /**
+     * True once the opponent has locked a card in for this round. The card
+     * itself stays hidden (simultaneous hidden selection is the game), but
+     * WHOSE commit the round is waiting on is public: without it the pause
+     * before a reveal is indistinguishable from a stalled client.
+     */
+    opponentCommitted: boolean;
     myCounters: Record<string, number>;
     opponentCounters: Record<string, number>;
     /**
@@ -433,6 +447,11 @@ export function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
       theirs,
       mineBase: isA ? playedA.value : playedB.value,
       theirsBase: isA ? playedB.value : playedA.value,
+      // The two card IDENTITIES, so the reveal can show the cards that
+      // actually clashed rather than two bare numbers. Both are public the
+      // instant the round resolves: the rules reveal every played card.
+      mineCardId: isA ? playedA.cardId : playedB.cardId,
+      theirsCardId: isA ? playedB.cardId : playedA.cardId,
       outcome: mine > theirs ? 'win' : mine < theirs ? 'lose' : 'push',
       reshuffled: isA ? res.refillA.reshuffled : res.refillB.reshuffled,
       pid,
@@ -665,7 +684,11 @@ export function buildCardMinigameInfo(ctx: SimContext, pid: number): CardMinigam
     available: true,
     decks,
     match: {
-      opponent: { pid: oppPid, name: oppMeta?.name ?? '' },
+      opponent: {
+        pid: oppPid,
+        name: oppMeta?.name ?? '',
+        ...(match.bot ? { opponentId: match.bot.opponentId } : {}),
+      },
       hand: me.cards.hand.map((card) => wireOwnCard(card, match.state, isA ? 'a' : 'b')),
       deckCount: me.cards.deck.length,
       discardCount: me.cards.discard.length,
@@ -674,6 +697,7 @@ export function buildCardMinigameInfo(ctx: SimContext, pid: number): CardMinigam
       roundsToWin: CARD_DUEL_ROUNDS_TO_WIN,
       round: match.state.round,
       waitingOnOpponent: me.playedThisRound !== null,
+      opponentCommitted: them.playedThisRound !== null,
       secondsLeft: Math.max(0, match.roundDeadline - ctx.time),
       myCounters: { ...me.counters },
       opponentCounters: { ...them.counters },

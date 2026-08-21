@@ -1151,6 +1151,27 @@ export const en = {
     revealLose: 'You lose the round',
     revealPush: 'The round is a push',
     revealReshuffled: 'Your discard pile was shuffled back into your deck.',
+    // The table: state as shapes rather than sentences (src/ui/cards/
+    // duel_table_markup.ts). Each of these labels a shape that already carries
+    // the meaning, and is the exact reading for anyone who wants figures.
+    youSeat: 'You',
+    commitLocked: 'Locked in',
+    commitChoosing: 'Choosing',
+    // Whose card the round is waiting on: the one thing a pause owes the
+    // player, so it is said in words as well as shown on the two lamps.
+    waitingBoth: 'Both players are choosing',
+    waitingThem: 'Waiting on your opponent',
+    waitingMe: 'Your opponent is ready',
+    waitingReveal: 'Revealing the round',
+    pipsAria: '{name}: {won} of {total} rounds won',
+    counterAria: '{name}: {count}',
+    revealedHeading: 'Seen in their hand',
+    pileDeck: 'Deck: {count}',
+    pileDiscard: 'Discard: {count}',
+    stageIdle: 'The table is empty',
+    // The screen-reader line for a resolved round: the stage tells the story
+    // in pictures, and this says the same thing in one sentence.
+    announce: 'You played {mine}, your opponent played {theirs}. {outcome}',
   },
   // The deck builder (src/ui/deck_builder_window.ts). The layout is what
   // explains the deck rule; `rule` states it once in words for a screen

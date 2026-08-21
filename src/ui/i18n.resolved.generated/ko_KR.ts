@@ -6930,7 +6930,10 @@ export const ko_KR: EnTranslations = {
       "reshuffled": "버린 카드 더미가 덱으로 다시 섞여 들어갔습니다.",
       "steps": "효과 {count}개가 처리되었습니다.",
       "overflow": "처리 단계 상한에 도달하여 이번 라운드는 현재 값으로 판정되었습니다.",
-      "empty": "아직 진행된 라운드가 없습니다."
+      "empty": "아직 진행된 라운드가 없습니다.",
+      "verdictA": "A 자리가 이번 라운드 승리",
+      "verdictB": "B 자리가 이번 라운드 승리",
+      "verdictPush": "이번 라운드 무승부"
     },
     "result": {
       "winA": "A 자리가 대전에서 승리했습니다.",
@@ -7036,6 +7039,10 @@ export const ko_KR: EnTranslations = {
       "Spirit": "영혼",
       "Dragon": "용",
       "Bandit": "도적"
+    },
+    "counter": {
+      "Web": "Web",
+      "Dread": "공포"
     },
     "card": {
       "valueLabel": "값 {value}",
@@ -7907,7 +7914,21 @@ export const ko_KR: EnTranslations = {
     "revealWin": "이번 라운드 승리",
     "revealLose": "이번 라운드 패배",
     "revealPush": "이번 라운드 무승부",
-    "revealReshuffled": "버린 카드 더미가 덱으로 다시 섞여 들어갔습니다."
+    "revealReshuffled": "버린 카드 더미가 덱으로 다시 섞여 들어갔습니다.",
+    "youSeat": "You",
+    "commitLocked": "카드 확정",
+    "commitChoosing": "선택 중",
+    "waitingBoth": "양쪽 모두 카드를 고르는 중",
+    "waitingThem": "상대의 카드를 기다리는 중",
+    "waitingMe": "상대가 준비되었습니다",
+    "waitingReveal": "라운드를 공개하는 중",
+    "pipsAria": "{name}: {total}라운드 중 {won}승",
+    "counterAria": "{name}: {count}",
+    "revealedHeading": "확인된 상대 손패",
+    "pileDeck": "Deck: {count}",
+    "pileDiscard": "버린 카드: {count}",
+    "stageIdle": "테이블이 비어 있습니다",
+    "announce": "나는 {mine}, 상대는 {theirs}을(를) 냈습니다. {outcome}"
   },
   "cardDeck": {
     "title": "덱 빌더",

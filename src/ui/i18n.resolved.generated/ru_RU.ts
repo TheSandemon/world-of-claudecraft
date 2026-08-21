@@ -6930,7 +6930,10 @@ export const ru_RU: EnTranslations = {
       "reshuffled": "Стопка сброса была замешана обратно в колоду.",
       "steps": "Обработано эффектов: {count}.",
       "overflow": "Обработка достигла предела шагов, и раунд был решен по текущим значениям.",
-      "empty": "Раундов пока не было."
+      "empty": "Раундов пока не было.",
+      "verdictA": "Место A выигрывает раунд",
+      "verdictB": "Место B выигрывает раунд",
+      "verdictPush": "Раунд сыгран вничью"
     },
     "result": {
       "winA": "Место A побеждает в матче.",
@@ -7036,6 +7039,10 @@ export const ru_RU: EnTranslations = {
       "Spirit": "Дух",
       "Dragon": "Дракон",
       "Bandit": "Бандит"
+    },
+    "counter": {
+      "Web": "Web",
+      "Dread": "Ужас"
     },
     "card": {
       "valueLabel": "Значение {value}",
@@ -7907,7 +7914,21 @@ export const ru_RU: EnTranslations = {
     "revealWin": "Вы выигрываете раунд",
     "revealLose": "Вы проигрываете раунд",
     "revealPush": "Раунд завершился вничью",
-    "revealReshuffled": "Ваша стопка сброса была замешана обратно в колоду."
+    "revealReshuffled": "Ваша стопка сброса была замешана обратно в колоду.",
+    "youSeat": "You",
+    "commitLocked": "Карта выбрана",
+    "commitChoosing": "Выбирает",
+    "waitingBoth": "Оба игрока выбирают карту",
+    "waitingThem": "Ожидание карты соперника",
+    "waitingMe": "Соперник готов",
+    "waitingReveal": "Раскрытие раунда",
+    "pipsAria": "{name}: выиграно раундов {won} из {total}",
+    "counterAria": "{name}: {count}",
+    "revealedHeading": "Видимые карты соперника",
+    "pileDeck": "Deck: {count}",
+    "pileDiscard": "Сброс: {count}",
+    "stageIdle": "На столе пусто",
+    "announce": "Вы сыграли {mine}, соперник сыграл {theirs}. {outcome}"
   },
   "cardDeck": {
     "title": "Конструктор колод",

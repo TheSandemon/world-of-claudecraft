@@ -6930,7 +6930,10 @@ export const zh_CN: EnTranslations = {
       "reshuffled": "一方的弃牌堆已重新洗回牌库。",
       "steps": "已结算 {count} 个效果。",
       "overflow": "结算达到步数上限，本回合按当前数值判定。",
-      "empty": "尚未进行任何回合。"
+      "empty": "尚未进行任何回合。",
+      "verdictA": "A 席赢得本轮",
+      "verdictB": "B 席赢得本轮",
+      "verdictPush": "本轮打平"
     },
     "result": {
       "winA": "A 座位赢得本局。",
@@ -7036,6 +7039,10 @@ export const zh_CN: EnTranslations = {
       "Spirit": "幽魂",
       "Dragon": "巨龙",
       "Bandit": "强盗"
+    },
+    "counter": {
+      "Web": "Web",
+      "Dread": "恐惧"
     },
     "card": {
       "valueLabel": "数值 {value}",
@@ -7907,7 +7914,21 @@ export const zh_CN: EnTranslations = {
     "revealWin": "你赢下本回合",
     "revealLose": "你输掉本回合",
     "revealPush": "本回合打平",
-    "revealReshuffled": "你的弃牌堆已重新洗回牌库。"
+    "revealReshuffled": "你的弃牌堆已重新洗回牌库。",
+    "youSeat": "You",
+    "commitLocked": "已出牌",
+    "commitChoosing": "选择中",
+    "waitingBoth": "双方都在选牌",
+    "waitingThem": "等待对手出牌",
+    "waitingMe": "对手已就绪",
+    "waitingReveal": "正在揭示本轮",
+    "pipsAria": "{name}：已赢 {won}/{total} 轮",
+    "counterAria": "{name}: {count}",
+    "revealedHeading": "已看到的对手手牌",
+    "pileDeck": "Deck: {count}",
+    "pileDiscard": "弃牌堆：{count}",
+    "stageIdle": "牌桌上还没有牌",
+    "announce": "你打出 {mine}，对手打出 {theirs}。{outcome}"
   },
   "cardDeck": {
     "title": "牌组编辑器",

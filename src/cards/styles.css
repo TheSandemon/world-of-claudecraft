@@ -1,15 +1,22 @@
-/* Card Duel playtest slice. Deliberately small and self-contained: this entry
-   never loads the HUD sheets (src/styles/), because it is a world-less table,
-   not a game window. The in-game Card Duel window keeps its own HUD styling. */
+/* Card Duel playtest slice.
+ *
+ * It loads the REAL card sheet (src/styles/cards.css) over the REAL design
+ * tokens, and nothing else from the HUD. That is the same rule slice_core.ts
+ * follows for the rules engine: the slice composes the shipping thing rather
+ * than a lookalike, because a drifted harness is worse than no harness, and a
+ * table that LOOKS different from the in-game table cannot be used to judge
+ * how the in-game table reads. What stays local is only what a world-less page
+ * needs on top: the page frame, the seed and opponent controls, and the round
+ * log. There is still no HUD chrome here: this is a table, not a game window.
+ */
+@import "../styles/tokens.css";
+@import "../styles/cards.css";
 
 :root {
   color-scheme: dark;
   --cards-bg: #0c0f14;
   --cards-panel: #151b24;
   --cards-line: #2a3442;
-  --cards-text: #e6ecf3;
-  --cards-muted: #93a1b1;
-  --cards-accent: #ffaa66;
 }
 
 * {
@@ -19,26 +26,30 @@
 body {
   margin: 0;
   background: var(--cards-bg);
-  color: var(--cards-text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--color-text-light);
+  font-family: var(--ui-font, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
   line-height: 1.5;
 }
 
 #cards-app {
-  max-width: 60rem;
+  /* Deliberately narrow: about the width the in-game window gives the table,
+     so the slice reads at the same proportions a player will get rather than
+     spreading a card game across a monitor. */
+  max-width: 34rem;
   margin: 0 auto;
   padding: 1.5rem 1rem 4rem;
 }
 
 .cards-header h1 {
   margin: 0 0 0.25rem;
+  font-family: var(--title-font);
   font-size: 1.5rem;
-  color: var(--cards-accent);
+  color: var(--gold);
 }
 
 .cards-header p {
-  margin: 0 0 1.5rem;
-  color: var(--cards-muted);
+  margin: 0 0 1.25rem;
+  color: var(--color-text-muted);
 }
 
 .cards-controls {
@@ -57,7 +68,7 @@ body {
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.8rem;
-  color: var(--cards-muted);
+  color: var(--color-text-muted);
 }
 
 .cards-seed,
@@ -67,8 +78,10 @@ body {
   border: 1px solid var(--cards-line);
   border-radius: 0.35rem;
   background: var(--cards-bg);
-  color: var(--cards-text);
+  color: var(--color-text-light);
+  /* 16px, so iOS Safari does not zoom the page when one is focused. */
   font: inherit;
+  font-size: 1rem;
 }
 
 .cards-button {
@@ -77,103 +90,55 @@ body {
   border: 1px solid var(--cards-line);
   border-radius: 0.35rem;
   background: var(--cards-bg);
-  color: var(--cards-text);
+  color: var(--color-text-light);
   font: inherit;
   cursor: pointer;
 }
 
 .cards-button:hover {
-  border-color: var(--cards-accent);
+  border-color: var(--gold);
 }
 
+/* The table itself is the shared .dt grammar (src/styles/cards.css). Only its
+   page-level framing is local. */
 .cards-table {
-  display: grid;
-  gap: 1rem;
   margin-top: 1rem;
-}
-
-.cards-seat {
   padding: 0.75rem;
   border: 1px solid var(--cards-line);
   border-radius: 0.5rem;
   background: var(--cards-panel);
 }
 
-.cards-seat h2 {
-  margin: 0;
-  font-size: 1.05rem;
-}
-
-.cards-seat-status {
-  margin: 0.15rem 0 0.5rem;
-  color: var(--cards-accent);
-  font-size: 0.85rem;
-}
-
-.cards-seat-counts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin: 0 0 0.75rem;
-  color: var(--cards-muted);
-  font-size: 0.8rem;
-}
-
-.cards-hand {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.cards-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  align-items: center;
-  justify-content: center;
-  width: 5.5rem;
-  min-height: 7.5rem;
-  padding: 0.5rem;
-  border: 1px solid var(--cards-line);
-  border-radius: 0.5rem;
-  background: var(--cards-bg);
-  color: var(--cards-text);
-  font: inherit;
-  cursor: pointer;
-}
-
-.cards-card:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-.cards-card-value {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--cards-accent);
-}
-
-.cards-card-name {
+.cards-hand-label {
+  margin: 0.35rem 0 0.15rem;
   font-size: 0.7rem;
-  color: var(--cards-muted);
-  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
 }
 
 .cards-result {
-  margin: 0;
+  margin: 0.75rem 0 0;
+  font-family: var(--title-font);
   font-weight: 600;
+  color: var(--gold);
+}
+
+.cards-log {
+  margin-top: 1rem;
 }
 
 .cards-log-row {
-  padding: 0.5rem 0.75rem;
+  padding: 0.35rem 0.75rem;
   border-left: 2px solid var(--cards-line);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .cards-log-row h3 {
   margin: 0;
-  font-size: 0.9rem;
-  color: var(--cards-accent);
+  font-family: var(--title-font);
+  font-size: 0.85rem;
+  color: var(--gold);
 }
 
 .cards-log-row p {
@@ -182,26 +147,6 @@ body {
 }
 
 .cards-log-detail {
-  color: var(--cards-muted);
+  color: var(--color-text-muted);
   font-size: 0.75rem;
-}
-
-@media (min-width: 45rem) {
-  .cards-table {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .cards-result,
-  .cards-log {
-    grid-column: 1 / -1;
-  }
-}
-
-/* The slice has no motion of its own beyond the button hover the browser
-   gives it, so reduced motion only has to disarm the card lift. */
-@media (prefers-reduced-motion: reduce) {
-  .cards-card,
-  .cards-button {
-    transition: none;
-  }
 }

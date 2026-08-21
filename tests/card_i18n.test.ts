@@ -26,6 +26,26 @@ describe('card i18n', () => {
     }
   });
 
+  it('names an unauthored basic by its face value, not by a key that does not exist', () => {
+    // The ten basics share ONE key id ('basic') and one English sentence with
+    // the value spliced in, so a per-card `cards.name.basic` was never
+    // authored. Before this, every surface that put a basic through the card
+    // face threw on the untracked key: the standalone /cards table deals
+    // basics by default, so it threw on its very first paint.
+    for (const def of BASIC_CARD_DEFINITIONS) {
+      const name = cardName(def);
+      expect(name).toContain(String(def.value));
+      expect(name).not.toContain('cards.name.');
+      expect(name).not.toContain('basic');
+    }
+    // Two basics of DIFFERENT values read as two different names (the deck
+    // holds two copies of each value, so adjacent entries share one).
+    const byValue = new Map(BASIC_CARD_DEFINITIONS.map((def) => [def.value, def]));
+    expect(byValue.size).toBeGreaterThan(1);
+    const names = new Set([...byValue.values()].map(cardName));
+    expect(names.size).toBe(byValue.size);
+  });
+
   it('resolves every tribe name', () => {
     for (const tribe of CARD_TRIBES) {
       expect(cardTribeName(tribe)).not.toContain('cards.tribe.');

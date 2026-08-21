@@ -6930,7 +6930,10 @@ export const en_XA: EnTranslations = {
       "reshuffled": "[Á ðíšçáŕð þíļé ŵáš šĥúƒƒļéð ƀáçķ íñţó íţš ðéçķ.]",
       "steps": "[{count} éƒƒéçţš ŕéšóļʋéð.]",
       "overflow": "[Ŕéšóļúţíóñ ĥíţ ţĥé šţéþ çéíļíñĝ áñð ţĥé ŕóúñð ŵáš ðéçíðéð óñ çúŕŕéñţ ʋáļúéš.]",
-      "empty": "[Ñó ŕóúñðš þļáýéð ýéţ.]"
+      "empty": "[Ñó ŕóúñðš þļáýéð ýéţ.]",
+      "verdictA": "[Šéáţ Á ŵíñš ţĥé ŕóúñð]",
+      "verdictB": "[Šéáţ Ɓ ŵíñš ţĥé ŕóúñð]",
+      "verdictPush": "[Ţĥé ŕóúñð íš á þúšĥ]"
     },
     "result": {
       "winA": "[Šéáţ Á ţáķéš ţĥé ɱáţçĥ.]",
@@ -7036,6 +7039,10 @@ export const en_XA: EnTranslations = {
       "Spirit": "[Šþíŕíţ]",
       "Dragon": "[Ðŕáĝóñ]",
       "Bandit": "[Ɓáñðíţ]"
+    },
+    "counter": {
+      "Web": "[Ŵéƀ]",
+      "Dread": "[Ðŕéáð]"
     },
     "card": {
       "valueLabel": "[Ʋáļúé {value}]",
@@ -7907,7 +7914,21 @@ export const en_XA: EnTranslations = {
     "revealWin": "[Ýóú ŵíñ ţĥé ŕóúñð]",
     "revealLose": "[Ýóú ļóšé ţĥé ŕóúñð]",
     "revealPush": "[Ţĥé ŕóúñð íš á þúšĥ]",
-    "revealReshuffled": "[Ýóúŕ ðíšçáŕð þíļé ŵáš šĥúƒƒļéð ƀáçķ íñţó ýóúŕ ðéçķ.]"
+    "revealReshuffled": "[Ýóúŕ ðíšçáŕð þíļé ŵáš šĥúƒƒļéð ƀáçķ íñţó ýóúŕ ðéçķ.]",
+    "youSeat": "[Ýóú]",
+    "commitLocked": "[Ļóçķéð íñ]",
+    "commitChoosing": "[Çĥóóšíñĝ]",
+    "waitingBoth": "[Ɓóţĥ þļáýéŕš áŕé çĥóóšíñĝ]",
+    "waitingThem": "[Ŵáíţíñĝ óñ ýóúŕ óþþóñéñţ]",
+    "waitingMe": "[Ýóúŕ óþþóñéñţ íš ŕéáðý]",
+    "waitingReveal": "[Ŕéʋéáļíñĝ ţĥé ŕóúñð]",
+    "pipsAria": "[{name}: {won} óƒ {total} ŕóúñðš ŵóñ]",
+    "counterAria": "[{name}: {count}]",
+    "revealedHeading": "[Šééñ íñ ţĥéíŕ ĥáñð]",
+    "pileDeck": "[Ðéçķ: {count}]",
+    "pileDiscard": "[Ðíšçáŕð: {count}]",
+    "stageIdle": "[Ţĥé ţáƀļé íš éɱþţý]",
+    "announce": "[Ýóú þļáýéð {mine}, ýóúŕ óþþóñéñţ þļáýéð {theirs}. {outcome}]"
   },
   "cardDeck": {
     "title": "[Ðéçķ Ɓúíļðéŕ]",

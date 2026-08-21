@@ -95,6 +95,33 @@ describe('Card Duel audio event wiring', () => {
     expect(forB).toMatchObject({ mine: 3, theirs: 9, outcome: 'lose' });
   });
 
+  it('names the two cards that clashed, from each side own point of view', () => {
+    // Without the ids the reveal can only show two bare numbers, which is the
+    // whole reason a round was hard to read. Both are public the instant the
+    // round resolves: the rules reveal every played card.
+    const sim = makeWorld();
+    const { a, b } = queueDuo(sim);
+    const match = sim.cardDuelMatchFor(a)!;
+    match.state.a.cards.hand[0] = { iid: 900, cardId: 'forest_wolf', value: 3 };
+    match.state.b.cards.hand[0] = { iid: 901, cardId: 'grave_rat', value: 2 };
+    sim.playCardInDuel(900, a);
+    sim.playCardInDuel(901, b);
+    const resolved = sim
+      .tick()
+      .filter(
+        (e): e is Extract<SimEvent, { type: 'cardRoundResolved' }> =>
+          e.type === 'cardRoundResolved',
+      );
+    expect(resolved.find((e) => e.pid === a)).toMatchObject({
+      mineCardId: 'forest_wolf',
+      theirsCardId: 'grave_rat',
+    });
+    expect(resolved.find((e) => e.pid === b)).toMatchObject({
+      mineCardId: 'grave_rat',
+      theirsCardId: 'forest_wolf',
+    });
+  });
+
   it('reports a push outcome (no reshuffle) when both sides play the same value', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);

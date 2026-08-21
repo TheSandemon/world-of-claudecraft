@@ -148,8 +148,8 @@ const FANOUT_ARMS: readonly string[] = [
   'this.calendarWindow.relocalize|',
   'this.mailboxWindow.relocalize|',
   'this.socialWindow.relocalize|',
-  'this.cardDuelWindow.relocalize|',
-  'this.deckBuilderWindow.relocalize|',
+  'this.cardWindows.cardDuel.relocalize|',
+  'this.cardWindows.deckBuilder.relocalize|',
   'this.spellbookWindow.relocalize|',
   'this.barEditorWindow.relocalize|',
   'this.lockpickController.relocalize|',
@@ -259,20 +259,31 @@ const ANSWERED: readonly AnsweredSurface[] = [
   },
   {
     file: 'card_duel_window.ts',
-    // `lastClock` is the SECOND memo, and it needs its own answer rather than
-    // inheriting this one: it compares the RESOLVED clock string, so a locale
-    // change moves the comparison and the clock repaints by itself, the
-    // write-elision behavior rather than the signature behavior. The
-    // relocalize arm below still covers it, because clearing lastSig rebuilds
-    // the subtree and resets the clock memo with it.
-    memos: ['lastClock', 'lastSig'],
-    answer: 'this.cardDuelWindow.relocalize',
-    why: 'the duel view model: state, card faces, round counts (#2529)',
+    // The window repaints PER REGION, so it carries one memo per region rather
+    // than one signature over the whole body: `lastShell` is the window state
+    // (the only one a rebuild hangs off), and the rest are the seat bands, the
+    // hand, the revealed strip and the waiting line. `lastClock`
+    // and `lastRatio` are the write-elision kind rather than the signature
+    // kind (they compare the RESOLVED string and the drawn ratio, so a locale
+    // change moves the clock comparison by itself); the relocalize arm covers
+    // every one of them regardless, because clearing `lastShell` rebuilds the
+    // shell and cacheRegions resets each region memo with it.
+    memos: [
+      'lastClock',
+      'lastHand',
+      'lastRatio',
+      'lastRevealed',
+      'lastSeats',
+      'lastShell',
+      'lastWaiting',
+    ],
+    answer: 'this.cardWindows.cardDuel.relocalize',
+    why: 'the duel table: seat bands, card faces, the waiting line, round counts (#2529)',
   },
   {
     file: 'deck_builder_window.ts',
     memos: ['lastSig'],
-    answer: 'this.deckBuilderWindow.relocalize',
+    answer: 'this.cardWindows.deckBuilder.relocalize',
     // Its signature is over the DRAFT, so a locale change alone can never move
     // it: the rule line, the row titles and every card name would keep the old
     // language until the player happened to edit a slot.
@@ -550,7 +561,7 @@ describe('language fan-out: half 1, the arms of refreshLocalizedDynamicUi', () =
     // One unconditional arm, one behind an isOpen gate, one behind a raw DOM
     // display check, and one optional-chained call: a walk that dropped any of
     // those families would still leave the other three healthy.
-    expect(observedArms).toContain('this.cardDuelWindow.relocalize|');
+    expect(observedArms).toContain('this.cardWindows.cardDuel.relocalize|');
     expect(observedArms).toContain('this.bankWindow.render|this.bankWindow.isOpen');
     expect(observedArms).toContain("this.renderBags|$('#bags').style.display !== 'none'");
     expect(observedArms).toContain('this.mobileActionRingPainter.relocalize|');
@@ -748,6 +759,7 @@ describe('language fan-out: half 2, every signature-gated src/ui surface is clas
     // relocalize() and nothing in the repo ever called it. A relocalize with no
     // caller is dead code that reads like a working feature.
     const armCalls = new Set(scan.sites.map((s) => s.call));
+    const factoryCredited = factoryCreditedClasses(armCalls);
     const uncalled: string[] = [];
     const scanned: string[] = [];
     const ownedRelocalizeClasses = relocalizeOwnedClasses(armCalls);
@@ -760,7 +772,9 @@ describe('language fan-out: half 2, every signature-gated src/ui surface is clas
       // (LockpickWindow via LockpickController) is credited by the wrapper's arm.
       const fields = hudFieldsByClass.get(cls) ?? [];
       const credited =
-        fields.some((f) => armCalls.has(`this.${f}.relocalize`)) || ownedRelocalizeClasses.has(cls);
+        fields.some((f) => armCalls.has(`this.${f}.relocalize`)) ||
+        factoryCredited.has(cls) ||
+        ownedRelocalizeClasses.has(cls);
       if (!credited) uncalled.push(`${file} (${cls || 'unnamed class'})`);
     }
     // The filter above is the whole test: an empty `uncalled` proves nothing if
@@ -781,11 +795,49 @@ describe('language fan-out: half 2, every signature-gated src/ui surface is clas
 });
 
 /**
- * Whether the Hud field behind `armCall` is a controller that forwards
- * relocalize() to `cls`. Reads the wrapper's own source rather than trusting a
- * name, so renaming LockpickController to something else keeps working and
- * gutting its forwarding call does not.
+ * Whether the Hud field behind `armCall` is a FACTORY BAG holding `cls`.
+ *
+ * The third shape a window can reach Hud by, after a direct field and a
+ * forwarding controller: a small factory mints a family of windows together
+ * and Hud holds the bag (`cardWindows = createCardWindows({...})`, then
+ * `this.cardWindows.cardDuel.relocalize()`). Before this existed, moving two
+ * windows behind such a factory silently uncredited both of their fan-out
+ * arms while every one of them still fired at runtime.
+ *
+ * It reads the factory's own source rather than trusting the names: the
+ * factory must really construct `cls` and really hand it back under the key
+ * the arm names.
  */
+function factoryCreditedClasses(armCalls: Iterable<string>): Set<string> {
+  const credited = new Set<string>();
+  const hud = stripComments(hudSource);
+  // factory function name -> the bag keys the fan-out actually calls on it.
+  const wanted = new Map<string, string[]>();
+  for (const call of armCalls) {
+    if (!call.startsWith('this.') || !call.endsWith('.relocalize')) continue;
+    const path = call.slice('this.'.length, -'.relocalize'.length).split('.');
+    if (path.length !== 2) continue;
+    const [field, key] = path;
+    const factory = new RegExp(`\\b${field}\\s*=\\s*(\\w+)\\(`).exec(hud)?.[1];
+    if (!factory) continue;
+    wanted.set(factory, [...(wanted.get(factory) ?? []), key]);
+  }
+  if (wanted.size === 0) return credited;
+  // ONE walk of the tree, not one per (module, arm) pair: the naive shape of
+  // this timed the suite out.
+  for (const { full } of tsFilesUnder(uiRoot)) {
+    const source = stripComments(readFileSync(full, 'utf8'));
+    for (const [factory, keys] of wanted) {
+      if (!new RegExp(`export function ${factory}\\b`).test(source)) continue;
+      for (const key of keys) {
+        const made = new RegExp(`\\b${key}\\s*=\\s*new (\\w+)\\(`).exec(source);
+        if (made) credited.add(made[1]);
+      }
+    }
+  }
+  return credited;
+}
+
 /** The other way a Hud field gets filled: a BUILDER in a sibling module
  *  constructs the painter and hands it back, which is how the mobile action ring
  *  is composed now that its construction lives behind the action_bar seam. Chase

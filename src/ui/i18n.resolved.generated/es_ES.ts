@@ -6930,7 +6930,10 @@ export const es_ES: EnTranslations = {
       "reshuffled": "A discard pile was shuffled back into its deck.",
       "steps": "{count} effects resolved.",
       "overflow": "Resolution hit the step ceiling and the round was decided on current values.",
-      "empty": "No rounds played yet."
+      "empty": "No rounds played yet.",
+      "verdictA": "Seat A wins the round",
+      "verdictB": "Seat B wins the round",
+      "verdictPush": "The round is a push"
     },
     "result": {
       "winA": "Seat A takes the match.",
@@ -7036,6 +7039,10 @@ export const es_ES: EnTranslations = {
       "Spirit": "Spirit",
       "Dragon": "Dragon",
       "Bandit": "Bandit"
+    },
+    "counter": {
+      "Web": "Web",
+      "Dread": "Dread"
     },
     "card": {
       "valueLabel": "Value {value}",
@@ -7907,7 +7914,21 @@ export const es_ES: EnTranslations = {
     "revealWin": "You win the round",
     "revealLose": "You lose the round",
     "revealPush": "The round is a push",
-    "revealReshuffled": "Your discard pile was shuffled back into your deck."
+    "revealReshuffled": "Your discard pile was shuffled back into your deck.",
+    "youSeat": "You",
+    "commitLocked": "Locked in",
+    "commitChoosing": "Choosing",
+    "waitingBoth": "Both players are choosing",
+    "waitingThem": "Waiting on your opponent",
+    "waitingMe": "Your opponent is ready",
+    "waitingReveal": "Revealing the round",
+    "pipsAria": "{name}: {won} of {total} rounds won",
+    "counterAria": "{name}: {count}",
+    "revealedHeading": "Seen in their hand",
+    "pileDeck": "Deck: {count}",
+    "pileDiscard": "Discard: {count}",
+    "stageIdle": "The table is empty",
+    "announce": "You played {mine}, your opponent played {theirs}. {outcome}"
   },
   "cardDeck": {
     "title": "Deck Builder",

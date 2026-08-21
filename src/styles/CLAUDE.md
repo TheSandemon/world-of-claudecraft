@@ -18,7 +18,7 @@ that order. Modules, in cascade order:
 | `tokens` | `tokens.css` | `:root` design tokens + `--color-*` / `--fx-*` defaults |
 | `base` | `base.css` | element + reset + base-tier glyph styling + the a11y skip/forced-colors/print sections |
 | `layout` | `layout.css` | the generic `.window` centering/shell |
-| `components` | `hud.css`, `components.css` | in-world HUD chrome; feature-window bodies (BOTH target `@layer components`; `components.css` is imported last so its window bodies win same-layer ties) |
+| `components` | `hud.css`, `components.css`, `cards.css` | in-world HUD chrome; feature-window bodies; the Card Duel sheet (ALL target `@layer components`; `components.css` is imported after `hud.css` so its window bodies win same-layer ties, and `cards.css` last) |
 | `hud` | (reserved, empty) | declared in the order but unused; `hud.css` targets `@layer components`, not this slot |
 | `shell` | `shell.css` | desktop pre-game shell + char-select |
 | `hud-mobile` | `hud.mobile.css` | the in-game mobile-touch block, ordered AFTER `shell` so in-game mobile overrides of pre-game shell elements win |
@@ -52,6 +52,16 @@ the throw (#2499, #2502).
   (inside `@layer components`); in-world HUD chrome in `hud.css`; pre-game shell in
   `shell.css`; mobile-touch overrides in `hud.mobile.css`. Never grow the `.extra` files
   with shared styling (they are per-entry).
+- **`cards.css` is the one sheet a SECOND entry loads.** It holds the whole Card Duel
+  grammar (window, table, round theater, deck builder, card face) and the standalone
+  `/cards` playtest slice imports it directly, with `tokens.css` and nothing else
+  (`src/cards/styles.css`). That is why it is its own module rather than a section of
+  `components.css`: the slice composes the real rules engine and the real card face, so it
+  must compose the real styling too rather than a lookalike that can drift. Card Duel rules
+  go here; it is not a general overflow for `components.css`. It also carries the Card Duel
+  TOUCH layout for the same reason (a table that only worked on a phone inside the shipped
+  client would be a table playtesters could not check on a phone); window PLACEMENT on
+  mobile still lives in `hud.mobile.css` with every other window.
 - **Every new `.window` id needs a deliberate mobile decision:** a real `body.mobile-touch`
   pin/size rule (join the `mobile sheet base` section in `hud.mobile.css`) or a reasoned
   entry in `MOBILE_WINDOW_EXCEPTIONS` in `tests/mobile_window_coverage.test.ts`, which

@@ -178,10 +178,16 @@ const _VIEW_SIG_RETURN = 'if (view.sig === this.lastSig) return;';
 // field, so the Thornhollow Fields arm names its signature apart to stay pinnable.
 const RAVENRIFT_SIG_RETURN = 'if (ravenriftSig === this.lastSig) return;';
 const VIEW_SIG_BLOCK = 'if (view.sig !== this.lastSig) {';
-// The Card Duel window guards the REBUILD rather than the whole method, because
-// the round clock must still paint on every poll: the clock is actionable
-// information, so it may never wait for the rest of the window to change.
-const SIG_BLOCK = 'if (sig !== this.lastSig) {';
+// The Card Duel window's shell guard. It guards the REBUILD rather than the
+// whole method, because the round clock must still paint on every poll: the
+// clock is actionable information, so it may never wait for the rest of the
+// window to change. It is its own constant, and not one of the shared
+// signature shapes above, because that window carries no single signature over
+// its whole body: the shell rebuilds only when the window's STATE changes (a
+// live match keeps one shell for its whole length, so a playing round theater
+// is never rebuilt out from under itself), and each region inside it carries
+// its own memo.
+const SHELL_BLOCK = 'if (view.state !== this.lastShell) {';
 
 /**
  * Every statement-position call `Hud.update()` makes, in SOURCE ORDER, so the table reads as
@@ -1035,8 +1041,8 @@ const HUD_UPDATE_DRIVES: readonly DriveRow[] = [
     band: 'medium',
     gate: "$('#card-duel-window').style.display === 'block'",
     surface: 'window',
-    guard: { kind: 'module', module: 'card_duel_window.ts', proof: SIG_BLOCK },
-    why: 'the card duel window (rebuild gated on the signature; the round clock still paints)',
+    guard: { kind: 'module', module: 'card_duel_window.ts', proof: SHELL_BLOCK },
+    why: 'the card duel table (the shell rebuilds on the window state; each region inside repaints behind its own memo, and the round clock still paints every poll)',
   },
   {
     call: 'this.cardWindows.deckBuilder.render',
@@ -1715,7 +1721,7 @@ describe('Hud.update() drives exactly the registered set, on the registered band
         'bags_window.ts: if (!bagsMoneyRowStale(el.style.display, this.deps.world().copper, this.lastMoneyCopper)) return;',
         'bank_window.ts: if (sig === this.lastSig) return;',
         'calendar_window.ts: if (sig === this.lastSig) return;',
-        'card_duel_window.ts: if (sig !== this.lastSig) {',
+        'card_duel_window.ts: if (view.state !== this.lastShell) {',
         'deck_builder_window.ts: if (sig === this.lastSig) return;',
         'deeds_window.ts: if (sig === this.lastSig) return;',
         'dungeon_finder_proposal_popup.ts: if (view.sig !== this.lastSig) {',

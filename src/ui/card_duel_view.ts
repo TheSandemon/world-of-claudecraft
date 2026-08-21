@@ -6,6 +6,7 @@
 // came from Sim or ClientWorld, since it is data, not a per-host structure).
 // The thin consumer (card_duel_window.ts) paints this.
 
+import type { CardMinigameCard } from '../sim/social/card_duel';
 import type { CardMinigameInfo } from '../world_api';
 
 export interface CardDuelHandCardView {
@@ -33,11 +34,23 @@ export interface CardDuelViewModel {
   deckCount: number;
   discardCount: number;
   opponentName: string;
+  /** Set when the opponent is one of the Card Master's regulars: the content
+   *  id whose localized name the painter resolves. */
+  opponentId: string;
   myRounds: number;
   opponentRounds: number;
   roundsToWin: number;
   round: number;
   waitingOnOpponent: boolean;
+  /** True once the opponent has locked a card in. Their CARD stays hidden;
+   *  only the fact that the round is no longer waiting on them is public. */
+  opponentCommitted: boolean;
+  /** Seconds left on the round clock, or null outside a match. */
+  secondsLeft: number | null;
+  myCounters: Record<string, number>;
+  opponentCounters: Record<string, number>;
+  /** Opponent cards a reveal effect entitled this viewer to see. */
+  opponentRevealed: CardMinigameCard[];
 }
 
 /** Build the structured Card Duel view from the live IWorld snapshot. */
@@ -49,11 +62,17 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
       deckCount: 0,
       discardCount: 0,
       opponentName: '',
+      opponentId: '',
       myRounds: 0,
       opponentRounds: 0,
       roundsToWin: 0,
       round: 0,
       waitingOnOpponent: false,
+      opponentCommitted: false,
+      secondsLeft: null,
+      myCounters: {},
+      opponentCounters: {},
+      opponentRevealed: [],
     };
   }
   const m = info.match;
@@ -69,10 +88,16 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
     deckCount: m.deckCount,
     discardCount: m.discardCount,
     opponentName: m.opponent.name,
+    opponentId: m.opponent.opponentId ?? '',
     myRounds: m.myRounds,
     opponentRounds: m.opponentRounds,
     roundsToWin: m.roundsToWin,
     round: m.round,
     waitingOnOpponent: m.waitingOnOpponent,
+    opponentCommitted: m.opponentCommitted,
+    secondsLeft: m.secondsLeft,
+    myCounters: { ...m.myCounters },
+    opponentCounters: { ...m.opponentCounters },
+    opponentRevealed: m.opponentRevealed.map((card) => ({ ...card })),
   };
 }

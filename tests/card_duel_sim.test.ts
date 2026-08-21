@@ -65,6 +65,26 @@ describe('Sim.cardMinigameInfoFor', () => {
     expect(info.match).toBeNull();
   });
 
+  it('tells each side whether the opponent has committed, without naming the card', () => {
+    // WHOSE commit the round is waiting on is public; the card is not. Without
+    // it, a pause before a reveal is indistinguishable from a stalled client.
+    const sim = makeWorld();
+    const { a, b } = queueDuo(sim);
+    const match = sim.cardDuelMatchFor(a)!;
+    expect(sim.cardMinigameInfoFor(a).match?.opponentCommitted).toBe(false);
+    expect(sim.cardMinigameInfoFor(b).match?.opponentCommitted).toBe(false);
+
+    const bCard = match.state.b.cards.hand[0];
+    sim.playCardInDuel(bCard.iid, b);
+    const infoA = sim.cardMinigameInfoFor(a);
+    expect(infoA.match?.opponentCommitted).toBe(true);
+    // A has not played, so A is not waiting on B; and B's card is still absent
+    // from A's whole snapshot.
+    expect(infoA.match?.waitingOnOpponent).toBe(false);
+    expect(JSON.stringify(infoA)).not.toContain(String(bCard.iid));
+    expect(sim.cardMinigameInfoFor(b).match?.opponentCommitted).toBe(false);
+  });
+
   it('reports a live match snapshot for each side, without leaking the opponent hand', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);
@@ -95,6 +115,7 @@ describe('Sim.cardMinigameInfoFor', () => {
         'roundsToWin',
         'round',
         'waitingOnOpponent',
+        'opponentCommitted',
         'secondsLeft',
         'myCounters',
         'opponentCounters',

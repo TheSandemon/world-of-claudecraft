@@ -45,6 +45,19 @@ describe('Card Duel against a named regular', () => {
     expect(sim.isQueuedForCardMinigame(pid)).toBe(false);
   });
 
+  it('sends the regular content id on the snapshot, since it has no player name', () => {
+    // A bot seat is deliberately absent from ctx.players, so `name` is empty
+    // for every one of these matches. The id is what the client resolves the
+    // displayed name from, and the sim stays language-agnostic by sending it
+    // rather than English.
+    const sim = makeWorld();
+    const pid = seatAtCardMaster(sim, 'Aleph');
+    sim.startCardDuelAgainstOpponent('gravedigger_ossa', pid);
+    const opponent = sim.cardMinigameInfoFor(pid).match?.opponent;
+    expect(opponent?.name).toBe('');
+    expect(opponent?.opponentId).toBe('gravedigger_ossa');
+  });
+
   it('works in a world with no other player at all', () => {
     // The whole point: a single-player world, an empty realm, or 3am.
     const sim = makeWorld();

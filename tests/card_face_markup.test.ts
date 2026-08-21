@@ -7,10 +7,9 @@ import { cardFaceHtml } from '../src/ui/cards/card_face_markup';
 import { buildCardFaceModel } from '../src/ui/cards/card_face_view';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const COMPONENTS_CSS = readFileSync(
-  path.join(here, '..', 'src', 'styles', 'components.css'),
-  'utf8',
-);
+// The card face is styled by src/styles/cards.css, the one sheet BOTH the game
+// client and the standalone /cards playtest slice load (see that file's header).
+const CARDS_CSS = readFileSync(path.join(here, '..', 'src', 'styles', 'cards.css'), 'utf8');
 
 const wolf = cardById('forest_wolf');
 const alpha = cardById('pack_alpha');
@@ -122,7 +121,7 @@ describe('card face markup', () => {
       [...html.matchAll(/class="([^"]+)"/g)].flatMap((m) => m[1].split(/\s+/)),
     );
     for (const cls of classes) {
-      expect(COMPONENTS_CSS.includes(`.${cls}`), `no CSS rule for .${cls}`).toBe(true);
+      expect(CARDS_CSS.includes(`.${cls}`), `no CSS rule for .${cls}`).toBe(true);
     }
   });
 });

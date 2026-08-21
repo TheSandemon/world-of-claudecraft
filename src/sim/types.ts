@@ -5647,6 +5647,11 @@ export type SimEvent = { pid?: number } & (
       // an event minted before it.
       mineBase?: number;
       theirsBase?: number;
+      // The two card ids that clashed, so the client's reveal can show the
+      // real faces instead of two bare numbers. Public by the rules the
+      // instant the round resolves. Absent on an event minted before them.
+      mineCardId?: string;
+      theirsCardId?: string;
       pid?: number;
     }
   | {
