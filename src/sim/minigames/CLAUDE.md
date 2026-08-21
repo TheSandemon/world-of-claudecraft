@@ -5,8 +5,8 @@
 
 A minigame folder here owns **rules only**: pure functions over its own state,
 with no `SimContext`, no `Sim`, no DOM, and no i18n. That is what lets the same
-rules run in the offline browser world, on the authoritative server, in the
-headless RL env, and in a standalone dev slice without a world at all.
+rules run identically in the offline browser world, on the authoritative
+server, and in the headless RL env.
 
 ## What lives here, and what does not
 

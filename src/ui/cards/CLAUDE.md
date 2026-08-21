@@ -6,11 +6,11 @@
 
 # src/ui/cards - the Card Duel presentation layer
 
-Everything that shows a Card Duel goes through this folder, and there are
-exactly two consumers of it: the in-game window (`src/ui/card_duel_window.ts`)
-and the standalone playtest slice (`src/cards/`). They share these modules and
-one stylesheet, so the table a playtester judges and the table a player gets
-cannot drift into looking like different games.
+Everything that shows a Card Duel goes through this folder: the duel window
+(`src/ui/card_duel_window.ts`), the deck builder, and every other surface that
+paints a card. One card component, one table grammar, one stylesheet
+(`src/styles/cards.css`), so a card cannot look or read differently depending
+on where it appears.
 
 | File | What it is |
 |---|---|
@@ -26,12 +26,12 @@ cannot drift into looking like different games.
 ## One card, one table, three sizes
 
 The face is one component at three sizes (hand, stage, collection cell): same
-model, same markup, only a CSS size variant differs. The TABLE is the same
-idea one level up. Both consumers build the same seat bands, the same pips, the
-same tokens, the same stage, from the same two pure cores. The only thing the
-window and the slice legitimately differ on is the LABELS (`DuelStageLabels`):
-the window is played from one seat and says "you", the hot seat has two named
-seats and no reader to be "you".
+model, same markup, only a CSS size variant differs. The TABLE is the same idea
+one level up: the seat bands, the pips, the counter tokens, the opponent's
+hand, the effects row and the stage all come out of two pure cores
+(`duel_table_view.ts`, `duel_beats_core.ts`) and one markup module.
+`DuelStageLabels` is the seam for a surface that is NOT played from one seat
+and cannot say "you".
 
 ## Why the consumers are not called painters
 
@@ -45,11 +45,20 @@ cadence they do not have.
 
 ## Two cadences, and why they must stay apart
 
-**The snapshot paints the truth.** The hand, the score pips, the clock and its
-ring, each seat's commit lamp, the counter tokens, the revealed strip: every
-one is correct the instant the snapshot arrives, at every graphics tier and on
-every device. The window carries one memo PER REGION so a counter changing does
-not rebuild the hand.
+**The snapshot paints the truth.** The hand (at what each card is WORTH, with
+the printed value and a signed chip beside it), the score pips, the clock and
+its ring, each seat's commit lamp, the counter tokens, the opponent's hand with
+any revealed cards face up in it, and the effects row: every one is correct the
+instant the snapshot arrives, at every graphics tier and on every device. The
+window carries one memo PER REGION so a counter changing does not rebuild the
+hand.
+
+Two of those answer questions the table could not answer before. A revealed
+opponent card now has a HAND to be revealed in (a face-down place per card they
+hold), instead of a floating strip with nothing to read it against. And the
+effects row says what is still parked and on whom, sourced from the engine's
+own modifier list (`src/sim/minigames/card_duel/preview.ts`) rather than a
+second model that could disagree with the round.
 
 **The theater narrates.** A resolved round arrives as one `cardRoundResolved`
 event and is played out over that already-true picture: the cards land, both
@@ -74,8 +83,9 @@ watching a silent two seconds with nothing moving in it.
 
 **Never tiered, at any preset, on any device, with no hover requirement and no
 animation delay:** the effective value, the printed value, the signed modifier
-delta, the rules text, revealed opponent cards, the round score, the counters,
-the round clock, and whose commit is outstanding.
+delta, the rules text, revealed opponent cards, the opponent's hand size, the
+effects still in play, the round score, the counters, the round clock, and
+whose commit is outstanding.
 `tests/card_duel_window_clock.test.ts` pins it against the stylesheet.
 
 **The one bounded exception**, written down so it stays bounded: the stage's

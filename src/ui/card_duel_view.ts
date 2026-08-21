@@ -6,7 +6,7 @@
 // came from Sim or ClientWorld, since it is data, not a per-host structure).
 // The thin consumer (card_duel_window.ts) paints this.
 
-import type { CardMinigameCard } from '../sim/social/card_duel';
+import type { CardMinigameCard, CardMinigameEffect } from '../sim/social/card_duel';
 import type { CardMinigameInfo } from '../world_api';
 
 export interface CardDuelHandCardView {
@@ -16,6 +16,9 @@ export interface CardDuelHandCardView {
   cardId: string;
   value: number;
   playable: boolean;
+  /** The value change parked modifiers would apply if this card were played
+   *  now, signed. Zero when nothing is riding on it. */
+  pendingDelta: number;
   /** Rules-text numbers the sim resolved against the live match, so a scaling
    *  card states what it would actually apply. Absent for a card with no
    *  placeholders to fill. */
@@ -51,6 +54,11 @@ export interface CardDuelViewModel {
   opponentCounters: Record<string, number>;
   /** Opponent cards a reveal effect entitled this viewer to see. */
   opponentRevealed: CardMinigameCard[];
+  /** How many cards the opponent is holding, so their hand has a place on the
+   *  table for a revealed card to be revealed IN. */
+  opponentHandCount: number;
+  /** Parked modifiers still in play, both sides. */
+  activeEffects: CardMinigameEffect[];
 }
 
 /** Build the structured Card Duel view from the live IWorld snapshot. */
@@ -73,6 +81,8 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
       myCounters: {},
       opponentCounters: {},
       opponentRevealed: [],
+      opponentHandCount: 0,
+      activeEffects: [],
     };
   }
   const m = info.match;
@@ -83,6 +93,7 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
       cardId: card.cardId,
       value: card.value,
       playable: !m.waitingOnOpponent,
+      pendingDelta: card.pendingDelta ?? 0,
       ...(card.textValues ? { textValues: { ...card.textValues } } : {}),
     })),
     deckCount: m.deckCount,
@@ -99,5 +110,7 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
     myCounters: { ...m.myCounters },
     opponentCounters: { ...m.opponentCounters },
     opponentRevealed: m.opponentRevealed.map((card) => ({ ...card })),
+    opponentHandCount: m.opponentHandCount,
+    activeEffects: m.activeEffects.map((effect) => ({ ...effect })),
   };
 }

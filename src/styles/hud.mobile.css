@@ -7791,13 +7791,13 @@
     body.mobile-touch .cf-size-hand .cf-tribes {
       font-size: 11px;
     }
-    body.mobile-touch .cd-hand {
+    body.mobile-touch .dt-hand {
       gap: 8px;
     }
-    body.mobile-touch .cd-clock {
+    body.mobile-touch .dt-clock-num {
       font-size: 15px;
     }
-    body.mobile-touch .cd-reveal-value {
+    body.mobile-touch .dt-plate-value {
       font-size: 24px;
     }
   }

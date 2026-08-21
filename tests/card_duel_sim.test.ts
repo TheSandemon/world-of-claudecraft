@@ -85,6 +85,25 @@ describe('Sim.cardMinigameInfoFor', () => {
     expect(sim.cardMinigameInfoFor(b).match?.opponentCommitted).toBe(false);
   });
 
+  it('reports the opponent hand SIZE without a single card in it', () => {
+    // The size is public (a hand refills to four and a commit takes one) and is
+    // what gives a revealed card a place on the table. The identities are not:
+    // the count must arrive with none of their instance ids anywhere near it.
+    const sim = makeWorld();
+    const { a, b } = queueDuo(sim);
+    const match = sim.cardDuelMatchFor(a)!;
+    const infoA = sim.cardMinigameInfoFor(a);
+    expect(infoA.match?.opponentHandCount).toBe(match.state.b.cards.hand.length);
+    for (const card of match.state.b.cards.hand) {
+      expect(JSON.stringify(infoA)).not.toContain(`"iid":${card.iid}`);
+    }
+    // And it shrinks the moment they commit, so the row is their real hand.
+    sim.playCardInDuel(match.state.b.cards.hand[0].iid, b);
+    expect(sim.cardMinigameInfoFor(a).match?.opponentHandCount).toBe(
+      match.state.b.cards.hand.length,
+    );
+  });
+
   it('reports a live match snapshot for each side, without leaking the opponent hand', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);
@@ -116,6 +135,8 @@ describe('Sim.cardMinigameInfoFor', () => {
         'round',
         'waitingOnOpponent',
         'opponentCommitted',
+        'opponentHandCount',
+        'activeEffects',
         'secondsLeft',
         'myCounters',
         'opponentCounters',

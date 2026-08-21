@@ -1165,7 +1165,18 @@ export const en = {
     waitingReveal: 'Revealing the round',
     pipsAria: '{name}: {won} of {total} rounds won',
     counterAria: '{name}: {count}',
-    revealedHeading: 'Seen in their hand',
+    // The opponent's hand: a face-down place per card they hold, with any a
+    // reveal effect exposed turned face up among them.
+    oppoHandHidden: 'Their hand: {count}',
+    oppoHandSeen: 'Their hand: {count}, {seen} seen',
+    // The effects row. Each chip names the card that parked the effect and
+    // carries that card's own rules sentence, so there is no second copy of
+    // the wording to keep in step.
+    effectsHeading: 'Still in play',
+    effectAria: '{name}: {rules} ({duration})',
+    durationNextRound: 'next round',
+    durationUntilTriggered: 'until it triggers',
+    durationMatchEnd: 'rest of the match',
     pileDeck: 'Deck: {count}',
     pileDiscard: 'Discard: {count}',
     stageIdle: 'The table is empty',

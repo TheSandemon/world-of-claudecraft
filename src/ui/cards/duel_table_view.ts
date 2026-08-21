@@ -12,6 +12,7 @@
 // data). The markup half resolves the strings; nothing here decides a color or
 // a pixel, only what is true.
 
+import type { CardParkedDuration } from '../../sim/minigames/card_duel/preview';
 import type { CardMinigameCard } from '../../sim/social/card_duel';
 
 /** One seat's answer to "is this side still deciding?". */
@@ -89,6 +90,62 @@ export function buildDuelCounters(counters: Record<string, number>): DuelCounter
     .sort()
     .filter((key) => counters[key] > 0)
     .map((key) => ({ key, count: counters[key] }));
+}
+
+/**
+ * One place in the opponent's hand.
+ *
+ * The whole point of the row: a revealed card had nowhere to BE before this,
+ * so a player was told "seen in their hand" with no hand on the table to look
+ * at. Every slot is face-down except the ones a reveal effect entitled this
+ * viewer to see, which are face-up IN PLACE, so the answer to "which of their
+ * cards do I know" is a position rather than a separate list.
+ */
+export interface DuelOpponentSlot {
+  index: number;
+  /** The revealed card, or null for a face-down place. */
+  card: CardMinigameCard | null;
+}
+
+/**
+ * The opponent's hand as slots, revealed cards first.
+ *
+ * Revealed cards take the LEADING slots rather than a guessed position: the
+ * projection deliberately does not say WHERE in their hand a revealed card
+ * sits, and inventing an index would be a claim the server never made. A
+ * revealed set larger than the reported hand (a card revealed and then played,
+ * so it is no longer held) never grows the row past the count.
+ */
+export function buildOpponentHand(
+  handCount: number,
+  revealed: readonly CardMinigameCard[],
+): DuelOpponentSlot[] {
+  const total = Math.max(0, Math.floor(handCount));
+  const slots: DuelOpponentSlot[] = [];
+  for (let index = 0; index < total; index++) {
+    slots.push({ index, card: index < revealed.length ? revealed[index] : null });
+  }
+  return slots;
+}
+
+/** One parked modifier, as the effects row reads it. */
+export interface DuelEffectChip {
+  mine: boolean;
+  cardId: string;
+  amount: number | null;
+  duration: CardParkedDuration;
+}
+
+/**
+ * The effects row: what is still in play, the viewer's own first.
+ *
+ * Grouping by side rather than interleaving is the whole readability win: "what
+ * is riding on me" and "what is riding on them" are two different questions and
+ * a player asks them one at a time. Order within a side is left alone, because
+ * it is already the engine's creation order.
+ */
+export function buildDuelEffects(effects: readonly DuelEffectChip[]): DuelEffectChip[] {
+  return [...effects.filter((e) => e.mine), ...effects.filter((e) => !e.mine)];
 }
 
 export interface DuelSeatModel {

@@ -130,6 +130,16 @@
     flex-direction: column;
     gap: 6px;
   }
+  /* The three groups the body is built from (card_duel_window.ts): the board,
+     the side readouts, and the hand. They are plain stacks here and become a
+     two-column grid on a short viewport (the touch block below). */
+  .dt-board,
+  .dt-side {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
 
   /* A seat band: who, whether they have committed, their score, their
      counters. The two bands are identical in structure and mirrored in tone,
@@ -326,22 +336,86 @@
     color: var(--color-text-light);
   }
 
-  /* Opponent cards a reveal effect entitled this viewer to see. Shown as
-     cards, because that is what they are. */
-  .dt-revealed {
-    padding: 4px 6px;
-    border: 1px dashed var(--mkt-name-rare);
-    border-radius: var(--radius-sm);
-  }
-  .dt-revealed-title {
-    margin-bottom: 4px;
-    font-size: 11px;
-    color: var(--mkt-name-rare);
-  }
-  .dt-revealed-row {
+  /* The opponent's hand: one face-down place per card they hold, with the ones
+     a reveal effect exposed turned face up AMONG them. A revealed card needs a
+     hand to be revealed in, or the player has nowhere to look. */
+  .dt-oppo-row {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
+    align-items: flex-end;
+  }
+  .dt-oppo-note {
+    margin-top: 2px;
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+  .dt-oppo-back {
+    width: 34px;
+    height: 48px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    background:
+      repeating-linear-gradient(45deg, #ffffff0e 0 3px, transparent 3px 6px),
+      linear-gradient(160deg, var(--panel-base, #17242c), #0a1116);
+  }
+  /* A revealed card sits at the hand's own scale, so the row reads as "these
+     two of their four, I can see". */
+  .dt-oppo-row .cf-size-hand {
+    width: 48px;
+    height: 68px;
+  }
+  .dt-oppo-row .cf-name,
+  .dt-oppo-row .cf-tribes {
+    font-size: 8px;
+  }
+
+  /* The effects row: every parked modifier still in play, yours first. Chips
+     rather than sentences, each carrying its source card's own rules text as
+     its accessible name. */
+  .dt-effects-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+  }
+  .dt-effects-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+  }
+  .dt-fx {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 2px 6px;
+    border: 1px solid var(--color-text-muted);
+    border-radius: 9px;
+    font-size: 10px;
+    color: var(--color-text-light);
+  }
+  /* Whose cards it rides, at a glance: yours takes the gold edge, exactly like
+     the seat band. */
+  .dt-fx[data-side="mine"] {
+    border-color: var(--gold);
+  }
+  .dt-fx-name {
+    font-family: var(--title-font);
+    font-size: 11px;
+  }
+  .dt-fx-amount {
+    font-family: var(--title-font);
+    font-size: 11px;
+  }
+  .dt-fx-up {
+    color: var(--color-stat-bonus);
+  }
+  .dt-fx-down {
+    color: var(--mkt-name-legendary);
+  }
+  .dt-fx-when {
+    color: var(--color-text-muted);
   }
 
   /* The screen-reader line for a resolved round. Off-screen rather than
@@ -954,8 +1028,17 @@
          on a landscape phone parks the two cards being compared at opposite
          ends of the screen. */
       max-width: 300px;
+      margin: 0 auto;
       grid-template-columns: 1fr 1fr;
       align-items: center;
+    }
+    .dt-oppo-back {
+      width: 26px;
+      height: 36px;
+    }
+    .dt-oppo-row .cf-size-hand {
+      width: 36px;
+      height: 50px;
     }
     .dt-slot-theirs {
       order: 1;
@@ -1012,12 +1095,119 @@
       flex: 0 0 auto;
       scroll-snap-align: center;
     }
-    /* A card is also the tap target, so it takes the touch floor. */
-    .cf-size-hand {
-      width: 76px;
-      height: 108px;
+    /* The touch TARGET size is hud.mobile.css's (a later @layer, so it wins
+       here whatever this sheet says): `body.mobile-touch .cf-size-hand` gives
+       the hand card its 84x122 tap box. Nothing about the hand's size belongs
+       in this block. */
+  }
+  /* ---------- card duel short-viewport layout ---------- */
+  /* A phone running the game client is in LANDSCAPE (its own orientation gate
+     refuses portrait), so the scarce axis is HEIGHT, not width. A stacked
+     table runs off the bottom there and buries the hand, which is the one row
+     a player has to reach.
+
+     Two columns: the board (both seats, their hand, the stage) on the left,
+     the readouts (clock, whose turn, what is still in play) on the right, and
+     your hand across the full width beneath both, where a thumb is. Ownership
+     still reads top-to-bottom INSIDE the board column, so the grammar holds. */
+  @media (max-height: 32rem) and (min-width: 34rem) {
+    /* The HAND is pinned, and the BOARD scrolls behind it.
+       On a phone the one row a player must always be able to reach is their
+       own hand, so it sticks to the bottom of the window's scrollport while
+       the board scrolls underneath. Sticky rather than a height budget on
+       purpose: the window sets its own `display` inline when it opens, so a
+       flex column cannot be imposed from CSS, and any arithmetic over "how
+       tall is the board today" would be wrong the first time a counter row or
+       an effects chip wrapped. */
+    #card-duel-window {
+      max-height: calc(var(--app-vh, 100vh) - 20px);
+    }
+    .dt-hand-wrap,
+    .dt-forfeit {
+      position: sticky;
+      bottom: 0;
+      z-index: 1;
+      padding-top: 4px;
+      background: var(--panel-base, #15151f);
+    }
+    .dt {
+      display: grid;
+      gap: 4px;
+      grid-template-columns: minmax(0, 1fr) minmax(9rem, 0.45fr);
+      grid-template-areas:
+        "board side"
+        "hand  forfeit";
+      align-items: start;
+      column-gap: 10px;
+    }
+    .dt-board {
+      grid-area: board;
+    }
+    .dt-side {
+      grid-area: side;
+    }
+    .dt-hand-wrap {
+      grid-area: hand;
+      min-width: 0;
+    }
+    .dt-forfeit {
+      grid-area: forfeit;
+      align-self: end;
+    }
+    /* The stage sheds its own margin here: it is already centred by the column
+       it sits in, and a second centring pushed it off the board's axis. */
+    .dt-stage {
+      margin: 0;
+      max-width: none;
+    }
+    /* The seat bands lose their piles and counters to wrapping in a narrower
+       column, so let the row breathe rather than clipping the score. */
+    .dt-seat {
+      row-gap: 2px;
+    }
+    /* Everything below is height, bought back so the whole table fits without
+       a scroll: the two stage cards sit shoulder to shoulder instead of at
+       opposite ends of the column, the opponent hand drops the caption its
+       accessible name already carries, and both card sizes step down. */
+    .dt-stage {
+      grid-template-columns: auto auto;
+      justify-content: center;
+      column-gap: 20px;
+      padding: 4px;
+    }
+    .dt-slot-card,
+    .dt-slot-card .cf-size-stage {
+      width: 56px;
+      height: 80px;
+    }
+    .dt-oppo-note {
+      display: none;
+    }
+    .dt-oppo-back {
+      width: 22px;
+      height: 30px;
+    }
+    .dt-oppo-row .cf-size-hand {
+      width: 30px;
+      height: 42px;
+    }
+    .dt-verdict {
+      font-size: 12px;
+    }
+    /* The hand keeps its full touch height, so the BOARD takes the squeeze:
+       it is bounded to whatever is left over and scrolls inside itself, rather
+       than growing under the pinned hand where half of it cannot be seen. The
+       13rem is the pinned furniture around it (the hand's 122px tap box plus
+       the window title and the body padding), the one place in this sheet that
+       number is spelled. */
+    .dt-board,
+    .dt-side {
+      max-height: calc(var(--app-vh, 100vh) - 13rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
   }
+
   @keyframes dt-lunge-right {
     50% {
       transform: translateX(7px);

@@ -29,6 +29,7 @@ Spec: `docs/design/card-duel-rules-language.md`. Plan:
 | `resolve.ts` | the round pipeline, priority-ordered |
 | `text.ts` | rules-text VALUE resolution (key plus values, never a string) |
 | `bot.ts` | CPU opponent policies, pure |
+| `preview.ts` | what a player can be TOLD before the reveal: the parked modifiers still in play, and the value change already riding on a card in hand |
 
 ## Writing a card: ignore priority
 

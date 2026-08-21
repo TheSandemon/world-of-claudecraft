@@ -31,6 +31,8 @@ function liveInfo(over: Partial<NonNullable<CardMinigameInfo['match']>> = {}): C
       round: 1,
       waitingOnOpponent: false,
       opponentCommitted: false,
+      opponentHandCount: 4,
+      activeEffects: [],
       secondsLeft: 45,
       myCounters: {},
       opponentCounters: {},
@@ -206,15 +208,90 @@ describe('card duel window clock and round theater', () => {
     expect(theirs.map((el) => (el as HTMLElement).dataset.counter)).toEqual(['Dread']);
   });
 
-  it('shows opponent cards a reveal effect entitled the viewer to see', () => {
+  it('gives the opponent hand a place on the table, and reveals INTO it', () => {
+    // The complaint this answers: a revealed card used to arrive in a strip of
+    // its own with no opponent hand anywhere, so there was nothing to read it
+    // against and no way to tell how much of their hand it was.
     const { win, root, setInfo } = makeWindow();
     win.render();
-    expect(root.querySelector('.dt-revealed')).toBeNull();
+    expect(root.querySelectorAll('[data-cd-oppohand] .dt-oppo-back').length).toBe(4);
+    expect(root.querySelector('[data-cd-oppohand] .cf')).toBeNull();
+
     setInfo(liveInfo({ opponentRevealed: [{ iid: 90, cardId: 'grave_rat', value: 2 }] }));
     win.render();
-    const revealed = root.querySelector('.dt-revealed') as HTMLElement;
-    expect(revealed).not.toBeNull();
-    expect(revealed.textContent).toContain('Grave Rat');
+    const row = root.querySelector('[data-cd-oppohand]') as HTMLElement;
+    // One of the four places is now a real card; the other three stay down.
+    expect(row.querySelectorAll('.cf').length).toBe(1);
+    expect(row.querySelectorAll('.dt-oppo-back').length).toBe(3);
+    expect(row.textContent).toContain('Grave Rat');
+  });
+
+  it('shrinks the opponent hand as they commit, so the row is their real hand', () => {
+    const { win, root, setInfo } = makeWindow();
+    setInfo(liveInfo({ opponentHandCount: 3 }));
+    win.render();
+    expect(root.querySelectorAll('[data-cd-oppohand] .dt-oppo-back').length).toBe(3);
+  });
+
+  it('never grows the opponent hand past the count the server reported', () => {
+    // A card revealed and then PLAYED is no longer held: the revealed set can
+    // outrun the hand, and the row must not invent a place for it.
+    const { win, root, setInfo } = makeWindow();
+    setInfo(
+      liveInfo({
+        opponentHandCount: 1,
+        opponentRevealed: [
+          { iid: 90, cardId: 'grave_rat', value: 2 },
+          { iid: 91, cardId: 'forest_wolf', value: 3 },
+        ],
+      }),
+    );
+    win.render();
+    const row = root.querySelector('[data-cd-oppohand]') as HTMLElement;
+    expect(row.querySelectorAll('.cf').length).toBe(1);
+    expect(row.querySelectorAll('.dt-oppo-back').length).toBe(0);
+  });
+
+  it('lists what is still in play, the viewer own effects first', () => {
+    const { win, root, setInfo } = makeWindow();
+    win.render();
+    expect(root.querySelector('.dt-fx')).toBeNull();
+    setInfo(
+      liveInfo({
+        activeEffects: [
+          { mine: false, cardId: 'grave_candle', amount: 2, duration: 'untilTriggered' },
+          { mine: true, cardId: 'stablemaster', amount: 2, duration: 'untilTriggered' },
+        ],
+      }),
+    );
+    win.render();
+    const chips = [...root.querySelectorAll('.dt-fx')] as HTMLElement[];
+    expect(chips.map((c) => c.dataset.side)).toEqual(['mine', 'theirs']);
+    expect(chips[0].textContent).toContain('Stablemaster');
+    expect(chips[0].textContent).toContain('+2');
+    // The source card's own sentence is the explanation, so it is the chip's
+    // accessible name rather than a second copy of the wording.
+    expect(chips[0].getAttribute('aria-label')).toContain('Beast');
+  });
+
+  it('shows a hand card at what it is worth, with the printed value beside it', () => {
+    // What a player asked for: the real number big, and a small chip saying how
+    // far it moved.
+    const { win, root, setInfo } = makeWindow();
+    setInfo(liveInfo({ hand: [{ iid: 11, cardId: 'forest_wolf', value: 3, pendingDelta: 2 }] }));
+    win.render();
+    const face = root.querySelector('[data-cd-hand] .cf') as HTMLElement;
+    expect(face.querySelector('.cf-value')?.textContent).toBe('5');
+    expect(face.querySelector('.cf-base')?.textContent).toBe('3');
+    expect(face.querySelector('.cf-delta')?.textContent).toBe('+2');
+  });
+
+  it('leaves a hand card alone when nothing is parked on it', () => {
+    const { win, root } = makeWindow();
+    win.render();
+    const face = root.querySelector('[data-cd-hand] .cf') as HTMLElement;
+    expect(face.querySelector('.cf-value')?.textContent).toBe('3');
+    expect(face.querySelector('.cf-delta')).toBeNull();
   });
 
   it('the stage is driven by the round event, not by the snapshot', () => {

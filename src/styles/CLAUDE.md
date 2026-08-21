@@ -52,16 +52,15 @@ the throw (#2499, #2502).
   (inside `@layer components`); in-world HUD chrome in `hud.css`; pre-game shell in
   `shell.css`; mobile-touch overrides in `hud.mobile.css`. Never grow the `.extra` files
   with shared styling (they are per-entry).
-- **`cards.css` is the one sheet a SECOND entry loads.** It holds the whole Card Duel
-  grammar (window, table, round theater, deck builder, card face) and the standalone
-  `/cards` playtest slice imports it directly, with `tokens.css` and nothing else
-  (`src/cards/styles.css`). That is why it is its own module rather than a section of
-  `components.css`: the slice composes the real rules engine and the real card face, so it
-  must compose the real styling too rather than a lookalike that can drift. Card Duel rules
-  go here; it is not a general overflow for `components.css`. It also carries the Card Duel
-  TOUCH layout for the same reason (a table that only worked on a phone inside the shipped
-  client would be a table playtesters could not check on a phone); window PLACEMENT on
-  mobile still lives in `hud.mobile.css` with every other window.
+- **`cards.css` is the Card Duel sheet**, its own module rather than a section of
+  `components.css` because the minigame is a whole self-contained visual grammar (the duel
+  window, the table, the round theater, the deck builder, and the card face at its three
+  sizes) and `components.css` is a named extraction target that must not grow. Card Duel
+  rules go here; it is not a general overflow for `components.css`. It also carries the
+  Card Duel TOUCH and SHORT-VIEWPORT layout, because those rules are about the TABLE
+  reflowing (the stage goes side by side, the hand becomes a rail), not about where the
+  window sits; window PLACEMENT on mobile stays in `hud.mobile.css` with every other
+  window.
 - **Every new `.window` id needs a deliberate mobile decision:** a real `body.mobile-touch`
   pin/size rule (join the `mobile sheet base` section in `hud.mobile.css`) or a reasoned
   entry in `MOBILE_WINDOW_EXCEPTIONS` in `tests/mobile_window_coverage.test.ts`, which

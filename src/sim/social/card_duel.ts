@@ -22,6 +22,7 @@ import {
 } from '../content/cards';
 import { cardMasterInRange } from '../instances/card_master';
 import {
+  activeCardEffects,
   activeDeckEntries,
   botCommitDelayTicks,
   buildBoard,
@@ -31,9 +32,11 @@ import {
   type CardDeckEntry,
   type CardInstance,
   type CardMatchState,
+  type CardParkedDuration,
   type CardSeat,
   createCardHand,
   createMatchState,
+  pendingValueDelta,
   playCardByInstance,
   resolveCardRound,
   resolveCardTextValues,
@@ -89,6 +92,14 @@ export interface CardMinigameCard {
   cardId: string;
   value: number;
   /**
+   * The value change parked modifiers would apply if this card were played
+   * this round, signed, and absent when it is zero. A PREVIEW of what the
+   * viewer already has riding on the card, never a promise: the true effective
+   * value also depends on the opponent's hidden card. Sent for the viewer's
+   * OWN hand only.
+   */
+  pendingDelta?: number;
+  /**
    * The numbers this card's rules sentence needs, resolved against the LIVE
    * match. Sent for the viewer's own hand so a scaling card ("+1 for every two
    * Beasts you have played") states what it would actually apply right now,
@@ -110,6 +121,18 @@ export interface CardMinigameDecks {
   /** The active deck's cards, so the builder opens on something real without
    *  a second round trip. */
   activeCards: string[];
+}
+
+/** One parked modifier still in play, for the table's effects row. The client
+ *  reads the SOURCE CARD's name and rules sentence as the explanation, so no
+ *  second copy of the wording rides the wire. */
+export interface CardMinigameEffect {
+  /** True when it rides the viewer's own cards. */
+  mine: boolean;
+  cardId: string;
+  /** The signed constant it carries, or null for a flag effect. */
+  amount: number | null;
+  duration: CardParkedDuration;
 }
 
 export interface CardMinigameInfo {
@@ -146,6 +169,15 @@ export interface CardMinigameInfo {
      * before a reveal is indistinguishable from a stalled client.
      */
     opponentCommitted: boolean;
+    /**
+     * How many cards the opponent is holding. Public by the rules (a hand
+     * refills to four and a commit takes one), and the thing the revealed set
+     * below hangs off: without it there is no opponent hand on the table for a
+     * revealed card to be revealed IN.
+     */
+    opponentHandCount: number;
+    /** Parked modifiers still in play, both sides, in creation order. */
+    activeEffects: CardMinigameEffect[];
     myCounters: Record<string, number>;
     opponentCounters: Record<string, number>;
     /**
@@ -635,10 +667,13 @@ function wireCard(card: CardInstance): CardMinigameCard {
 }
 
 /** A card in the viewer's OWN hand, with its rules-text numbers priced against
- *  the live match so the face states what it would really apply. */
+ *  the live match so the face states what it would really apply, and the buff
+ *  or debuff already parked on it so the face states what it is worth. */
 function wireOwnCard(card: CardInstance, state: CardMatchState, seat: CardSeat): CardMinigameCard {
+  const delta = pendingValueDelta(state, seat, card, CARD_CATALOG);
+  const base = delta === 0 ? wireCard(card) : { ...wireCard(card), pendingDelta: delta };
   const def = CARD_CATALOG.get(card.cardId);
-  if (!def || def.effects.length === 0) return wireCard(card);
+  if (!def || def.effects.length === 0) return base;
   const values = resolveCardTextValues(def, {
     state,
     board: buildBoard(state, CARD_CATALOG),
@@ -646,9 +681,7 @@ function wireOwnCard(card: CardInstance, state: CardMatchState, seat: CardSeat):
     seat,
     thisCard: card,
   });
-  return Object.keys(values).length === 0
-    ? wireCard(card)
-    : { ...wireCard(card), textValues: values };
+  return Object.keys(values).length === 0 ? base : { ...base, textValues: values };
 }
 
 // IWorldCardMinigame read surface: the local/queried player's queue/match
@@ -698,6 +731,13 @@ export function buildCardMinigameInfo(ctx: SimContext, pid: number): CardMinigam
       round: match.state.round,
       waitingOnOpponent: me.playedThisRound !== null,
       opponentCommitted: them.playedThisRound !== null,
+      opponentHandCount: them.cards.hand.length,
+      activeEffects: activeCardEffects(match.state, match.state.round).map((effect) => ({
+        mine: effect.seat === (isA ? 'a' : 'b'),
+        cardId: effect.sourceCardId,
+        amount: effect.amount,
+        duration: effect.duration,
+      })),
       secondsLeft: Math.max(0, match.roundDeadline - ctx.time),
       myCounters: { ...me.counters },
       opponentCounters: { ...them.counters },

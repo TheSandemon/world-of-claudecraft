@@ -34,14 +34,17 @@ import {
   browserTheaterHost,
   buildCardFaceModel,
   buildDuelClock,
+  buildDuelEffects,
   buildDuelStage,
   buildDuelTable,
+  buildOpponentHand,
   type CardRoundAudio,
   type CardRoundRevealInput,
   cardFaceHtml,
   DuelTheater,
   duelClockHtml,
-  duelRevealedHtml,
+  duelEffectsHtml,
+  duelOpponentHandHtml,
   duelSeatBandHtml,
   duelStageHtml,
   duelStageIdleHtml,
@@ -77,7 +80,8 @@ interface CardDuelRegions {
   clockRing: HTMLElement | null;
   waiting: HTMLElement | null;
   hand: HTMLElement | null;
-  revealed: HTMLElement | null;
+  oppoHand: HTMLElement | null;
+  effects: HTMLElement | null;
   announce: HTMLElement | null;
 }
 
@@ -90,7 +94,8 @@ function emptyRegions(): CardDuelRegions {
     clockRing: null,
     waiting: null,
     hand: null,
-    revealed: null,
+    oppoHand: null,
+    effects: null,
     announce: null,
   };
 }
@@ -107,7 +112,8 @@ export class CardDuelWindow {
   private lastShell = '';
   private lastSeats = '';
   private lastHand = '';
-  private lastRevealed = '';
+  private lastOppoHand = '';
+  private lastEffects = '';
   private lastWaiting = '';
   private lastClock = '';
   private lastRatio = '';
@@ -238,7 +244,7 @@ export class CardDuelWindow {
           .sort()
           .map((key) => `${key}=${values[key]}`)
           .join('+');
-        return `${card.iid}:${card.cardId}:${card.value}:${card.playable ? 'p' : '-'}:${priced}`;
+        return `${card.iid}:${card.cardId}:${card.value}:${card.pendingDelta}:${card.playable ? 'p' : '-'}:${priced}`;
       })
       .join(',');
     if (handSig !== this.lastHand && this.els.hand) {
@@ -254,7 +260,15 @@ export class CardDuelWindow {
                 textValues: card.textValues,
               },
               CARD_CATALOG.get(card.cardId),
-              { size: 'hand', playable: card.playable },
+              {
+                size: 'hand',
+                playable: card.playable,
+                // What the card is worth with everything already parked on it,
+                // so the face reads the real number with the printed one and a
+                // signed chip beside it, rather than a value the round will
+                // contradict the moment it resolves.
+                effectiveValue: card.value + card.pendingDelta,
+              },
             ),
             { playAttribute: 'data-play', catalog: CARD_CATALOG },
           ),
@@ -262,10 +276,22 @@ export class CardDuelWindow {
         .join('');
     }
 
-    const revealedSig = view.opponentRevealed.map((card) => card.iid).join(',');
-    if (revealedSig !== this.lastRevealed && this.els.revealed) {
-      this.lastRevealed = revealedSig;
-      this.els.revealed.innerHTML = duelRevealedHtml(view.opponentRevealed, CARD_CATALOG);
+    const oppoSig = `${view.opponentHandCount}|${view.opponentRevealed.map((c) => c.iid).join(',')}`;
+    if (oppoSig !== this.lastOppoHand && this.els.oppoHand) {
+      this.lastOppoHand = oppoSig;
+      this.els.oppoHand.innerHTML = duelOpponentHandHtml(
+        buildOpponentHand(view.opponentHandCount, view.opponentRevealed),
+        CARD_CATALOG,
+      );
+    }
+
+    const effects = buildDuelEffects(view.activeEffects);
+    const effectsSig = effects
+      .map((fx) => `${fx.mine ? 'm' : 't'}:${fx.cardId}:${fx.amount}:${fx.duration}`)
+      .join(',');
+    if (effectsSig !== this.lastEffects && this.els.effects) {
+      this.lastEffects = effectsSig;
+      this.els.effects.innerHTML = duelEffectsHtml(effects, CARD_CATALOG);
     }
 
     this.paintClock(view.secondsLeft);
@@ -355,13 +381,15 @@ export class CardDuelWindow {
       clockRing: pick('[data-cd-clockring]'),
       waiting: pick('[data-cd-waiting]'),
       hand: pick('[data-cd-hand]'),
-      revealed: pick('[data-cd-revealed]'),
+      oppoHand: pick('[data-cd-oppohand]'),
+      effects: pick('[data-cd-effects]'),
       announce: pick('[data-cd-announce]'),
     };
     this.theater = null;
     this.lastSeats = '';
     this.lastHand = '';
-    this.lastRevealed = '';
+    this.lastOppoHand = '';
+    this.lastEffects = '';
     this.lastWaiting = '';
     this.lastClock = '';
     this.lastRatio = '';
@@ -390,19 +418,29 @@ export class CardDuelWindow {
       // cards meet, the clock, the player's band, then their hand. Position is
       // ownership and never moves, so a glance at the same place always
       // answers the same question.
+      // Three groups, not a flat stack: the BOARD (both seats and the place
+      // their cards meet), the SIDE readouts (clock, whose turn, what is still
+      // in play), and your HAND. On a short viewport the board and the side sit
+      // in two columns with the hand across the bottom, which is the only way
+      // a landscape phone fits a table this tall.
       body =
         '<div class="dt">' +
+        '<div class="dt-board">' +
         '<div data-cd-seats-them></div>' +
+        '<div data-cd-oppohand></div>' +
         '<div class="dt-stage" data-cd-stage data-beat="idle">' +
         duelStageIdleHtml() +
         '</div>' +
+        '<div data-cd-seats-mine></div>' +
+        '</div>' +
+        '<div class="dt-side">' +
         duelClockHtml() +
         '<div class="dt-waiting" data-cd-waiting></div>' +
-        '<div data-cd-seats-mine></div>' +
-        '<div class="dt-hand" data-cd-hand></div>' +
-        '<div data-cd-revealed></div>' +
+        '<div data-cd-effects></div>' +
+        '</div>' +
+        '<div class="dt-hand-wrap"><div class="dt-hand" data-cd-hand></div></div>' +
+        `<button type="button" class="cd-action-btn dt-forfeit" data-forfeit aria-label="${esc(t('cardDuel.forfeitAria'))}">${esc(t('cardDuel.forfeit'))}</button>` +
         '<div class="dt-announce" data-cd-announce role="status" aria-live="polite"></div>' +
-        `<button type="button" class="cd-action-btn" data-forfeit aria-label="${esc(t('cardDuel.forfeitAria'))}">${esc(t('cardDuel.forfeit'))}</button>` +
         '</div>';
     }
     return (

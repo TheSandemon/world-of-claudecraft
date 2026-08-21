@@ -63,6 +63,8 @@ describe('card_duel_view', () => {
         opponentRounds: 0,
         waitingOnOpponent: false,
         opponentCommitted: false,
+        opponentHandCount: 4,
+        activeEffects: [],
         ...matchDefaults,
       },
     };
@@ -74,10 +76,10 @@ describe('card_duel_view', () => {
     expect(view.deckCount).toBe(12);
     expect(view.discardCount).toBe(2);
     expect(view.hand).toEqual([
-      { iid: 11, cardId: 'card_3', value: 3, playable: true },
-      { iid: 12, cardId: 'card_8', value: 8, playable: true },
-      { iid: 13, cardId: 'card_1', value: 1, playable: true },
-      { iid: 14, cardId: 'card_5', value: 5, playable: true },
+      { iid: 11, cardId: 'card_3', value: 3, playable: true, pendingDelta: 0 },
+      { iid: 12, cardId: 'card_8', value: 8, playable: true, pendingDelta: 0 },
+      { iid: 13, cardId: 'card_1', value: 1, playable: true, pendingDelta: 0 },
+      { iid: 14, cardId: 'card_5', value: 5, playable: true, pendingDelta: 0 },
     ]);
   });
 
@@ -95,6 +97,8 @@ describe('card_duel_view', () => {
         opponentRounds: 1,
         waitingOnOpponent: true,
         opponentCommitted: false,
+        opponentHandCount: 4,
+        activeEffects: [],
         ...matchDefaults,
       },
     };
@@ -117,6 +121,8 @@ describe('card_duel_view', () => {
         opponentRounds: 0,
         waitingOnOpponent: false,
         opponentCommitted: false,
+        opponentHandCount: 4,
+        activeEffects: [],
         ...matchDefaults,
       },
     };
@@ -141,6 +147,8 @@ describe('card_duel_view', () => {
         opponentRounds: 0,
         waitingOnOpponent: false,
         opponentCommitted: false,
+        opponentHandCount: 4,
+        activeEffects: [],
         ...matchDefaults,
       },
     };

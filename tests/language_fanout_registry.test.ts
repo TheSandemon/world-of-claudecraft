@@ -262,7 +262,7 @@ const ANSWERED: readonly AnsweredSurface[] = [
     // The window repaints PER REGION, so it carries one memo per region rather
     // than one signature over the whole body: `lastShell` is the window state
     // (the only one a rebuild hangs off), and the rest are the seat bands, the
-    // hand, the revealed strip and the waiting line. `lastClock`
+    // hand, the opponent's hand, the effects row and the waiting line. `lastClock`
     // and `lastRatio` are the write-elision kind rather than the signature
     // kind (they compare the RESOLVED string and the drawn ratio, so a locale
     // change moves the clock comparison by itself); the relocalize arm covers
@@ -270,9 +270,10 @@ const ANSWERED: readonly AnsweredSurface[] = [
     // shell and cacheRegions resets each region memo with it.
     memos: [
       'lastClock',
+      'lastEffects',
       'lastHand',
+      'lastOppoHand',
       'lastRatio',
-      'lastRevealed',
       'lastSeats',
       'lastShell',
       'lastWaiting',

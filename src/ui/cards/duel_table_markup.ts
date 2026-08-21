@@ -13,12 +13,20 @@
 
 import type { CardCatalog } from '../../sim/minigames/card_duel/match_state';
 import type { CardMinigameCard } from '../../sim/social/card_duel';
+import { cardName, cardRulesTextFrom } from '../card_i18n';
 import { esc } from '../esc';
 import { formatNumber, t } from '../i18n';
 import { cardFaceHtml } from './card_face_markup';
 import { buildCardFaceModel } from './card_face_view';
 import type { DuelStageModel, DuelStageSide } from './duel_beats_core';
-import type { DuelCounterToken, DuelPip, DuelSeatModel, DuelTableModel } from './duel_table_view';
+import type {
+  DuelCounterToken,
+  DuelEffectChip,
+  DuelOpponentSlot,
+  DuelPip,
+  DuelSeatModel,
+  DuelTableModel,
+} from './duel_table_view';
 
 /** A whole number as the player's locale writes it. */
 function num(value: number): string {
@@ -130,22 +138,88 @@ export function duelPilesHtml(deck: number, discard: number): string {
   );
 }
 
-/** The opponent cards a reveal effect entitled this viewer to see. Cards, not
- *  a sentence: they are read the same way as everything else on the table. */
-export function duelRevealedHtml(cards: readonly CardMinigameCard[], catalog: CardCatalog): string {
-  if (cards.length === 0) return '';
-  const faces = cards
-    .map((card) =>
-      cardFaceHtml(
-        buildCardFaceModel(card, catalog.get(card.cardId), { size: 'hand', revealed: true }),
-        { catalog },
-      ),
+/**
+ * The opponent's hand: a face-down place per card they hold, with the ones a
+ * reveal effect entitled this viewer to see turned face up among them.
+ *
+ * This is where a revealed card LIVES. Before it, the viewer was handed a
+ * separate "seen in their hand" strip with no hand anywhere on the table, so
+ * there was nothing to read it against and no way to tell how much of their
+ * hand it was.
+ */
+export function duelOpponentHandHtml(
+  slots: readonly DuelOpponentSlot[],
+  catalog: CardCatalog,
+): string {
+  if (slots.length === 0) return '';
+  const seen = slots.filter((slot) => slot.card !== null).length;
+  const label =
+    seen > 0
+      ? t('cardDuel.oppoHandSeen', { count: num(slots.length), seen: num(seen) })
+      : t('cardDuel.oppoHandHidden', { count: num(slots.length) });
+  const cells = slots
+    .map((slot) =>
+      slot.card
+        ? cardFaceHtml(
+            buildCardFaceModel(slot.card, catalog.get(slot.card.cardId), {
+              size: 'hand',
+              revealed: true,
+            }),
+            { catalog },
+          )
+        : '<span class="dt-oppo-back" aria-hidden="true"></span>',
     )
     .join('');
   return (
-    '<div class="dt-revealed">' +
-    `<div class="dt-revealed-title">${esc(t('cardDuel.revealedHeading'))}</div>` +
-    `<div class="dt-revealed-row">${faces}</div>` +
+    `<div class="dt-oppo" role="group" aria-label="${esc(label)}">` +
+    `<div class="dt-oppo-row">${cells}</div>` +
+    `<div class="dt-oppo-note">${esc(label)}</div>` +
+    '</div>'
+  );
+}
+
+/**
+ * The effects row: every parked modifier still in play, the viewer's own
+ * first.
+ *
+ * Each chip names the SOURCE CARD and carries that card's own rules sentence
+ * as its accessible name, because the sentence already says what the effect
+ * does ("Your next Beast gets +2"). Writing a second copy of that wording here
+ * would be a sentence to translate, review, and keep in step with the card for
+ * no new information.
+ */
+export function duelEffectsHtml(effects: readonly DuelEffectChip[], catalog: CardCatalog): string {
+  if (effects.length === 0) return '';
+  const durationKey = {
+    nextRound: 'cardDuel.durationNextRound',
+    untilTriggered: 'cardDuel.durationUntilTriggered',
+    untilMatchEnd: 'cardDuel.durationMatchEnd',
+  } as const;
+  const chips = effects
+    .map((effect) => {
+      const def = catalog.get(effect.cardId);
+      const name = def ? cardName(def) : '';
+      const rules = def ? cardRulesTextFrom(def, {}) : '';
+      const duration = t(durationKey[effect.duration]);
+      const label = t('cardDuel.effectAria', { name, rules, duration });
+      const amount =
+        effect.amount === null || effect.amount === 0
+          ? ''
+          : `<span class="dt-fx-amount ${effect.amount > 0 ? 'dt-fx-up' : 'dt-fx-down'}">` +
+            `${esc(effect.amount > 0 ? `+${num(effect.amount)}` : num(effect.amount))}</span>`;
+      return (
+        `<span class="dt-fx" data-side="${effect.mine ? 'mine' : 'theirs'}" aria-label="${esc(label)}" title="${esc(label)}">` +
+        `<span class="dt-fx-name">${esc(name)}</span>` +
+        amount +
+        `<span class="dt-fx-when">${esc(duration)}</span>` +
+        '</span>'
+      );
+    })
+    .join('');
+  return (
+    '<div class="dt-effects">' +
+    `<div class="dt-effects-title">${esc(t('cardDuel.effectsHeading'))}</div>` +
+    `<div class="dt-effects-row">${chips}</div>` +
     '</div>'
   );
 }
