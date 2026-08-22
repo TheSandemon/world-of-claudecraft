@@ -55,6 +55,11 @@ export const UI_CUES = {
   cardReveal: 'ui_card_reveal',
   cardRoundPush: 'ui_card_round_push',
   cardShuffle: 'ui_card_shuffle',
+  // The narration cues (src/ui/cards/duel_beats_core.ts): one per effect that
+  // lands, one for the health it takes off. Fired several times a round, so
+  // both are short and sit under the four cues above.
+  cardEffect: 'ui_card_effect',
+  cardHit: 'ui_card_hit',
   // Gathering rhythm (Professions 2.0 Phase 12b, issue #2208): fishCast/
   // fishBite/fishReel are real, shipped fishing cues. gatherCast branches by
   // node type (gatherCastByNodeType below); this flat cue is only the
@@ -359,6 +364,14 @@ export class GameAudio {
 
   cardShuffle(): void {
     this.play(UI_CUES.cardShuffle);
+  }
+
+  cardEffect(): void {
+    this.play(UI_CUES.cardEffect);
+  }
+
+  cardHit(): void {
+    this.play(UI_CUES.cardHit);
   }
 
   // Gathering rhythm (Professions 2.0 Phase 12b). All of these are personal

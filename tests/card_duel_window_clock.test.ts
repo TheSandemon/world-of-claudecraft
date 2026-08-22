@@ -420,6 +420,8 @@ describe('card duel window clock and round theater', () => {
         cardReveal: () => cues.push('reveal'),
         cardRoundPush: () => cues.push('push'),
         cardShuffle: () => cues.push('shuffle'),
+        cardEffect: () => cues.push('effect'),
+        cardHit: () => cues.push('hit'),
       };
       const root = document.body.firstElementChild as HTMLElement;
       const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
@@ -461,6 +463,8 @@ describe('card duel window clock and round theater', () => {
           cardReveal: () => cues.push('reveal'),
           cardRoundPush: () => cues.push('push'),
           cardShuffle: () => cues.push('shuffle'),
+          cardEffect: () => cues.push('effect'),
+          cardHit: () => cues.push('hit'),
         },
       );
       expect(stage.dataset.beat).toBe('deal');
@@ -492,6 +496,8 @@ describe('card duel window clock and round theater', () => {
           cardReveal: () => cues.push('reveal'),
           cardRoundPush: () => cues.push('push'),
           cardShuffle: () => cues.push('shuffle'),
+          cardEffect: () => cues.push('effect'),
+          cardHit: () => cues.push('hit'),
         },
       );
       expect(stage.dataset.beat).toBe('settle');
@@ -503,39 +509,129 @@ describe('card duel window clock and round theater', () => {
     }
   });
 
-  it('names every beat in words, so a motionless round is still readable', () => {
-    // At the low preset nothing animates, so the clash has nothing but this
-    // line to tell it apart from the beat before it.
-    const { win, root } = makeWindow();
-    win.render();
-    const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
-    win.showReveal({
-      mine: 6,
-      theirs: 2,
-      mineBase: 4,
-      theirsBase: 2,
-      outcome: 'win',
-      reshuffled: false,
-    });
-    const captions = [...stage.querySelectorAll('.dt-beat')] as HTMLElement[];
-    expect(captions.map((el) => el.dataset.phase)).toEqual(['deal', 'reveal', 'shift', 'clash']);
-    expect(captions.map((el) => el.textContent)).toEqual([
-      'Cards down',
-      'Cards turn',
-      'Effects land',
-      'The cards clash',
-    ]);
-    // One line per beat, written once with the stage: the beats only move the
-    // attribute, and the stylesheet shows the matching caption.
-    for (const phase of ['deal', 'reveal', 'shift', 'clash']) {
-      expect(CARDS_CSS).toContain(
-        `.dt-stage[data-beat="${phase}"] .dt-beat[data-phase="${phase}"]`,
+  it('says what each beat is doing, in words, one line at a time', () => {
+    // At the low preset nothing animates, so this line is the only thing that
+    // tells a clash apart from the beat before it. It also names the CARD that
+    // moved a number, which is the complaint that started all of this.
+    vi.useFakeTimers();
+    try {
+      const { win, root } = makeWindow();
+      win.render();
+      const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
+      win.showReveal({
+        mine: 6,
+        theirs: 2,
+        mineBase: 4,
+        theirsBase: 2,
+        mineCardId: 'forest_wolf',
+        theirsCardId: 'grave_rat',
+        outcome: 'win',
+        reshuffled: false,
+        steps: [
+          {
+            side: 'mine',
+            cardId: 'stablemaster',
+            effect: 'modifyValue',
+            target: 'mine',
+            amount: 2,
+            valueAfter: 6,
+          },
+        ],
+        damage: 4,
+        damageTo: 'theirs',
+        myHp: 100,
+        theirHp: 96,
+        maxHp: 100,
+      });
+      const line = () => (stage.querySelector('[data-cd-beatline]') as HTMLElement).textContent;
+      expect(line()).toBe('Cards down');
+      vi.advanceTimersByTime(300);
+      expect(line()).toBe('Cards turn');
+      vi.advanceTimersByTime(600);
+      // The step beat: the card that did it, the number it moved, and whose
+      // card it moved it on.
+      expect(line()).toBe('Stablemaster: +2 to your card');
+      vi.advanceTimersByTime(500);
+      expect(line()).toBe('The cards clash');
+      vi.advanceTimersByTime(400);
+      expect(line()).toBe('Your opponent takes 4');
+      // Not read aloud: the announce line already says the whole round once.
+      expect((stage.querySelector('.dt-beats') as HTMLElement).getAttribute('aria-hidden')).toBe(
+        'true',
       );
+    } finally {
+      vi.useRealTimers();
     }
-    // Not read aloud: the announce line already says the whole round once.
-    expect((stage.querySelector('.dt-beats') as HTMLElement).getAttribute('aria-hidden')).toBe(
-      'true',
+  });
+
+  it('puts a committed card face-down on the table, on the side that played it', () => {
+    // Where a played card GOES. Before this it left the hand and ceased to
+    // exist until the round resolved, so the table could not answer "have I
+    // played, and have they?" with anything but a lamp on a band.
+    const { win, root, setInfo } = makeWindow();
+    win.render();
+    const slot = (side: string) =>
+      root.querySelector(`[data-cd-stage] [data-cd-slot="${side}"]`)?.parentElement as HTMLElement;
+    expect(slot('mine').classList.contains('dt-slot-empty')).toBe(true);
+
+    setInfo(
+      liveInfo({
+        waitingOnOpponent: true,
+        myPlayedCard: { iid: 11, cardId: 'forest_wolf', value: 3 },
+      }),
     );
+    win.render();
+    expect(slot('mine').classList.contains('dt-slot-empty')).toBe(false);
+    expect(slot('theirs').classList.contains('dt-slot-empty')).toBe(true);
+
+    setInfo(
+      liveInfo({
+        waitingOnOpponent: true,
+        opponentCommitted: true,
+        myPlayedCard: { iid: 11, cardId: 'forest_wolf', value: 3 },
+      }),
+    );
+    win.render();
+    expect(slot('theirs').classList.contains('dt-slot-empty')).toBe(false);
+  });
+
+  it('leaves the finished round on the table until the next card is played', () => {
+    // The snapshot flips to "round 2, nobody has committed" the instant a round
+    // resolves. Repainting the stage on that would wipe the result out from
+    // under the player mid-glance.
+    vi.useFakeTimers();
+    try {
+      const { win, root, setInfo } = makeWindow();
+      win.render();
+      const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
+      win.showReveal({
+        mine: 6,
+        theirs: 2,
+        mineCardId: 'forest_wolf',
+        theirsCardId: 'grave_rat',
+        outcome: 'win',
+        reshuffled: false,
+      });
+      vi.advanceTimersByTime(4000);
+      expect(stage.textContent).toContain('Forest Wolf');
+
+      setInfo(liveInfo({ round: 2 }));
+      win.render();
+      expect(stage.textContent).toContain('Forest Wolf');
+
+      // Playing the next card is what clears it.
+      setInfo(
+        liveInfo({
+          round: 2,
+          waitingOnOpponent: true,
+          myPlayedCard: { iid: 12, cardId: 'pack_alpha', value: 6 },
+        }),
+      );
+      win.render();
+      expect(stage.textContent).not.toContain('Forest Wolf');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('a closed window hands the cues back rather than eating them', () => {

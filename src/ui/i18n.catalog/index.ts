@@ -1182,6 +1182,9 @@ export const en = {
     pileDeck: 'Deck: {count}',
     pileDiscard: 'Discard: {count}',
     stageIdle: 'The table is empty',
+    // The hit plate on the stage: the health a round took, and off whom.
+    damageMine: 'You take {amount}',
+    damageTheirs: 'Your opponent takes {amount}',
     // The round theater caption strip (src/ui/cards/duel_table_markup.ts):
     // one line per beat, saying what the stage is doing right now. It is the
     // half of the narration that survives every animation being switched off,
@@ -1189,8 +1192,20 @@ export const en = {
     beat: {
       deal: 'Cards down',
       reveal: 'Cards turn',
-      shift: 'Effects land',
       clash: 'The cards clash',
+      // One line per effect that landed, naming the card that did it: a number
+      // that changes with no author is the thing this whole strip exists for.
+      effectValue: '{card}: {amount} to {target}',
+      effectSilence: '{card} silences the other card',
+      effectReveal: '{card} reveals a card',
+      effectDraw: '{card} draws a card',
+      effectSwap: '{card} swaps the two values',
+      effectOther: '{card} resolves',
+      yourCard: 'your card',
+      theirCard: 'their card',
+      damage: '{target} takes {amount}',
+      you: 'You',
+      them: 'Your opponent',
     },
     // The screen-reader line for a resolved round: the stage tells the story
     // in pictures, and this says the same thing in one sentence.

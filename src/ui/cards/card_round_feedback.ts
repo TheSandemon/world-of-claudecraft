@@ -18,14 +18,17 @@ import type { SimEvent } from '../../sim/types';
 
 type CardRoundResolved = Extract<SimEvent, { type: 'cardRoundResolved' }>;
 
-/** The audio surface this needs, narrowed to the three Card Duel round cues. */
+/** The audio surface this needs, narrowed to the Card Duel round cues. */
 export interface CardRoundAudio {
   cardReveal(): void;
   cardRoundPush(): void;
   cardShuffle(): void;
+  cardEffect(): void;
+  cardHit(): void;
 }
 
-/** What the theater narrates for one resolved round. */
+/** What the theater narrates for one resolved round: the whole round event,
+ *  minus the wire bookkeeping. */
 export interface CardRoundRevealInput {
   mine: number;
   theirs: number;
@@ -35,6 +38,21 @@ export interface CardRoundRevealInput {
   theirsCardId?: string;
   outcome: 'win' | 'lose' | 'push';
   reshuffled: boolean;
+  /** What the round DID, one beat each (src/sim/.../resolve.ts CardRoundStep,
+   *  already viewer-relative). */
+  steps?: readonly {
+    side: 'mine' | 'theirs';
+    cardId: string;
+    effect: string;
+    target?: 'mine' | 'theirs';
+    amount?: number;
+    valueAfter?: number;
+  }[];
+  damage?: number;
+  damageTo?: 'mine' | 'theirs';
+  myHp?: number;
+  theirHp?: number;
+  maxHp?: number;
 }
 
 /** The window surface this needs: just the reveal entry point. It returns
@@ -68,11 +86,22 @@ export function applyCardRoundFeedback(
       theirsCardId: ev.theirsCardId,
       outcome: ev.outcome,
       reshuffled: ev.reshuffled,
+      steps: ev.steps,
+      damage: ev.damage,
+      damageTo: ev.damageTo,
+      myHp: ev.myHp,
+      theirHp: ev.theirHp,
+      maxHp: ev.maxHp,
     },
     audio,
   );
   if (taken) return;
+  // No stage to ride: the player still hears the round they are not watching,
+  // including one tick per effect and the hit, so a match played with the
+  // window shut still sounds like the round it was.
   audio.cardReveal();
+  for (const _step of ev.steps ?? []) audio.cardEffect();
+  if ((ev.damage ?? 0) > 0) audio.cardHit();
   if (ev.outcome === 'push') audio.cardRoundPush();
   if (ev.reshuffled) audio.cardShuffle();
 }

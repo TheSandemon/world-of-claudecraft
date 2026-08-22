@@ -7889,11 +7889,23 @@ export const ja_JP: EnTranslations = {
     "pileDeck": "Deck: {count}",
     "pileDiscard": "捨て札：{count}",
     "stageIdle": "テーブルにカードはありません",
+    "damageMine": "あなたに{amount}ダメージ",
+    "damageTheirs": "相手に{amount}ダメージ",
     "beat": {
       "deal": "カードを伏せた",
       "reveal": "カードが表に",
-      "shift": "効果が発動",
-      "clash": "カードが激突"
+      "clash": "カードが激突",
+      "effectValue": "{card}：{target}に{amount}",
+      "effectSilence": "{card}が相手のカードを沈黙させた",
+      "effectReveal": "{card}がカードを公開した",
+      "effectDraw": "{card}がカードを1枚引いた",
+      "effectSwap": "{card}が両者の値を入れ替えた",
+      "effectOther": "{card}が発動",
+      "yourCard": "あなたのカード",
+      "theirCard": "相手のカード",
+      "damage": "{target}に{amount}ダメージ",
+      "you": "あなた",
+      "them": "相手"
     },
     "announce": "あなたは{mine}、相手は{theirs}を出しました。{outcome}"
   },

@@ -29,6 +29,8 @@ function rig(taken: boolean) {
     cardReveal: () => cues.push('reveal'),
     cardRoundPush: () => cues.push('push'),
     cardShuffle: () => cues.push('shuffle'),
+    cardEffect: () => cues.push('effect'),
+    cardHit: () => cues.push('hit'),
   };
   const stage = {
     showReveal(input: CardRoundRevealInput) {

@@ -15,7 +15,7 @@ function fakeHost() {
   let now = 0;
   let nextHandle = 1;
   const host: DuelTheaterHost = {
-    setPhase: (phase) => phases.push(phase),
+    open: (beat) => phases.push(beat.phase),
     play: (cue) => cues.push(cue),
     schedule(ms, fn) {
       const handle = nextHandle++;
@@ -49,6 +49,8 @@ const winStage = buildDuelStage({
   theirsBase: 4,
   outcome: 'win',
   reshuffled: false,
+  damage: 3,
+  damageTo: 'theirs',
 });
 
 describe('duel theater', () => {
@@ -57,7 +59,7 @@ describe('duel theater', () => {
     new DuelTheater(rig.host).play(winStage, 'full');
     expect(rig.phases).toEqual(['deal']);
     rig.advance(5000);
-    expect(rig.phases).toEqual(['deal', 'reveal', 'shift', 'clash', 'verdict', 'settle']);
+    expect(rig.phases).toEqual(['deal', 'reveal', 'clash', 'damage', 'verdict', 'settle']);
     expect(rig.pending()).toBe(0);
   });
 

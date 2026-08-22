@@ -45,17 +45,22 @@ import {
   type CardRoundAudio,
   type CardRoundRevealInput,
   cardFaceHtml,
+  type DuelStageModel,
   DuelTheater,
+  duelBeatCaption,
   duelClockHtml,
   duelEffectsHtml,
   duelOpponentHandHtml,
   duelSeatBandHtml,
   duelStageHtml,
   duelStageIdleHtml,
+  duelStagePendingHtml,
   duelTokensHtml,
   duelWaitingText,
+  flyCard,
   resolveDuelMotion,
 } from './cards';
+import type { FlightRect } from './cards/card_flight_core';
 import { markDialogRoot } from './dialog_root';
 import { esc } from './esc';
 import { formatNumber, t } from './i18n';
@@ -128,6 +133,13 @@ export class CardDuelWindow {
    *  "which card is this" from the same data the face was painted from, rather
    *  than a second copy that could disagree with it. */
   private lastView: CardDuelViewModel | null = null;
+  /** The card the player just clicked, measured where it sat, waiting for the
+   *  stage slot it flies to. Cleared by the flight or by the next commit. */
+  private pendingFlight: { from: FlightRect; html: string } | null = null;
+  /** The signature of the between-rounds stage picture (who has committed),
+   *  latched only when it is actually painted: while a round is being told the
+   *  stage belongs to the theater, and the change waits. */
+  private lastPending = '';
   private readonly inspector = new CardInspector({
     resolve: (iid) => this.inspectModel(iid),
     catalog: CARD_CATALOG,
@@ -359,7 +371,61 @@ export class CardDuelWindow {
       this.els.effects.innerHTML = duelEffectsHtml(effects, CARD_CATALOG);
     }
 
+    this.paintPendingStage(view);
     this.paintClock(view.secondsLeft);
+  }
+
+  /**
+   * The stage BETWEEN rounds: a face-down card wherever a side has committed.
+   *
+   * This is the half of the table the theater does not own. It repaints when a
+   * commit lands, and it does NOT repaint while a round is being told: the
+   * stage belongs to the timeline then, and the settled picture of the round
+   * that just happened has to survive until the player moves on. The signature
+   * is latched only on a real paint, so a commit that arrives mid-narration is
+   * painted the moment the narration is done rather than lost.
+   */
+  private paintPendingStage(view: CardDuelViewModel): void {
+    const el = this.els.stage;
+    if (!el) return;
+    const mine = view.myPlayedCard !== null;
+    const theirs = view.opponentCommitted;
+    const sig = `${view.round}|${mine ? 'm' : '-'}|${theirs ? 't' : '-'}`;
+    if (sig === this.lastPending) return;
+    if (this.theater?.isPlaying) return;
+    this.lastPending = sig;
+    // Nobody has committed yet and the match is past its first round: the
+    // stage is showing the round that just finished, and that picture is the
+    // right one to leave up. Wiping it back to two empty places the instant a
+    // round resolved is how the old table lost the result mid-glance.
+    if (!mine && !theirs && view.round > 1) return;
+    el.innerHTML = duelStagePendingHtml({ mine, theirs });
+    el.dataset.beat = 'idle';
+    el.removeAttribute('data-outcome');
+    this.flyCommittedCard(el, mine);
+  }
+
+  /**
+   * Sends the card the player just clicked to the place it now sits.
+   *
+   * Only the viewer's own card: the opponent's commit has no rectangle to fly
+   * FROM (their hand is a row of backs whose contents this client never sees),
+   * and inventing one would be animating a card that was never there.
+   */
+  private flyCommittedCard(stage: HTMLElement, mineCommitted: boolean): void {
+    const flight = this.pendingFlight;
+    this.pendingFlight = null;
+    if (!flight || !mineCommitted) return;
+    const slot = stage.querySelector('[data-cd-slot="mine"]') as HTMLElement | null;
+    if (!slot) return;
+    flyCard({
+      from: flight.from,
+      to: slot,
+      html: flight.html,
+      // The same authority the round theater reads: a player who asked for no
+      // motion gets the card already on the table, which it is.
+      animate: resolveDuelMotion(stage.ownerDocument) !== 'none',
+    });
   }
 
   /**
@@ -423,16 +489,22 @@ export class CardDuelWindow {
         outcome,
       });
     }
-    const theater = this.ensureTheater(el, audio ?? null);
+    const theater = this.ensureTheater(el, audio ?? null, stage);
     theater.play(stage, resolveDuelMotion(el.ownerDocument));
     return true;
   }
 
   /** The theater is rebuilt whenever the shell is, because it is bound to the
    *  stage element and to the audio surface the round arrived with. */
-  private ensureTheater(el: HTMLElement, audio: CardRoundAudio | null): DuelTheater {
+  private ensureTheater(
+    el: HTMLElement,
+    audio: CardRoundAudio | null,
+    stage: DuelStageModel,
+  ): DuelTheater {
     this.theater?.stop();
-    this.theater = new DuelTheater(browserTheaterHost(el, audio));
+    this.theater = new DuelTheater(
+      browserTheaterHost(el, audio, window, (beat) => duelBeatCaption(beat, stage, CARD_CATALOG)),
+    );
     return this.theater;
   }
 
@@ -578,6 +650,14 @@ export class CardDuelWindow {
       }
       const card = target.closest('[data-play]') as HTMLElement | null;
       if (card && !(card as HTMLButtonElement).disabled) {
+        // Where the card is RIGHT NOW, captured before the command: the commit
+        // repaints the hand without it, so by the time the stage shows it there
+        // is nothing left to measure. This is the origin of its flight.
+        const box = card.getBoundingClientRect();
+        this.pendingFlight = {
+          from: { left: box.left, top: box.top, width: box.width, height: box.height },
+          html: card.outerHTML,
+        };
         // The INSTANCE id, not the face value: a hand can hold two different
         // cards of the same value, so a value would be an ambiguous request.
         world.playCardInDuel(Number(card.dataset.play));

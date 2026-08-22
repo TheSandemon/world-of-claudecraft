@@ -7889,11 +7889,23 @@ export const zh_TW: EnTranslations = {
     "pileDeck": "Deck: {count}",
     "pileDiscard": "棄牌堆：{count}",
     "stageIdle": "牌桌上還沒有牌",
+    "damageMine": "你受到 {amount} 點傷害",
+    "damageTheirs": "對手受到 {amount} 點傷害",
     "beat": {
       "deal": "牌已蓋下",
       "reveal": "翻開牌面",
-      "shift": "效果生效",
-      "clash": "兩牌交鋒"
+      "clash": "兩牌交鋒",
+      "effectValue": "{card}：{target} {amount}",
+      "effectSilence": "{card}沉默了對方的牌",
+      "effectReveal": "{card}揭示一張牌",
+      "effectDraw": "{card}抽了一張牌",
+      "effectSwap": "{card}交換了雙方數值",
+      "effectOther": "{card}生效",
+      "yourCard": "你的牌",
+      "theirCard": "對方的牌",
+      "damage": "{target}受到 {amount} 點傷害",
+      "you": "你",
+      "them": "對手"
     },
     "announce": "你打出 {mine}，對手打出 {theirs}。{outcome}"
   },

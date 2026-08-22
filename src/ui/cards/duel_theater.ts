@@ -11,21 +11,27 @@ import {
   buildDuelBeats,
   type DuelBeat,
   type DuelBeatCue,
-  type DuelBeatPhase,
   type DuelMotion,
   type DuelStageModel,
   duelCues,
 } from './duel_beats_core';
 
 export interface DuelTheaterHost {
-  /** Opens a beat: the stage paints itself for this phase. */
-  setPhase(phase: DuelBeatPhase): void;
+  /** Opens a beat: the stage paints itself for it. Takes the whole beat rather
+   *  than its phase name because a `step` beat also carries WHICH effect it is
+   *  narrating, and that is the difference between "something changed" and
+   *  "their Nullstone silenced your wolf". */
+  open(beat: DuelBeat): void;
   /** Fires one audio cue. */
   play(cue: DuelBeatCue): void;
   /** Schedules `fn` in `ms`, returning a cancellable handle. */
   schedule(ms: number, fn: () => void): number;
   cancel(handle: number): void;
 }
+
+/** The finished picture, as a beat: what a jumped-to or collapsed timeline
+ *  opens. */
+const SETTLED: DuelBeat = { phase: 'settle', at: 0, cue: null, step: null };
 
 export class DuelTheater {
   private pending: number[] = [];
@@ -36,6 +42,12 @@ export class DuelTheater {
   /** The round currently on the stage, finished or mid-play. */
   get current(): DuelStageModel | null {
     return this.stage;
+  }
+
+  /** True while beats are still scheduled: the stage belongs to the timeline
+   *  and no snapshot repaint may take it. */
+  get isPlaying(): boolean {
+    return this.pending.length > 0;
   }
 
   /**
@@ -54,7 +66,7 @@ export class DuelTheater {
     if (motion === 'none') {
       // The collapsed timeline still owes the player every cue: they are
       // information (a push, a reshuffle), not decoration.
-      this.openCollapsed(beats[0]?.phase ?? 'settle', duelCues(stage));
+      this.openCollapsed(beats[0] ?? SETTLED, duelCues(stage));
       return;
     }
     for (const beat of beats) this.schedule(beat);
@@ -66,7 +78,7 @@ export class DuelTheater {
   finishNow(): void {
     if (this.pending.length === 0) return;
     this.clear();
-    this.host.setPhase('settle');
+    this.host.open(SETTLED);
   }
 
   /** Drops the timeline without touching the stage (the window is closing). */
@@ -75,14 +87,14 @@ export class DuelTheater {
     this.stage = null;
   }
 
-  private openCollapsed(phase: DuelBeatPhase, cues: readonly DuelBeatCue[]): void {
-    this.host.setPhase(phase);
+  private openCollapsed(beat: DuelBeat, cues: readonly DuelBeatCue[]): void {
+    this.host.open(beat);
     for (const cue of cues) this.host.play(cue);
   }
 
   private schedule(beat: DuelBeat): void {
     const open = () => {
-      this.host.setPhase(beat.phase);
+      this.host.open(beat);
       if (beat.cue) this.host.play(beat.cue);
     };
     if (beat.at <= 0) {

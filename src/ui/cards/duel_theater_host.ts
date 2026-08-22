@@ -8,14 +8,19 @@
 // of this round does this player want played" instead of each inventing their
 // own.
 
-import type { DuelBeatCue, DuelMotion } from './duel_beats_core';
+import type { DuelBeat, DuelBeatCue, DuelMotion } from './duel_beats_core';
 import type { DuelTheaterHost } from './duel_theater';
 
-/** The three Card Duel cues, narrowed to what a host needs to fire. */
+/** The Card Duel cues, narrowed to what a host needs to fire. */
 export interface DuelCueAudio {
   cardReveal(): void;
   cardRoundPush(): void;
   cardShuffle(): void;
+  /** One effect landing. Fired once per narrated effect, so a round where three
+   *  things happened does not sound like a round where one did. */
+  cardEffect(): void;
+  /** The hit: health coming off. */
+  cardHit(): void;
 }
 
 /**
@@ -59,14 +64,27 @@ export function browserTheaterHost(
   el: HTMLElement,
   audio: DuelCueAudio | null,
   timers: Pick<Window, 'setTimeout' | 'clearTimeout'> = window,
+  /** Turns a beat into the line the stage shows while it plays. Injected
+   *  because it needs i18n and the catalog, neither of which belongs in a
+   *  module whose whole job is the timer and the element. */
+  caption?: (beat: DuelBeat) => string,
 ): DuelTheaterHost {
+  const captionEl = el.querySelector('[data-cd-beatline]') as HTMLElement | null;
   return {
-    setPhase(phase) {
-      el.dataset.beat = phase;
+    open(beat) {
+      el.dataset.beat = beat.phase;
+      // Two writes per beat at most: the attribute every CSS rule keys on, and
+      // the one line of text that says what is happening. Both elided against
+      // what is already there.
+      if (!captionEl || !caption) return;
+      const text = caption(beat);
+      if (captionEl.textContent !== text) captionEl.textContent = text;
     },
     play(cue: DuelBeatCue) {
       if (!audio) return;
       if (cue === 'reveal') audio.cardReveal();
+      else if (cue === 'effect') audio.cardEffect();
+      else if (cue === 'hit') audio.cardHit();
       else if (cue === 'push') audio.cardRoundPush();
       else audio.cardShuffle();
     },

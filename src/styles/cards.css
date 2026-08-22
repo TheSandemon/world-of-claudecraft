@@ -587,36 +587,60 @@
     color: var(--color-text-muted);
   }
 
-  /* The caption strip: every beat says what it is, in words.
-     Written once with the stage (all four lines, one per captioned beat) and
-     switched by the same data-beat attribute as everything else, so it costs no
-     extra write and no extra markup per beat.
+  /* The caption line: one sentence saying what the stage is doing right now,
+     written by the theater once per beat.
 
-     This is the part that makes a beat legible when there is no motion at all:
-     at the lowest preset, and under reduced motion, the clash has nothing to
-     distinguish it from the beat before it except this line. The strip reserves
-     its own height so a caption appearing never shifts the table under it. */
+     This is what makes a beat legible when there is no motion at all: at the
+     lowest preset, and under reduced motion, a clash has nothing to tell it
+     apart from the beat before it except this line, and a step beat's line is
+     the only place the CARD that moved a number is named. It reserves its own
+     height so a caption appearing never shifts the table under it. */
   .dt-beats {
     grid-column: 1 / -1;
-    min-height: 13px;
-    font-size: 10px;
-    letter-spacing: 0.04em;
+    min-height: 14px;
+    font-size: 11px;
+    letter-spacing: 0.03em;
     text-align: center;
-    color: var(--color-text-muted);
+    color: var(--color-text-light);
   }
-  .dt-beat {
-    display: none;
-  }
-  .dt-stage[data-beat="deal"] .dt-beat[data-phase="deal"],
-  .dt-stage[data-beat="reveal"] .dt-beat[data-phase="reveal"],
-  .dt-stage[data-beat="shift"] .dt-beat[data-phase="shift"],
-  .dt-stage[data-beat="clash"] .dt-beat[data-phase="clash"] {
-    display: inline;
-  }
-  /* The shift beat is the one that explains the round, so its caption reads in
-     the same green the value going up does. */
-  .dt-beat[data-phase="shift"] {
+  /* An effect landing is the beat that explains the round, so its line reads
+     in the same green a value going up does. */
+  .dt-stage[data-beat="step"] .dt-beats {
     color: var(--color-stat-bonus);
+  }
+  .dt-stage[data-beat="damage"] .dt-beats {
+    color: var(--mkt-name-legendary);
+  }
+
+  /* The hit: how much health the round took, and off whom. Written with the
+     stage (the bar underneath has already moved) and pointed at by the damage
+     beat, so the number never waits on an animation. */
+  .dt-damage {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    min-height: 18px;
+    opacity: 0;
+  }
+  .dt-stage[data-beat="damage"] .dt-damage,
+  .dt-stage[data-beat="verdict"] .dt-damage,
+  .dt-stage[data-beat="settle"] .dt-damage {
+    opacity: 1;
+  }
+  .dt-stage[data-beat="damage"] .dt-damage {
+    animation: dt-hit-in 260ms ease-out;
+  }
+  .dt-damage-num {
+    font-family: var(--title-font);
+    font-size: 18px;
+    color: var(--mkt-name-legendary);
+    text-shadow: 0 1px 2px #000;
+  }
+  .dt-damage-who {
+    font-size: 10px;
+    color: var(--color-text-muted);
   }
 
   /* Beat 1, deal: the two cards arrive from their owner's side of the table,
@@ -645,7 +669,8 @@
   /* Beat 2, reveal: both backs turn at once. Simultaneous, because
      simultaneous hidden selection is the game. */
   .dt-stage[data-beat="reveal"] .dt-back,
-  .dt-stage[data-beat="shift"] .dt-back,
+  .dt-stage[data-beat="step"] .dt-back,
+  .dt-stage[data-beat="damage"] .dt-back,
   .dt-stage[data-beat="clash"] .dt-back,
   .dt-stage[data-beat="verdict"] .dt-back,
   .dt-stage[data-beat="settle"] .dt-back {
@@ -658,16 +683,18 @@
     animation: dt-flip-in 200ms 120ms ease-out backwards;
   }
 
-  /* Beat 3, shift: the effects land. The delta chip pops onto the plate it
-     moved, so a value that changed says WHY beside itself. */
+  /* Beat 3, step: ONE effect landing, once per effect that did something. The
+     delta chip pops onto the plate it moved and the value ticks, so a number
+     that changed says WHY beside itself while the caption line names the card
+     that did it. */
   .dt-stage[data-beat="reveal"] .dt-chip,
   .dt-stage[data-beat="reveal"] .dt-plate-base {
     opacity: 0;
   }
-  .dt-stage[data-beat="shift"] .dt-chip {
+  .dt-stage[data-beat="step"] .dt-chip {
     animation: dt-chip-in 260ms ease-out;
   }
-  .dt-stage[data-beat="shift"] .dt-plate-value {
+  .dt-stage[data-beat="step"] .dt-plate-value {
     animation: dt-tick 260ms ease-out;
   }
 
@@ -689,8 +716,9 @@
   .dt-stage[data-beat="idle"] .dt-verdict:not(.dt-verdict-idle),
   .dt-stage[data-beat="deal"] .dt-verdict,
   .dt-stage[data-beat="reveal"] .dt-verdict,
-  .dt-stage[data-beat="shift"] .dt-verdict,
-  .dt-stage[data-beat="clash"] .dt-verdict {
+  .dt-stage[data-beat="step"] .dt-verdict,
+  .dt-stage[data-beat="clash"] .dt-verdict,
+  .dt-stage[data-beat="damage"] .dt-verdict {
     opacity: 0;
   }
   .dt-stage[data-beat="verdict"] .dt-verdict {
@@ -763,6 +791,12 @@
     to {
       opacity: 0;
       transform: scaleX(2);
+    }
+  }
+  @keyframes dt-hit-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(1.4);
     }
   }
   @keyframes dt-verdict-in {
@@ -1104,6 +1138,20 @@
   }
   .cf-size-inspect .cf-tribes {
     font-size: 11px;
+  }
+
+  /* ---------- the card flight (src/ui/cards/card_flight.ts) ---------- */
+  /* A card physically leaving the hand and landing on the table. Fixed to the
+     viewport and mounted on <body>, because it crosses the duel window's own
+     scrollport on the way; pointer-events off, because it is a picture of a
+     move that has already happened as far as the rules are concerned. Only
+     transform and opacity animate, so the whole move stays on the compositor. */
+  .cf-flight {
+    position: fixed;
+    z-index: 101;
+    pointer-events: none;
+    transform-origin: center center;
+    will-change: transform;
   }
 
   /* ---------- the card inspector (src/ui/cards/card_inspect.ts) ---------- */

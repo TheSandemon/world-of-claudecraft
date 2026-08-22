@@ -7889,11 +7889,23 @@ export const ko_KR: EnTranslations = {
     "pileDeck": "Deck: {count}",
     "pileDiscard": "버린 카드: {count}",
     "stageIdle": "테이블이 비어 있습니다",
+    "damageMine": "당신이 {amount} 피해를 입음",
+    "damageTheirs": "상대가 {amount} 피해를 입음",
     "beat": {
       "deal": "카드를 내려놓음",
       "reveal": "카드 공개",
-      "shift": "효과 적용",
-      "clash": "카드 격돌"
+      "clash": "카드 격돌",
+      "effectValue": "{card}: {target}에 {amount}",
+      "effectSilence": "{card}이(가) 상대 카드를 침묵시킴",
+      "effectReveal": "{card}이(가) 카드를 공개",
+      "effectDraw": "{card}이(가) 카드를 뽑음",
+      "effectSwap": "{card}이(가) 두 값을 맞바꿈",
+      "effectOther": "{card} 발동",
+      "yourCard": "당신의 카드",
+      "theirCard": "상대의 카드",
+      "damage": "{target} {amount} 피해",
+      "you": "당신",
+      "them": "상대"
     },
     "announce": "나는 {mine}, 상대는 {theirs}을(를) 냈습니다. {outcome}"
   },

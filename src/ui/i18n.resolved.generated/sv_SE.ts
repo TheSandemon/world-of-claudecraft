@@ -7889,11 +7889,23 @@ export const sv_SE: EnTranslations = {
     "pileDeck": "Deck: {count}",
     "pileDiscard": "Discard: {count}",
     "stageIdle": "The table is empty",
+    "damageMine": "You take {amount}",
+    "damageTheirs": "Your opponent takes {amount}",
     "beat": {
       "deal": "Cards down",
       "reveal": "Cards turn",
-      "shift": "Effects land",
-      "clash": "The cards clash"
+      "clash": "The cards clash",
+      "effectValue": "{card}: {amount} to {target}",
+      "effectSilence": "{card} silences the other card",
+      "effectReveal": "{card} reveals a card",
+      "effectDraw": "{card} draws a card",
+      "effectSwap": "{card} swaps the two values",
+      "effectOther": "{card} resolves",
+      "yourCard": "your card",
+      "theirCard": "their card",
+      "damage": "{target} takes {amount}",
+      "you": "You",
+      "them": "Your opponent"
     },
     "announce": "You played {mine}, your opponent played {theirs}. {outcome}"
   },

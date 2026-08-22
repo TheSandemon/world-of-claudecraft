@@ -47,6 +47,12 @@ export interface CardDuelViewModel {
   myHp: number;
   opponentHp: number;
   maxHp: number;
+  /** The card this viewer has locked in, so the table can put it face-down on
+   *  their side of the stage instead of having it vanish from the hand. */
+  myPlayedCard: CardDuelHandCardView | null;
+  /** True while the last round is still being told; the round clock is stopped
+   *  for exactly this window. */
+  resolving: boolean;
   round: number;
   waitingOnOpponent: boolean;
   /** True once the opponent has locked a card in. Their CARD stays hidden;
@@ -80,6 +86,8 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
       myHp: 0,
       opponentHp: 0,
       maxHp: 0,
+      myPlayedCard: null,
+      resolving: false,
       round: 0,
       waitingOnOpponent: false,
       opponentCommitted: false,
@@ -111,6 +119,19 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
     myHp: m.myHp,
     opponentHp: m.opponentHp,
     maxHp: m.maxHp,
+    myPlayedCard: m.myPlayedCard
+      ? {
+          iid: m.myPlayedCard.iid,
+          cardId: m.myPlayedCard.cardId,
+          value: m.myPlayedCard.value,
+          // A committed card is not playable and has nothing pending: it is
+          // already on the table.
+          playable: false,
+          pendingDelta: m.myPlayedCard.pendingDelta ?? 0,
+          ...(m.myPlayedCard.textValues ? { textValues: { ...m.myPlayedCard.textValues } } : {}),
+        }
+      : null,
+    resolving: m.resolving,
     round: m.round,
     waitingOnOpponent: m.waitingOnOpponent,
     opponentCommitted: m.opponentCommitted,

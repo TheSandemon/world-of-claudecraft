@@ -18,7 +18,7 @@ import { esc } from '../esc';
 import { formatNumber, t } from '../i18n';
 import { cardFaceHtml } from './card_face_markup';
 import { buildCardFaceModel } from './card_face_view';
-import type { DuelStageModel, DuelStageSide } from './duel_beats_core';
+import type { DuelBeat, DuelStageModel, DuelStageSide, DuelStageStep } from './duel_beats_core';
 import type {
   DuelCounterToken,
   DuelEffectChip,
@@ -308,35 +308,74 @@ function stageCardHtml(
   );
 }
 
-/** The beats the caption strip names, in the order they open. `verdict` and
- *  `settle` are deliberately absent: the verdict banner is already the caption
- *  for those, and two lines saying the same thing is one line of noise. */
-const CAPTIONED_BEATS = ['deal', 'reveal', 'shift', 'clash'] as const;
-
 /**
- * The caption strip: one line per beat, saying in words what the stage is
- * doing right now.
+ * The caption line: one sentence saying what the stage is doing RIGHT NOW.
  *
- * Every line is written once, when the stage is; the beats only move the
- * `data-beat` attribute across it and CSS shows the matching one. That keeps
- * the theater's one-attribute-per-beat contract intact and keeps every string
- * a `t()` key, which a CSS `content` string could not be.
- *
- * It is the one part of the round that survives having every animation
- * switched off, which is exactly why it is here: at the lowest graphics preset
- * the clash beat has no motion to distinguish it, and a beat a player cannot
- * tell apart from its neighbour is not a beat.
+ * The theater writes into it once per beat (duel_theater_host.ts), because a
+ * step beat's line names the card that acted and the number it moved, and
+ * neither is knowable when the stage markup is written. It is the one part of
+ * the round that survives having every animation switched off, which is why it
+ * exists at all: at the lowest preset a clash has no motion to tell it apart
+ * from the beat before it, and a beat a player cannot distinguish is not a
+ * beat.
  *
  * `aria-hidden`: the off-screen announce line already reads the whole round as
- * one sentence, and a caption that rewrites itself four times in two seconds
+ * one sentence, and a caption that rewrites itself six times in three seconds
  * would talk over it.
  */
-export function duelBeatCaptionsHtml(): string {
-  const lines = CAPTIONED_BEATS.map(
-    (phase) =>
-      `<span class="dt-beat" data-phase="${phase}">${esc(t(`cardDuel.beat.${phase}` as never))}</span>`,
-  ).join('');
-  return `<div class="dt-beats" aria-hidden="true">${lines}</div>`;
+export function duelBeatLineHtml(): string {
+  return '<div class="dt-beats" data-cd-beatline aria-hidden="true"></div>';
+}
+
+/**
+ * What one beat says.
+ *
+ * A step beat names the CARD, because "+2" with no author is the thing players
+ * were complaining about: a number that changes for no visible reason. The
+ * value-moving steps read as a signed change; the rest name what the effect
+ * did in its own words.
+ */
+export function duelBeatCaption(
+  beat: DuelBeat,
+  stage: DuelStageModel,
+  catalog: CardCatalog,
+): string {
+  if (beat.phase === 'step' && beat.step) return stepCaption(beat.step, catalog);
+  if (beat.phase === 'deal') return t('cardDuel.beat.deal');
+  if (beat.phase === 'reveal') return t('cardDuel.beat.reveal');
+  if (beat.phase === 'clash') return t('cardDuel.beat.clash');
+  if (beat.phase === 'damage') {
+    return t('cardDuel.beat.damage', {
+      target: t(stage.damageTo === 'mine' ? 'cardDuel.beat.you' : 'cardDuel.beat.them'),
+      amount: num(stage.damage),
+    });
+  }
+  // The verdict banner is already the caption for the last two beats, and two
+  // lines saying the same thing is one line of noise.
+  return '';
+}
+
+function stepCaption(step: DuelStageStep, catalog: CardCatalog): string {
+  const def = catalog.get(step.cardId);
+  const name = def ? cardName(def) : step.cardId;
+  if (step.amount !== null && step.amount !== 0) {
+    return t('cardDuel.beat.effectValue', {
+      card: name,
+      amount: step.amount > 0 ? `+${num(step.amount)}` : num(step.amount),
+      target: t(step.target === 'mine' ? 'cardDuel.beat.yourCard' : 'cardDuel.beat.theirCard'),
+    });
+  }
+  const key =
+    step.effect === 'silence'
+      ? 'cardDuel.beat.effectSilence'
+      : step.effect === 'reveal'
+        ? 'cardDuel.beat.effectReveal'
+        : step.effect === 'draw'
+          ? 'cardDuel.beat.effectDraw'
+          : step.effect === 'swapValues'
+            ? 'cardDuel.beat.effectSwap'
+            : 'cardDuel.beat.effectOther';
+  return t(key as never, { card: name });
 }
 
 /**
@@ -361,23 +400,74 @@ export function duelStageHtml(
     `<div class="dt-verdict">${esc(outcome)}</div>` +
     (stage.reshuffled ? `<div class="dt-note">${esc(t('cardDuel.revealReshuffled'))}</div>` : '') +
     stageCardHtml(stage.mine, 'mine', catalog, labels) +
-    duelBeatCaptionsHtml()
+    duelDamagePlateHtml(stage) +
+    duelBeatLineHtml()
+  );
+}
+
+/**
+ * The hit, as a plate on the stage: how much health the round took and off
+ * whom.
+ *
+ * Written with the stage and revealed by the damage beat, so the number is in
+ * the markup from the first frame (the health bar underneath has already
+ * moved) and the beat only chooses when to point at it.
+ */
+export function duelDamagePlateHtml(stage: DuelStageModel): string {
+  if (stage.damage <= 0 || stage.damageTo === null) return '';
+  const side = stage.damageTo;
+  const label = t(side === 'mine' ? 'cardDuel.damageMine' : 'cardDuel.damageTheirs', {
+    amount: num(stage.damage),
+  });
+  return (
+    `<div class="dt-damage" data-side="${side}" aria-hidden="true">` +
+    `<span class="dt-damage-num">-${esc(num(stage.damage))}</span>` +
+    `<span class="dt-damage-who">${esc(label)}</span>` +
+    '</div>'
   );
 }
 
 /** The stage before any round has resolved: two empty places, so the table
  *  reads as a table rather than as a gap that might be a bug. */
 export function duelStageIdleHtml(labels: DuelStageLabels = defaultStageLabels()): string {
-  const empty = (which: DuelSide) =>
-    `<div class="dt-slot dt-slot-${which} dt-slot-empty">` +
-    `<div class="dt-slot-label">${esc(which === 'mine' ? labels.mine : labels.theirs)}</div>` +
-    '<div class="dt-slot-card"><span class="dt-back" aria-hidden="true"></span></div>' +
-    '</div>';
+  return duelStagePendingHtml({ mine: false, theirs: false }, labels);
+}
+
+/**
+ * The stage BETWEEN rounds: a face-down card in the place of every side that
+ * has committed.
+ *
+ * This is where a played card goes. Before it, a card left the hand and simply
+ * ceased to exist until the round resolved, so the table could not answer the
+ * most basic question in the game ("have I played, and have they?") with
+ * anything but a lamp on a band. A committed side gets a real card back, face
+ * down, in the slot its card will be revealed in.
+ *
+ * Snapshot-driven, so it is correct the instant a commit lands, at every
+ * preset. The MOTION of the card getting there is the flight
+ * (src/ui/cards/card_flight.ts), which is decoration over this.
+ */
+export function duelStagePendingHtml(
+  committed: { mine: boolean; theirs: boolean },
+  labels: DuelStageLabels = defaultStageLabels(),
+): string {
+  const slot = (which: DuelSide) => {
+    const down = which === 'mine' ? committed.mine : committed.theirs;
+    return (
+      `<div class="dt-slot dt-slot-${which}${down ? '' : ' dt-slot-empty'}">` +
+      `<div class="dt-slot-label">${esc(which === 'mine' ? labels.mine : labels.theirs)}</div>` +
+      `<div class="dt-slot-card" data-cd-slot="${which}">` +
+      '<span class="dt-back" aria-hidden="true"></span></div>' +
+      '</div>'
+    );
+  };
+  const both = committed.mine && committed.theirs;
+  const line = both ? t('cardDuel.waitingReveal') : t('cardDuel.stageIdle');
   return (
-    empty('theirs') +
+    slot('theirs') +
     '<div class="dt-clash" aria-hidden="true"></div>' +
-    `<div class="dt-verdict dt-verdict-idle">${esc(t('cardDuel.stageIdle'))}</div>` +
-    empty('mine')
+    `<div class="dt-verdict dt-verdict-idle">${esc(line)}</div>` +
+    slot('mine')
   );
 }
 

@@ -310,6 +310,8 @@ const UI_PURE_CORES = [
   // Where the enlarged copy of a hovered card sits: pure rectangle math, so the
   // placement is argued about in Node rather than by eye against a phone.
   'src/ui/cards/card_inspect_view.ts',
+  // The geometry of a card leaving the hand for the table.
+  'src/ui/cards/card_flight_core.ts',
   // The duel table and its round theater: what a match reads like between
   // reveals, and the beat timeline one resolved round plays out over.
   'src/ui/cards/duel_beats_core.ts',
@@ -2151,6 +2153,8 @@ const UI_DOM_MODULES = [
   'src/ui/breath_bar.ts',
   'src/ui/calendar_window.ts',
   'src/ui/camera_prompt.ts',
+  'src/ui/card_duel_window.ts',
+  'src/ui/cards/card_flight.ts',
   'src/ui/cards/duel_theater_host.ts',
   'src/ui/hud/action_bar/bar_editor/bar_editor_window.ts',
   'src/ui/hud/action_bar/consumable_seat_controller.ts',

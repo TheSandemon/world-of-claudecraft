@@ -26,6 +26,12 @@ const MASTER_GAINS_DB = {
   ui_fiesta_down: 6.66,
   ui_fiesta_revive: 4.01,
   ui_gather_cast: 0,
+  // Card Duel narration (src/ui/cards/duel_beats_core.ts): one cue per effect
+  // that lands, and one for the health that comes off. Both are per-BEAT
+  // sounds fired several times a round, so they are deliberately short and
+  // quiet next to the existing card cues.
+  ui_card_effect: 0,
+  ui_card_hit: 1.5,
   // Craft-family cast-start placeholder (Craft Cast System Phase 6): soft
   // workbench wind-up, distinct from the per-family completion cues.
   ui_craft_cast: 0,
@@ -79,6 +85,19 @@ function fiestaWord(tier, base) {
 }
 
 export const UI_SFX_SPECS = [
+  // One effect resolving on the table: a small bright tick, low enough to fire
+  // three or four times in a round without wearing.
+  cue('ui_card_effect', 0.5, 'Short bright magical tick as a card effect resolves. No speech.', [
+    tone(880, 0, 0.14, 0.2, { wave: 'triangle', endFrequency: 1320 }),
+    tone(1760, 0.03, 0.1, 0.08, { wave: 'sine' }),
+    noise('white', 0, 0.08, 0.03, { highpass: 3200 }),
+  ]),
+  // The hit: health coming off. Blunter and lower than the effect tick, so the
+  // two are never mistaken for each other in the same round.
+  cue('ui_card_hit', 0.6, 'Blunt low impact as a card duel round takes health. No speech.', [
+    tone(180, 0, 0.22, 0.3, { wave: 'saw', endFrequency: 70 }),
+    noise('brown', 0, 0.18, 0.16, { lowpass: 900 }),
+  ]),
   cue('ui_quest_done', 0.75, 'Three-note ascending fantasy quest completion chime.', [
     tone(523, 0, 0.35, 0.16, { wave: 'triangle' }),
     tone(659, 0.12, 0.38, 0.16, { wave: 'triangle' }),

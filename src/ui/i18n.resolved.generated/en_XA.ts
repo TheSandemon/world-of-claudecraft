@@ -7889,11 +7889,23 @@ export const en_XA: EnTranslations = {
     "pileDeck": "[Ðéçķ: {count}]",
     "pileDiscard": "[Ðíšçáŕð: {count}]",
     "stageIdle": "[Ţĥé ţáƀļé íš éɱþţý]",
+    "damageMine": "[Ýóú ţáķé {amount}]",
+    "damageTheirs": "[Ýóúŕ óþþóñéñţ ţáķéš {amount}]",
     "beat": {
       "deal": "[Çáŕðš ðóŵñ]",
       "reveal": "[Çáŕðš ţúŕñ]",
-      "shift": "[Éƒƒéçţš ļáñð]",
-      "clash": "[Ţĥé çáŕðš çļášĥ]"
+      "clash": "[Ţĥé çáŕðš çļášĥ]",
+      "effectValue": "[{card}: {amount} ţó {target}]",
+      "effectSilence": "[{card} šíļéñçéš ţĥé óţĥéŕ çáŕð]",
+      "effectReveal": "[{card} ŕéʋéáļš á çáŕð]",
+      "effectDraw": "[{card} ðŕáŵš á çáŕð]",
+      "effectSwap": "[{card} šŵáþš ţĥé ţŵó ʋáļúéš]",
+      "effectOther": "[{card} ŕéšóļʋéš]",
+      "yourCard": "[ýóúŕ çáŕð]",
+      "theirCard": "[ţĥéíŕ çáŕð]",
+      "damage": "[{target} ţáķéš {amount}]",
+      "you": "[Ýóú]",
+      "them": "[Ýóúŕ óþþóñéñţ]"
     },
     "announce": "[Ýóú þļáýéð {mine}, ýóúŕ óþþóñéñţ þļáýéð {theirs}. {outcome}]"
   },

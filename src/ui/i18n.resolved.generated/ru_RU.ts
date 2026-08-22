@@ -7889,11 +7889,23 @@ export const ru_RU: EnTranslations = {
     "pileDeck": "Deck: {count}",
     "pileDiscard": "Сброс: {count}",
     "stageIdle": "На столе пусто",
+    "damageMine": "Вы получаете {amount}",
+    "damageTheirs": "Противник получает {amount}",
     "beat": {
       "deal": "Карты выложены",
       "reveal": "Карты открываются",
-      "shift": "Эффекты сработали",
-      "clash": "Карты сходятся"
+      "clash": "Карты сходятся",
+      "effectValue": "{card}: {amount} на {target}",
+      "effectSilence": "{card} заставляет карту умолкнуть",
+      "effectReveal": "{card} раскрывает карту",
+      "effectDraw": "{card} тянет карту",
+      "effectSwap": "{card} меняет значения местами",
+      "effectOther": "{card} срабатывает",
+      "yourCard": "вашу карту",
+      "theirCard": "карту противника",
+      "damage": "{target} получает {amount}",
+      "you": "Вы",
+      "them": "Противник"
     },
     "announce": "Вы сыграли {mine}, соперник сыграл {theirs}. {outcome}"
   },

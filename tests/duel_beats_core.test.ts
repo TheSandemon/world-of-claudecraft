@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CARD_NARRATION_MAX_S } from '../src/sim/minigames/card_duel/narration';
 import {
   buildDuelBeats,
   buildDuelStage,
@@ -7,6 +8,18 @@ import {
   duelBeatSpan,
   duelCues,
 } from '../src/ui/cards/duel_beats_core';
+
+/** One narrated effect, as the wire carries it. */
+function step(amount: number) {
+  return {
+    side: 'mine' as const,
+    cardId: 'stablemaster',
+    effect: 'modifyValue',
+    target: 'mine' as const,
+    amount,
+    valueAfter: 7 + amount,
+  };
+}
 
 const plainWin: DuelRoundInput = {
   mine: 7,
@@ -62,30 +75,52 @@ describe('duel beat timeline', () => {
     for (let i = 1; i < beats.length; i++) expect(beats[i].at).toBeGreaterThan(beats[i - 1].at);
   });
 
-  it('skips the shift beat when no effect moved a value, and pulls the rest forward', () => {
-    // A plain round should not sit through a pause explaining a change that
-    // never happened.
+  it('gives every effect that happened its own beat, and a plain round none', () => {
+    // The whole shape of the fix: a round is as long as it earned. A player
+    // watching three effects land sees three moments, and a player whose round
+    // was two bare numbers waits through nothing at all.
     const plain = buildDuelBeats(buildDuelStage(plainWin));
-    const shifted = buildDuelBeats(
-      buildDuelStage({ ...plainWin, mine: 9, mineBase: 7, theirs: 4, theirsBase: 4 }),
-    );
+    const busy = buildDuelBeats(buildDuelStage({ ...plainWin, steps: [step(2), step(-1)] }));
     expect(plain.map((b) => b.phase)).toEqual(['deal', 'reveal', 'clash', 'verdict', 'settle']);
-    expect(shifted.map((b) => b.phase)).toEqual([
+    expect(busy.map((b) => b.phase)).toEqual([
       'deal',
       'reveal',
-      'shift',
+      'step',
+      'step',
       'clash',
       'verdict',
       'settle',
     ]);
-    expect(duelBeatSpan(plain)).toBe(duelBeatSpan(shifted) - DUEL_BEAT_GAP_MS.shift);
+    // And each step beat carries WHICH effect it narrates, or the line it shows
+    // could only ever say "something changed".
+    expect(busy.filter((b) => b.phase === 'step').map((b) => b.step?.amount)).toEqual([2, -1]);
+    expect(duelBeatSpan(busy)).toBe(duelBeatSpan(plain) + DUEL_BEAT_GAP_MS.step * 2);
   });
 
-  it('stays inside two and a half seconds, so a round never outlives its own moment', () => {
+  it('pays for the hit only on a round that dealt one', () => {
+    const hit = buildDuelBeats(buildDuelStage({ ...plainWin, damage: 3, damageTo: 'theirs' }));
+    const bloodless = buildDuelBeats(buildDuelStage({ ...plainWin, damage: 0 }));
+    expect(hit.some((b) => b.phase === 'damage')).toBe(true);
+    expect(bloodless.some((b) => b.phase === 'damage')).toBe(false);
+    expect(duelBeatSpan(hit)).toBe(duelBeatSpan(bloodless) + DUEL_BEAT_GAP_MS.damage);
+  });
+
+  it('keeps even a busy round inside the engine cap it shares with the sim', () => {
+    // The sim stops the round clock for exactly as long as this timeline runs,
+    // so an unbounded story would be an unbounded pause.
     const longest = buildDuelBeats(
-      buildDuelStage({ ...plainWin, mine: 9, mineBase: 7, outcome: 'push', reshuffled: true }),
+      buildDuelStage({
+        ...plainWin,
+        steps: Array.from({ length: 12 }, (_, i) => step(i + 1)),
+        damage: 9,
+        damageTo: 'theirs',
+        outcome: 'push',
+        reshuffled: true,
+      }),
     );
-    expect(duelBeatSpan(longest)).toBeLessThanOrEqual(2500);
+    expect(duelBeatSpan(longest)).toBeLessThanOrEqual(CARD_NARRATION_MAX_S * 1000);
+    // Squeezed, never truncated: all twelve effects still get a moment.
+    expect(longest.filter((b) => b.phase === 'step').length).toBe(12);
   });
 
   it('holds the face-down beat under a third of a second', () => {
@@ -96,10 +131,21 @@ describe('duel beat timeline', () => {
     expect(reveal?.at).toBeLessThan(300);
   });
 
-  it('puts each cue on the beat it belongs to', () => {
-    const push = buildDuelBeats(buildDuelStage({ ...plainWin, outcome: 'push', reshuffled: true }));
+  it('puts each cue on the beat it belongs to, one per effect included', () => {
+    const push = buildDuelBeats(
+      buildDuelStage({
+        ...plainWin,
+        outcome: 'push',
+        reshuffled: true,
+        steps: [step(2)],
+        damage: 4,
+        damageTo: 'mine',
+      }),
+    );
     const cueAt = (phase: string) => push.find((b) => b.phase === phase)?.cue;
     expect(cueAt('reveal')).toBe('reveal');
+    expect(cueAt('step')).toBe('effect');
+    expect(cueAt('damage')).toBe('hit');
     expect(cueAt('verdict')).toBe('push');
     expect(cueAt('settle')).toBe('shuffle');
     expect(cueAt('deal')).toBeNull();
@@ -122,13 +168,22 @@ describe('duel beat timeline', () => {
     // The whole reason the collapse is legal: it shows the same result at the
     // same instant, so reduced motion and the low preset cost no information.
     const beats = buildDuelBeats(buildDuelStage(plainWin), 'none');
-    expect(beats).toEqual([{ phase: 'settle', at: 0, cue: null }]);
+    expect(beats).toEqual([{ phase: 'settle', at: 0, cue: null, step: null }]);
     expect(duelBeatSpan(beats)).toBe(0);
   });
 
-  it('still owes every cue when the timeline is collapsed', () => {
-    const stage = buildDuelStage({ ...plainWin, outcome: 'push', reshuffled: true });
-    expect(duelCues(stage)).toEqual(['reveal', 'push', 'shuffle']);
+  it('still owes every cue when the timeline is collapsed, one per effect', () => {
+    // A collapsed round must still SOUND like the round it was: three effects
+    // is three ticks, not one.
+    const stage = buildDuelStage({
+      ...plainWin,
+      outcome: 'push',
+      reshuffled: true,
+      steps: [step(1), step(-2)],
+      damage: 5,
+      damageTo: 'mine',
+    });
+    expect(duelCues(stage)).toEqual(['reveal', 'effect', 'effect', 'hit', 'push', 'shuffle']);
     expect(duelCues(buildDuelStage(plainWin))).toEqual(['reveal']);
   });
 
