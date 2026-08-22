@@ -22,8 +22,8 @@ import type { DuelStageModel, DuelStageSide } from './duel_beats_core';
 import type {
   DuelCounterToken,
   DuelEffectChip,
+  DuelHealthModel,
   DuelOpponentSlot,
-  DuelPip,
   DuelSeatModel,
   DuelTableModel,
 } from './duel_table_view';
@@ -43,12 +43,23 @@ export function counterName(key: string): string {
   return t(`cards.counter.${key}` as never);
 }
 
-/** The score track. Filled pips are rounds already won. */
-export function duelPipsHtml(pips: readonly DuelPip[], label: string): string {
-  const cells = pips
-    .map((pip) => `<span class="dt-pip${pip.filled ? ' dt-pip-on' : ''}"></span>`)
-    .join('');
-  return `<div class="dt-pips" role="img" aria-label="${esc(label)}">${cells}</div>`;
+/**
+ * One seat's health bar: the thing the match is decided on.
+ *
+ * The exact numbers ride ON the bar rather than under it, because a bar alone
+ * cannot answer "can that card finish me" and that is the question every choice
+ * in this game turns on. Never tiered and never hover-gated; the only thing a
+ * graphics preset touches is whether the fill SLIDES to its new width or cuts
+ * to it.
+ */
+export function duelHealthHtml(health: DuelHealthModel, label: string): string {
+  const pct = `${(health.ratio * 100).toFixed(1)}%`;
+  return (
+    `<div class="dt-hp" data-band="${health.band}" role="img" aria-label="${esc(label)}">` +
+    `<span class="dt-hp-fill" style="width:${pct}"></span>` +
+    `<span class="dt-hp-num">${esc(num(health.hp))}<span class="dt-hp-max">/${esc(num(health.max))}</span></span>` +
+    '</div>'
+  );
 }
 
 /** The counter tokens a side is carrying. Nothing renders when it has none:
@@ -94,17 +105,20 @@ export function duelSeatBandHtml(
   const commitText = t(
     seat.commit === 'locked' ? 'cardDuel.commitLocked' : 'cardDuel.commitChoosing',
   );
-  const won = seat.pips.filter((pip) => pip.filled).length;
-  const scoreLabel = t('cardDuel.pipsAria', {
+  const healthLabel = t('cardDuel.healthAria', {
     name,
-    won: num(won),
-    total: num(seat.pips.length),
+    hp: num(seat.health.hp),
+    max: num(seat.health.max),
   });
+  // Rounds won is a readout rather than the win condition now, so it rides the
+  // band as one small figure instead of owning a track of its own.
+  const rounds = t('cardDuel.roundsWon', { count: num(seat.roundWins) });
   return (
     `<div class="dt-seat dt-seat-${side}" data-commit="${seat.commit}">` +
     `<span class="dt-seat-name">${esc(name)}</span>` +
     `<span class="dt-commit"><span class="dt-lamp" aria-hidden="true"></span>${esc(commitText)}</span>` +
-    duelPipsHtml(seat.pips, scoreLabel) +
+    duelHealthHtml(seat.health, healthLabel) +
+    `<span class="dt-rounds">${esc(rounds)}</span>` +
     duelTokensHtml(seat.counters) +
     (opts.piles ? duelPilesHtml(opts.piles.deck, opts.piles.discard) : '') +
     '</div>'
@@ -165,7 +179,7 @@ export function duelOpponentHandHtml(
               size: 'hand',
               revealed: true,
             }),
-            { catalog },
+            { catalog, inspect: true },
           )
         : '<span class="dt-oppo-back" aria-hidden="true"></span>',
     )
@@ -294,6 +308,37 @@ function stageCardHtml(
   );
 }
 
+/** The beats the caption strip names, in the order they open. `verdict` and
+ *  `settle` are deliberately absent: the verdict banner is already the caption
+ *  for those, and two lines saying the same thing is one line of noise. */
+const CAPTIONED_BEATS = ['deal', 'reveal', 'shift', 'clash'] as const;
+
+/**
+ * The caption strip: one line per beat, saying in words what the stage is
+ * doing right now.
+ *
+ * Every line is written once, when the stage is; the beats only move the
+ * `data-beat` attribute across it and CSS shows the matching one. That keeps
+ * the theater's one-attribute-per-beat contract intact and keeps every string
+ * a `t()` key, which a CSS `content` string could not be.
+ *
+ * It is the one part of the round that survives having every animation
+ * switched off, which is exactly why it is here: at the lowest graphics preset
+ * the clash beat has no motion to distinguish it, and a beat a player cannot
+ * tell apart from its neighbour is not a beat.
+ *
+ * `aria-hidden`: the off-screen announce line already reads the whole round as
+ * one sentence, and a caption that rewrites itself four times in two seconds
+ * would talk over it.
+ */
+export function duelBeatCaptionsHtml(): string {
+  const lines = CAPTIONED_BEATS.map(
+    (phase) =>
+      `<span class="dt-beat" data-phase="${phase}">${esc(t(`cardDuel.beat.${phase}` as never))}</span>`,
+  ).join('');
+  return `<div class="dt-beats" aria-hidden="true">${lines}</div>`;
+}
+
 /**
  * The stage for a resolved round: two cards, the strike between them, and the
  * verdict.
@@ -315,7 +360,8 @@ export function duelStageHtml(
     '<div class="dt-clash" aria-hidden="true"><span class="dt-spark"></span></div>' +
     `<div class="dt-verdict">${esc(outcome)}</div>` +
     (stage.reshuffled ? `<div class="dt-note">${esc(t('cardDuel.revealReshuffled'))}</div>` : '') +
-    stageCardHtml(stage.mine, 'mine', catalog, labels)
+    stageCardHtml(stage.mine, 'mine', catalog, labels) +
+    duelBeatCaptionsHtml()
   );
 }
 

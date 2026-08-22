@@ -7,6 +7,7 @@
 // match and never reaches past this module's shapes.
 
 import type { CardHandState } from './deck';
+import { CARD_DUEL_START_HP } from './rules';
 import type {
   CardDefinition,
   CardHistoryEntry,
@@ -27,10 +28,24 @@ export interface CardCatalog {
   get(id: CardId): CardDefinition | undefined;
 }
 
+/** The biggest single hit one seat has landed, for the end-of-match summary.
+ *  Null until that seat has won a round that dealt damage. */
+export interface CardBestHit {
+  round: number;
+  cardId: CardId;
+  amount: number;
+}
+
 /** One seat's live state. */
 export interface PlayerCardState {
   seat: CardSeat;
   cards: CardHandState;
+  /** Health remaining. The match ends when a seat reaches zero (rules.ts). */
+  hp: number;
+  /** Total damage this seat has DEALT, for the summary. Not a rule input: no
+   *  card reads it, and no comparison depends on it. */
+  damageDealt: number;
+  bestHit: CardBestHit | null;
   /** The card locked in for this round, or null before it is played. */
   playedThisRound: CardInstance | null;
   /** The card this seat played LAST round. */
@@ -109,6 +124,9 @@ export function createPlayerCardState(seat: CardSeat, cards: CardHandState): Pla
   return {
     seat,
     cards,
+    hp: CARD_DUEL_START_HP,
+    damageDealt: 0,
+    bestHit: null,
     playedThisRound: null,
     previousCard: null,
     previousResult: null,
@@ -279,6 +297,33 @@ export function applyRoundResult(state: CardMatchState, winner: CardSeat | null)
       side.consecutiveWins = 0;
       side.consecutiveLosses = 0;
     }
+  }
+}
+
+/**
+ * Applies one round's damage to the seat that lost it.
+ *
+ * Kept beside `applyRoundResult` because they are the same moment: these two
+ * functions together are the whole answer to "what does a resolved round do to
+ * the match", and splitting them would let a caller run one without the other.
+ *
+ * Health floors at zero rather than going negative: the overkill is not a
+ * mechanic anything reads, and a negative bar is a rendering bug waiting to
+ * happen in two hosts at once.
+ */
+export function applyRoundDamage(
+  state: CardMatchState,
+  winner: CardSeat,
+  damage: number,
+  sourceCardId: CardId | null,
+): void {
+  if (damage <= 0) return;
+  const loser = sideOf(state, otherSeat(winner));
+  const victor = sideOf(state, winner);
+  loser.hp = Math.max(0, loser.hp - damage);
+  victor.damageDealt += damage;
+  if (sourceCardId && (victor.bestHit === null || damage > victor.bestHit.amount)) {
+    victor.bestHit = { round: state.round, cardId: sourceCardId, amount: damage };
   }
 }
 

@@ -12,7 +12,7 @@ import type { CardDuelMatch } from '../src/sim/social/card_duel';
 import {
   buildCardMinigameInfo,
   CARD_DUEL_ROUND_DEADLINE_S,
-  CARD_DUEL_ROUNDS_TO_WIN,
+  CARD_DUEL_START_HP,
   cardDuelMatchFor,
   deckForPlayer,
   forfeitCardDuelMatch,
@@ -621,29 +621,63 @@ describe('card_duel', () => {
     expect(CARD_DUEL_ROUND_DEADLINE_S).toBe(45);
   });
 
-  it('best-of-CARD_DUEL_ROUNDS_TO_WIN: the match ends the instant a side reaches the pinned threshold, not sooner', () => {
+  it('takes health off the loser of a round, by the margin between the two cards', () => {
     const { ctx } = makeCtx();
     joinCardMinigameQueue(ctx, 1);
     joinCardMinigameQueue(ctx, 2);
     updateCardDuelQueue(ctx);
     const match = cardDuelMatchFor(ctx, 1);
     if (!match) throw new Error('expected a live match');
-    // Side A wins CARD_DUEL_ROUNDS_TO_WIN - 1 rounds: the match must still
-    // be live (a threshold of 1, i.e. single-round, would have ended it).
-    for (let i = 0; i < CARD_DUEL_ROUNDS_TO_WIN - 1; i++) {
-      const m = cardDuelMatchFor(ctx, 1);
-      if (!m) throw new Error('match ended early');
-      playCardInDuel(ctx, highestCard(m.state.a.cards.hand).iid, 1);
-      playCardInDuel(ctx, lowestCard(m.state.b.cards.hand).iid, 2);
-    }
-    expect(cardDuelMatchFor(ctx, 1)?.state.a.roundWins).toBe(CARD_DUEL_ROUNDS_TO_WIN - 1);
+    playCardInDuel(ctx, highestCard(match.state.a.cards.hand).iid, 1);
+    playCardInDuel(ctx, lowestCard(match.state.b.cards.hand).iid, 2);
+    const live = cardDuelMatchFor(ctx, 1);
+    if (!live) throw new Error('one round cannot end a match from full health');
+    // The margin is read off the values the comparison USED (a card's effects
+    // can move them), which is the same pair the stage shows the player.
+    const played = live.state.history.slice(-2);
+    const aValue = played.find((entry) => entry.owner === 'a')?.effectiveValue ?? 0;
+    const bValue = played.find((entry) => entry.owner === 'b')?.effectiveValue ?? 0;
+    const margin = aValue - bValue;
+    expect(margin).toBeGreaterThan(0);
+    // The winner is untouched and the loser is down exactly the margin: the
+    // player can read the hit off the two cards before it lands.
+    expect(live.state.a.hp).toBe(CARD_DUEL_START_HP);
+    expect(live.state.b.hp).toBe(CARD_DUEL_START_HP - margin);
+    expect(live.state.a.damageDealt).toBe(margin);
+    expect(live.state.a.bestHit?.amount).toBe(margin);
+  });
+
+  it('ends the match when a seat runs out of health, and not before', () => {
+    const { ctx } = makeCtx();
+    joinCardMinigameQueue(ctx, 1);
+    joinCardMinigameQueue(ctx, 2);
+    updateCardDuelQueue(ctx);
+    const match = cardDuelMatchFor(ctx, 1);
+    if (!match) throw new Error('expected a live match');
+    // One point of health left, and a round A is about to win: the match ends
+    // on the damage, not on any round count.
+    match.state.b.hp = 1;
     expect(cardDuelMatchFor(ctx, 1)).not.toBeNull();
-    // The next A win reaches the threshold and ends the match.
-    const m = cardDuelMatchFor(ctx, 1);
-    if (!m) throw new Error('expected a live match');
-    playCardInDuel(ctx, highestCard(m.state.a.cards.hand).iid, 1);
-    playCardInDuel(ctx, lowestCard(m.state.b.cards.hand).iid, 2);
+    const high = highestCard(match.state.a.cards.hand);
+    const low = lowestCard(match.state.b.cards.hand);
+    playCardInDuel(ctx, high.iid, 1);
+    playCardInDuel(ctx, low.iid, 2);
     expect(cardDuelMatchFor(ctx, 1)).toBeNull();
+  });
+
+  it('a round win with no margin ends nothing: winning rounds is not the win condition', () => {
+    // Two round wins used to take the match. Now a round that took no health
+    // (a winTies push, or a margin that rounded to nothing) leaves the match
+    // exactly where it was.
+    const { ctx } = makeCtx();
+    joinCardMinigameQueue(ctx, 1);
+    joinCardMinigameQueue(ctx, 2);
+    updateCardDuelQueue(ctx);
+    const match = cardDuelMatchFor(ctx, 1);
+    if (!match) throw new Error('expected a live match');
+    match.state.a.roundWins = 5;
+    expect(cardDuelMatchFor(ctx, 1)).not.toBeNull();
+    expect(match.state.b.hp).toBe(CARD_DUEL_START_HP);
   });
 
   it('cardMinigameAvailable ignores Fiesta bots (offline bot matches must not fake availability)', () => {

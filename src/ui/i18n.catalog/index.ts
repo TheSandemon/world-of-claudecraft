@@ -1163,7 +1163,9 @@ export const en = {
     waitingThem: 'Waiting on your opponent',
     waitingMe: 'Your opponent is ready',
     waitingReveal: 'Revealing the round',
-    pipsAria: '{name}: {won} of {total} rounds won',
+    // The health bar replaced the score pips when health replaced best-of-3.
+    healthAria: '{name}: {hp} of {max} health',
+    roundsWon: 'Rounds won: {count}',
     counterAria: '{name}: {count}',
     // The opponent's hand: a face-down place per card they hold, with any a
     // reveal effect exposed turned face up among them.
@@ -1180,6 +1182,16 @@ export const en = {
     pileDeck: 'Deck: {count}',
     pileDiscard: 'Discard: {count}',
     stageIdle: 'The table is empty',
+    // The round theater caption strip (src/ui/cards/duel_table_markup.ts):
+    // one line per beat, saying what the stage is doing right now. It is the
+    // half of the narration that survives every animation being switched off,
+    // so it renders at every graphics tier.
+    beat: {
+      deal: 'Cards down',
+      reveal: 'Cards turn',
+      shift: 'Effects land',
+      clash: 'The cards clash',
+    },
     // The screen-reader line for a resolved round: the stage tells the story
     // in pictures, and this says the same thing in one sentence.
     announce: 'You played {mine}, your opponent played {theirs}. {outcome}',

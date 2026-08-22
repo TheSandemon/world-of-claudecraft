@@ -16,8 +16,8 @@
 
      POSITION is ownership.  The opponent is the top band and the top stage
                              slot, the player is the bottom ones, always.
-     SHAPE is category.      Rounds won are pips, a counter is a token, a pile
-                             is a stack, a card is a card.
+     SHAPE is category.      Health is a bar, a counter is a token, a pile is a
+                             stack, a card is a card.
      COLOR is state.         Gold is the player's own and the winner's; the
                              stat-bonus green is a value going up; the
                              legendary orange is a value coming down; the
@@ -28,13 +28,13 @@
                              all of it costs no information at all.
 
    FAIRNESS. Every number a player acts on (the clock, the value plates, the
-   card values, the modifier deltas, the pips) paints at every graphics tier,
+   card values, the modifier deltas, both health bars) paints at every graphics tier,
    on every device, with no hover requirement and no animation delay. The tier
    rules at the bottom of this file touch transitions and animations only. The
    ONE bounded exception is the stage's own deal beat: the two cards of an
    ALREADY DECIDED round stay face-down for 260ms while they land. That
-   narrates a finished round, never a pending decision, the pips and the hand
-   underneath have already moved, and any of the three motion authorities
+   narrates a finished round, never a pending decision, the health bars and the
+   hand underneath have already moved, and any of the three motion authorities
    collapses it to zero. */
 @layer components {
   /* ---------- card duel (the Card Master minigame) ---------- */
@@ -203,22 +203,53 @@
     color: var(--color-stat-bonus);
   }
 
-  /* The score, as a track. Two pips means best of three; the track states the
-     match length without a sentence about it. */
-  .dt-pips {
-    display: inline-flex;
-    gap: 3px;
-  }
-  .dt-pip {
-    width: 10px;
-    height: 10px;
+  /* Health: what the match is decided on, so it is the widest thing on the
+     band. The numbers sit ON the bar, because "can that card finish me" is a
+     question a bar alone cannot answer.
+
+     The FILL slides to its new width, which is the only part of this a graphics
+     preset touches (the tier block at the bottom cuts the transition). The
+     number itself is written by the snapshot and never waits for anything. */
+  .dt-hp {
+    position: relative;
+    flex: 1 1 120px;
+    min-width: 90px;
+    height: 14px;
     border: 1px solid var(--gold-dim);
-    border-radius: 2px;
-    transform: rotate(45deg);
+    border-radius: var(--radius-sm);
+    background: #00000055;
+    overflow: hidden;
   }
-  .dt-pip-on {
-    border-color: var(--gold);
-    background: var(--gold);
+  .dt-hp-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--color-stat-bonus);
+    transition: width 320ms ease-out;
+  }
+  .dt-hp[data-band="hurt"] .dt-hp-fill {
+    background: var(--color-craft-full);
+  }
+  .dt-hp[data-band="critical"] .dt-hp-fill {
+    background: var(--mkt-name-legendary);
+  }
+  .dt-hp-num {
+    position: relative;
+    display: block;
+    font-family: var(--title-font);
+    font-size: 11px;
+    line-height: 14px;
+    text-align: center;
+    color: var(--color-text-light);
+    text-shadow: 0 1px 2px #000;
+  }
+  .dt-hp-max {
+    color: var(--color-text-muted);
+  }
+  /* Rounds won, now a readout rather than the win condition: small, beside the
+     bar, and still there because cards read the round score. */
+  .dt-rounds {
+    font-size: 10px;
+    color: var(--color-text-muted);
   }
 
   /* Counters (Web, Dread) as physical tokens on the board rather than a line
@@ -556,6 +587,38 @@
     color: var(--color-text-muted);
   }
 
+  /* The caption strip: every beat says what it is, in words.
+     Written once with the stage (all four lines, one per captioned beat) and
+     switched by the same data-beat attribute as everything else, so it costs no
+     extra write and no extra markup per beat.
+
+     This is the part that makes a beat legible when there is no motion at all:
+     at the lowest preset, and under reduced motion, the clash has nothing to
+     distinguish it from the beat before it except this line. The strip reserves
+     its own height so a caption appearing never shifts the table under it. */
+  .dt-beats {
+    grid-column: 1 / -1;
+    min-height: 13px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+  .dt-beat {
+    display: none;
+  }
+  .dt-stage[data-beat="deal"] .dt-beat[data-phase="deal"],
+  .dt-stage[data-beat="reveal"] .dt-beat[data-phase="reveal"],
+  .dt-stage[data-beat="shift"] .dt-beat[data-phase="shift"],
+  .dt-stage[data-beat="clash"] .dt-beat[data-phase="clash"] {
+    display: inline;
+  }
+  /* The shift beat is the one that explains the round, so its caption reads in
+     the same green the value going up does. */
+  .dt-beat[data-phase="shift"] {
+    color: var(--color-stat-bonus);
+  }
+
   /* Beat 1, deal: the two cards arrive from their owner's side of the table,
      face-down. Where a card came from is the first thing the eye is told. */
   .dt-stage[data-beat="deal"] .dt-slot-theirs,
@@ -616,6 +679,7 @@
     animation: dt-lunge-up 220ms ease-in-out;
   }
   .dt-stage[data-beat="clash"] .dt-spark {
+    opacity: 1;
     animation: dt-spark 260ms ease-out;
   }
 
@@ -1008,6 +1072,62 @@
     width: 132px;
     height: 196px;
   }
+  /* The inspect size: the whole card, big enough to read the art and the rules
+     sentence without leaning in. Only the inspector paints at this size. */
+  .cf-size-inspect {
+    width: 208px;
+    height: 300px;
+  }
+  .cf-size-inspect .cf-rules {
+    display: block;
+    padding: 5px 7px;
+    font-size: 12px;
+  }
+  .cf-size-inspect .cf-value {
+    font-size: 30px;
+  }
+  .cf-size-inspect .cf-base {
+    font-size: 15px;
+  }
+  .cf-size-inspect .cf-delta {
+    font-size: 18px;
+  }
+  .cf-size-inspect .cf-corner {
+    top: 4px;
+    left: 6px;
+  }
+  .cf-size-inspect .cf-plate {
+    padding: 4px 7px;
+  }
+  .cf-size-inspect .cf-name {
+    font-size: 14px;
+  }
+  .cf-size-inspect .cf-tribes {
+    font-size: 11px;
+  }
+
+  /* ---------- the card inspector (src/ui/cards/card_inspect.ts) ---------- */
+  /* The enlarged copy of the card under the pointer, the keyboard focus, or a
+     press-and-hold. Fixed-position and mounted on <body>, because the duel
+     window scrolls inside itself and anything absolutely positioned within it
+     would be clipped by the first card near an edge.
+
+     Not tiered and not animated: it is the only place a player can read what a
+     hand card DOES, so it appears at every graphics preset, on every device,
+     the instant it is asked for. `pointer-events: none` keeps it from ever
+     eating the click that plays the card underneath. */
+  .cf-inspect {
+    position: fixed;
+    /* The shared HUD tooltip's layer: this is the same kind of thing (a
+       transient readout over whatever window asked for it), so it sits with
+       it rather than inventing a level of its own. */
+    z-index: 100;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 14px #000000cc);
+  }
+  .cf-inspect .cf-frame {
+    background: var(--panel-base, #15151f);
+  }
 
   /* ---------- card duel touch layout ---------- */
   /* Authored here rather than in hud.mobile.css because the standalone /cards
@@ -1058,6 +1178,11 @@
     .dt-note {
       grid-column: 1 / -1;
       order: 4;
+    }
+    /* Last row of the side-by-side stage: the caption reads under both cards,
+       the way it reads under the stacked one. */
+    .dt-beats {
+      order: 5;
     }
     .dt-stage[data-beat="clash"] .dt-slot-theirs {
       animation-name: dt-lunge-right;
@@ -1221,12 +1346,21 @@
 
   /* ---------- card duel motion tiers ---------- */
   /* Reduced motion and the lowest graphics preset each drop the motion, and
-     ONLY the motion. Nothing below hides, delays, or dims a number: the beats
-     collapse in JavaScript too (duel_theater_host.ts reads the same three
-     authorities), so a collapsed table lands on the settled picture at once
-     rather than sitting through a silent two seconds. */
+     ONLY the motion. Nothing below hides, delays, or dims a number.
+
+     The two are not the same thing, and duel_theater_host.ts is the other half
+     of the distinction. REDUCED MOTION means the player asked for no staged
+     sequence: the beats collapse in JavaScript as well, so the table lands on
+     the settled picture at once. The LOW PRESET keeps every beat and only sheds
+     the animation between them, so the round still plays out, as hard cuts. It
+     used to collapse too, which meant the machine with the least frame budget
+     was the only one that never got to watch a round happen; a preset may shed
+     richness, never legibility. Every beat therefore has a STATIC state to cut
+     to (the face-down back, the revealed face, the delta chip, the spark, the
+     winner's gold edge) plus its caption line. */
   @media (prefers-reduced-motion: reduce) {
-    .cf-frame {
+    .cf-frame,
+    .dt-hp-fill {
       transition: none;
     }
     .cf-playable:hover .cf-frame {
@@ -1239,7 +1373,8 @@
     }
   }
 
-  :root[data-fx-level="low"] .cf-frame {
+  :root[data-fx-level="low"] .cf-frame,
+  :root[data-fx-level="low"] .dt-hp-fill {
     transition: none;
   }
   :root[data-fx-level="low"] .cf-playable:hover .cf-frame {

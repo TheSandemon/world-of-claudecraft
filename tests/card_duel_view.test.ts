@@ -11,7 +11,9 @@ function wireCard(iid: number, value: number, cardId = `card_${value}`) {
 
 /** The match fields every case below shares. */
 const matchDefaults = {
-  roundsToWin: 2,
+  myHp: 100,
+  opponentHp: 100,
+  maxHp: 100,
   round: 1,
   secondsLeft: 45,
   myCounters: {},

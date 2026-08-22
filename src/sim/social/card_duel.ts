@@ -26,8 +26,9 @@ import {
   activeDeckEntries,
   botCommitDelayTicks,
   buildBoard,
+  CARD_DUEL_MAX_ROUNDS,
   CARD_DUEL_ROUND_DEADLINE_S,
-  CARD_DUEL_ROUNDS_TO_WIN,
+  CARD_DUEL_START_HP,
   type CardBotTier,
   type CardDeckEntry,
   type CardInstance,
@@ -55,7 +56,11 @@ import {
 // so the standalone slice and the bot read the same numbers this orchestrator
 // does. Re-exported here because this module is where every caller and every
 // pinned test resolves them.
-export { CARD_DUEL_ROUND_DEADLINE_S, CARD_DUEL_ROUNDS_TO_WIN } from '../minigames/card_duel';
+export {
+  CARD_DUEL_MAX_ROUNDS,
+  CARD_DUEL_ROUND_DEADLINE_S,
+  CARD_DUEL_START_HP,
+} from '../minigames/card_duel';
 
 export interface CardDuelMatch {
   a: number;
@@ -157,7 +162,11 @@ export interface CardMinigameInfo {
     discardCount: number;
     myRounds: number;
     opponentRounds: number;
-    roundsToWin: number;
+    /** Health, the thing that decides the match. Round wins above are a
+     *  readout: cards read them, nothing ends on them. */
+    myHp: number;
+    opponentHp: number;
+    maxHp: number;
     round: number;
     waitingOnOpponent: boolean;
     /** Seconds left on this round's clock, floored at zero. */
@@ -489,10 +498,29 @@ export function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
       pid,
     });
   }
-  if (match.state.a.roundWins >= CARD_DUEL_ROUNDS_TO_WIN) {
-    endCardDuelMatch(ctx, match, match.a);
-  } else if (match.state.b.roundWins >= CARD_DUEL_ROUNDS_TO_WIN) {
+  // Health decides the match. A seat at zero loses; both at zero in the same
+  // round (only reachable if a future rule ever damages the winner too) is the
+  // same draw the double-timeout is.
+  const aDead = match.state.a.hp <= 0;
+  const bDead = match.state.b.hp <= 0;
+  if (aDead && bDead) {
+    drawMatch(ctx, match);
+    return;
+  }
+  if (aDead) {
     endCardDuelMatch(ctx, match, match.b);
+    return;
+  }
+  if (bDead) {
+    endCardDuelMatch(ctx, match, match.a);
+    return;
+  }
+  // The bound on a match neither deck can finish: at the cap the healthier seat
+  // takes it, and equal health is a draw. Without this, two seats trading
+  // one-point rounds hold a match slot open forever.
+  if (match.state.round > CARD_DUEL_MAX_ROUNDS) {
+    if (match.state.a.hp === match.state.b.hp) drawMatch(ctx, match);
+    else endCardDuelMatch(ctx, match, match.state.a.hp > match.state.b.hp ? match.a : match.b);
   }
 }
 
@@ -555,7 +583,13 @@ function endCardDuelMatch(ctx: SimContext, match: CardDuelMatch, winnerPid: numb
 // consistent; a forfeit after at least one round has been won still credits
 // the non-forfeiting side normally.
 function forfeitMatch(ctx: SimContext, match: CardDuelMatch, forfeiterPid: number): void {
-  if (match.state.a.roundWins + match.state.b.roundWins === 0) {
+  // "Nothing is at stake yet" is now a HEALTH test rather than a round-wins
+  // one, which is the same question asked against the new win condition: no
+  // damage dealt means nobody is closer to winning, so the forfeit credits
+  // nobody. It also keeps the anti-farm rule at least as tight as it was (a
+  // round win with any margin at all takes health, and a round that took no
+  // health decided nothing).
+  if (match.state.a.hp >= CARD_DUEL_START_HP && match.state.b.hp >= CARD_DUEL_START_HP) {
     voidMatch(ctx, match);
     return;
   }
@@ -727,7 +761,9 @@ export function buildCardMinigameInfo(ctx: SimContext, pid: number): CardMinigam
       discardCount: me.cards.discard.length,
       myRounds: me.roundWins,
       opponentRounds: them.roundWins,
-      roundsToWin: CARD_DUEL_ROUNDS_TO_WIN,
+      myHp: me.hp,
+      opponentHp: them.hp,
+      maxHp: CARD_DUEL_START_HP,
       round: match.state.round,
       waitingOnOpponent: me.playedThisRound !== null,
       opponentCommitted: them.playedThisRound !== null,

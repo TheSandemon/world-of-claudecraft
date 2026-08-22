@@ -13,9 +13,10 @@
 import type { CardDefinition, CardRarity, CardTribe } from '../../sim/minigames/card_duel/types';
 import type { CardMinigameCard } from '../../sim/social/card_duel';
 
-/** Which size the face paints at. Same markup and painter for all three; only
- *  the CSS variant differs. */
-export type CardFaceSize = 'hand' | 'stage' | 'cell';
+/** Which size the face paints at. Same markup for all four; only the CSS
+ *  variant differs. `inspect` is the enlarged copy the card inspector shows
+ *  over a face too small to carry its own rules sentence. */
+export type CardFaceSize = 'hand' | 'stage' | 'cell' | 'inspect';
 
 export interface CardFaceModel {
   iid: number;

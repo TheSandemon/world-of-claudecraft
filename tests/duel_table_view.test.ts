@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildDuelClock,
   buildDuelCounters,
-  buildDuelPips,
+  buildDuelHealth,
   buildDuelSeat,
   buildDuelTable,
   DUEL_CLOCK_URGENT_S,
@@ -15,7 +15,9 @@ function tableInput(over: Partial<DuelTableInput> = {}): DuelTableInput {
     opponentCommitted: false,
     myRounds: 0,
     opponentRounds: 0,
-    roundsToWin: 2,
+    myHp: 100,
+    opponentHp: 100,
+    maxHp: 100,
     myCounters: {},
     opponentCounters: {},
     secondsLeft: 45,
@@ -58,23 +60,27 @@ describe('duel clock model', () => {
   });
 });
 
-describe('duel score pips', () => {
-  it('draws one pip per round the match needs, filling the ones already won', () => {
-    expect(buildDuelPips(1, 2)).toEqual([
-      { index: 0, filled: true },
-      { index: 1, filled: false },
-    ]);
+describe('duel health model', () => {
+  it('reads the exact number and the share of the pool it is', () => {
+    expect(buildDuelHealth(68, 100)).toEqual({ hp: 68, max: 100, ratio: 0.68, band: 'healthy' });
   });
 
-  it('never grows the track past the match length', () => {
-    // A snapshot arriving one round late must not add a pip.
-    const pips = buildDuelPips(5, 2);
-    expect(pips.length).toBe(2);
-    expect(pips.every((pip) => pip.filled)).toBe(true);
+  it('names the band a stylesheet acts on, at the thresholds it declares', () => {
+    expect(buildDuelHealth(51, 100).band).toBe('healthy');
+    expect(buildDuelHealth(50, 100).band).toBe('hurt');
+    expect(buildDuelHealth(26, 100).band).toBe('hurt');
+    expect(buildDuelHealth(25, 100).band).toBe('critical');
+    expect(buildDuelHealth(0, 100).band).toBe('critical');
   });
 
-  it('handles a zero-length track without throwing', () => {
-    expect(buildDuelPips(0, 0)).toEqual([]);
+  it('never overflows its track and never goes negative', () => {
+    // Both are rendering bugs that would be reported as rules bugs.
+    expect(buildDuelHealth(140, 100)).toEqual({ hp: 100, max: 100, ratio: 1, band: 'healthy' });
+    expect(buildDuelHealth(-20, 100)).toEqual({ hp: 0, max: 100, ratio: 0, band: 'critical' });
+  });
+
+  it('leaves the bar empty rather than dividing by a zero pool', () => {
+    expect(buildDuelHealth(0, 0)).toEqual({ hp: 0, max: 0, ratio: 0, band: 'critical' });
   });
 });
 
@@ -123,8 +129,8 @@ describe('duel table model', () => {
         opponentCounters: { Dread: 1 },
       }),
     );
-    expect(model.mine.pips.filter((pip) => pip.filled).length).toBe(1);
-    expect(model.theirs.pips.filter((pip) => pip.filled).length).toBe(0);
+    expect(model.mine.roundWins).toBe(1);
+    expect(model.theirs.roundWins).toBe(0);
     expect(model.mine.counters).toEqual([{ key: 'Web', count: 3 }]);
     expect(model.theirs.counters).toEqual([{ key: 'Dread', count: 1 }]);
   });
@@ -134,7 +140,8 @@ describe('duel table model', () => {
     const seat = buildDuelSeat({
       committed: true,
       roundWins: 1,
-      roundsToWin: 2,
+      hp: 100,
+      maxHp: 100,
       counters: { Web: 1 },
     });
     expect(seat).toEqual(

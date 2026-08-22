@@ -307,6 +307,9 @@ const UI_PURE_CORES = [
   // The card face: one pure core behind the hand, the reveal stage, and a
   // collection cell (src/ui/cards/).
   'src/ui/cards/card_face_view.ts',
+  // Where the enlarged copy of a hovered card sits: pure rectangle math, so the
+  // placement is argued about in Node rather than by eye against a phone.
+  'src/ui/cards/card_inspect_view.ts',
   // The duel table and its round theater: what a match reads like between
   // reveals, and the beat timeline one resolved round plays out over.
   'src/ui/cards/duel_beats_core.ts',

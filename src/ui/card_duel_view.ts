@@ -42,7 +42,11 @@ export interface CardDuelViewModel {
   opponentId: string;
   myRounds: number;
   opponentRounds: number;
-  roundsToWin: number;
+  /** Health both seats have left, and the pool it came from: what the match
+   *  is decided on. */
+  myHp: number;
+  opponentHp: number;
+  maxHp: number;
   round: number;
   waitingOnOpponent: boolean;
   /** True once the opponent has locked a card in. Their CARD stays hidden;
@@ -73,7 +77,9 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
       opponentId: '',
       myRounds: 0,
       opponentRounds: 0,
-      roundsToWin: 0,
+      myHp: 0,
+      opponentHp: 0,
+      maxHp: 0,
       round: 0,
       waitingOnOpponent: false,
       opponentCommitted: false,
@@ -102,7 +108,9 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
     opponentId: m.opponent.opponentId ?? '',
     myRounds: m.myRounds,
     opponentRounds: m.opponentRounds,
-    roundsToWin: m.roundsToWin,
+    myHp: m.myHp,
+    opponentHp: m.opponentHp,
+    maxHp: m.maxHp,
     round: m.round,
     waitingOnOpponent: m.waitingOnOpponent,
     opponentCommitted: m.opponentCommitted,

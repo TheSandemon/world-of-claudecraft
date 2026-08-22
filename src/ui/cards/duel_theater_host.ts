@@ -4,8 +4,9 @@
 // duel_beats_core.ts decides WHAT happens and when; duel_theater.ts walks it;
 // this module is the only piece that knows there is a document. Keeping the
 // split means a test drives a whole round on a fake clock, and means the
-// standalone /cards slice and the in-game window share one answer to "does
-// this player want motion" instead of each inventing their own.
+// standalone /cards slice and the in-game window share one answer to "how much
+// of this round does this player want played" instead of each inventing their
+// own.
 
 import type { DuelBeatCue, DuelMotion } from './duel_beats_core';
 import type { DuelTheaterHost } from './duel_theater';
@@ -18,23 +19,30 @@ export interface DuelCueAudio {
 }
 
 /**
- * Whether the round timeline plays out or lands whole.
+ * How the round timeline is played here, from the two authorities that get a
+ * say, in the order they win.
  *
- * Three independent authorities can each collapse it, and any one of them is
- * enough: the in-game reduced-motion setting (`body.reduce-motion`), the OS
- * preference, and the lowest graphics preset (`data-fx-level="low"`). This
- * mirrors exactly what the stylesheet already does to the card face, so the
- * JavaScript pacing and the CSS motion can never disagree and leave a player
- * watching a two second silence with nothing moving in it.
+ * REDUCED MOTION comes first (the in-game `body.reduce-motion` class or the OS
+ * preference) and collapses the timeline to 'none': a player who asked for no
+ * staged sequence gets the finished picture at once, cues and all.
  *
- * Collapsing is always safe: the beats narrate numbers the snapshot has
- * already painted, so 'none' shows the same result at the same instant.
+ * The LOWEST GRAPHICS PRESET (`data-fx-level="low"`) resolves to 'steps', not
+ * 'none'. It used to collapse, and that was the bug this function is written
+ * around: the stylesheet drops every animation at that preset, so collapsing
+ * the beats as well meant the entire round (both cards, the effects, who won)
+ * appeared in a single frame with nothing to watch and nothing to read. A
+ * preset may shed motion; it may not shed the PACING that makes a round
+ * legible. At 'steps' the same beats open at the same times and the stage cuts
+ * between settled pictures.
+ *
+ * Either way the numbers are unaffected: the beats narrate what the snapshot
+ * has already painted underneath.
  */
 export function resolveDuelMotion(doc: Document = document): DuelMotion {
-  if (doc.documentElement.dataset.fxLevel === 'low') return 'none';
   if (doc.body?.classList.contains('reduce-motion')) return 'none';
   const view = doc.defaultView;
   if (view?.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return 'none';
+  if (doc.documentElement.dataset.fxLevel === 'low') return 'steps';
   return 'full';
 }
 

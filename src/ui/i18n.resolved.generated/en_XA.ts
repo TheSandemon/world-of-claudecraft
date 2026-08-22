@@ -7000,7 +7000,8 @@ export const en_XA: EnTranslations = {
     "card": {
       "valueLabel": "[Ʋáļúé {value}]",
       "effectiveLabel": "[Éƒƒéçţíʋé ʋáļúé {value}]",
-      "play": "[Þļáý {name}]"
+      "play": "[Þļáý {name}]",
+      "playDetail": "[Þļáý {name}, ŵóŕţĥ {value}. {rules}]"
     }
   },
   "skinEvent": {
@@ -7875,7 +7876,8 @@ export const en_XA: EnTranslations = {
     "waitingThem": "[Ŵáíţíñĝ óñ ýóúŕ óþþóñéñţ]",
     "waitingMe": "[Ýóúŕ óþþóñéñţ íš ŕéáðý]",
     "waitingReveal": "[Ŕéʋéáļíñĝ ţĥé ŕóúñð]",
-    "pipsAria": "[{name}: {won} óƒ {total} ŕóúñðš ŵóñ]",
+    "healthAria": "[{name}: {hp} óƒ {max} ĥéáļţĥ]",
+    "roundsWon": "[Ŕóúñðš ŵóñ: {count}]",
     "counterAria": "[{name}: {count}]",
     "oppoHandHidden": "[Ţĥéíŕ ĥáñð: {count}]",
     "oppoHandSeen": "[Ţĥéíŕ ĥáñð: {count}, {seen} šééñ]",
@@ -7887,6 +7889,12 @@ export const en_XA: EnTranslations = {
     "pileDeck": "[Ðéçķ: {count}]",
     "pileDiscard": "[Ðíšçáŕð: {count}]",
     "stageIdle": "[Ţĥé ţáƀļé íš éɱþţý]",
+    "beat": {
+      "deal": "[Çáŕðš ðóŵñ]",
+      "reveal": "[Çáŕðš ţúŕñ]",
+      "shift": "[Éƒƒéçţš ļáñð]",
+      "clash": "[Ţĥé çáŕðš çļášĥ]"
+    },
     "announce": "[Ýóú þļáýéð {mine}, ýóúŕ óþþóñéñţ þļáýéð {theirs}. {outcome}]"
   },
   "cardDeck": {

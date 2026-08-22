@@ -22,13 +22,21 @@ on where it appears.
 | `duel_theater.ts` | the driver that walks a timeline against an injected host. No element, no timer API, no audio object. |
 | `duel_theater_host.ts` | the browser half: the real timer, the real element, and the one motion decision. In `UI_DOM_MODULES`. |
 | `card_round_feedback.ts` | what a resolved round does to the client: hands the round and its cues to the stage, and plays them itself only when no stage took it |
+| `card_inspect_view.ts` | pure core: where the enlarged copy of a hovered card sits. In `UI_PURE_CORES`. |
+| `card_inspect.ts` | the card inspector: hover, focus or press-and-hold shows a card at a readable size. Owns the popup element and one layout read per show. |
 
-## One card, one table, three sizes
+## One card, one table, four sizes
 
-The face is one component at three sizes (hand, stage, collection cell): same
-model, same markup, only a CSS size variant differs. The TABLE is the same idea
-one level up: the seat bands, the pips, the counter tokens, the opponent's
-hand, the effects row and the stage all come out of two pure cores
+The face is one component at four sizes (hand, stage, collection cell, and the
+inspect popup): same model, same markup, only a CSS size variant differs. The
+hand size cannot fit the rules sentence, which is why the INSPECTOR exists:
+`data-inspect` on a face makes hover, keyboard focus, and a touch
+press-and-hold show the whole card at `cf-size-inspect`. It is not a graphics
+feature (same at every preset, on every device) and it is aria-hidden, because
+the sentence it shows also rides the card button own accessible name.
+
+The TABLE is the same idea one level up: the seat bands, the pips, the counter
+tokens, the opponent's hand, the effects row and the stage all come out of two pure cores
 (`duel_table_view.ts`, `duel_beats_core.ts`) and one markup module.
 `DuelStageLabels` is the seam for a surface that is NOT played from one seat
 and cannot say "you".
@@ -74,19 +82,36 @@ would delay information.
 
 ## The fairness rule, concretely
 
-Animation is cosmetic; the numbers are not. Motion lives entirely in CSS
-(`transform` and `opacity` only), and THREE independent authorities each
-collapse it: the in-game reduced-motion setting, the OS preference, and the
-lowest graphics preset. `resolveDuelMotion` reads the same three, so the
-JavaScript pacing and the CSS motion can never disagree and leave a player
-watching a silent two seconds with nothing moving in it.
+Animation is cosmetic; the numbers are not, and neither is the PACING. Motion
+lives entirely in CSS (`transform` and `opacity` only), and `resolveDuelMotion`
+resolves the two authorities that get a say, in the order they win:
+
+- **Reduced motion** (the in-game setting or the OS preference) collapses the
+  timeline to `none`: the finished picture at once, cues and all. The player
+  asked for no staged sequence.
+- **The lowest graphics preset** resolves to `steps`: every beat, at the same
+  times, with the stylesheet animation dropped. It used to collapse, and that
+  was a bug: the machine with the least frame budget was the only one that never
+  got to watch a round happen. A preset may shed richness, never legibility.
+
+Because `steps` exists, every beat owes a STATIC state to cut to (the face-down
+back, the revealed face, the delta chip, the spark, the winner gold edge) plus
+its line in the caption strip (`duelBeatCaptionsHtml`), which is written once
+with the stage and switched by the same `data-beat` attribute. A beat a player
+cannot tell apart from its neighbour is not a beat.
 
 **Never tiered, at any preset, on any device, with no hover requirement and no
 animation delay:** the effective value, the printed value, the signed modifier
-delta, the rules text, revealed opponent cards, the opponent's hand size, the
-effects still in play, the round score, the counters, the round clock, and
+delta, revealed opponent cards, the opponent's hand size, the effects still in
+play, the round score, the counters, the round clock, and
 whose commit is outstanding.
 `tests/card_duel_window_clock.test.ts` pins it against the stylesheet.
+
+The RULES TEXT is in that list with one honest asterisk: it is in the markup at
+every size, but the hand variant has no room to show it, and a display:none node
+is out of the accessibility tree too. So the sentence reaches a hand card two
+ways that are neither tiered nor device-dependent: the button own accessible
+name carries it (`cards.card.playDetail`), and the inspector shows it.
 
 **The one bounded exception**, written down so it stays bounded: the stage's
 `deal` beat holds the two cards face-down for one beat (under 300ms, pinned in

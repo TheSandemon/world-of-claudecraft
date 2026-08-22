@@ -15,8 +15,10 @@
 //
 // THE FAIRNESS RULE THIS CORE MUST NOT BREAK: the timeline narrates state the
 // snapshot has ALREADY painted underneath. No number a player acts on waits on
-// a beat, so collapsing the whole timeline (reduced motion, the low graphics
-// preset) is always legal and always shows exactly the same numbers.
+// a beat, so collapsing the whole timeline (reduced motion) is always legal and
+// always shows exactly the same numbers. The lowest graphics preset keeps the
+// beats and sheds only the motion (see DuelMotion): pacing is how a round is
+// read, and a preset may shed richness, never legibility.
 
 /** The ordered phases of a resolved round. */
 export type DuelBeatPhase = 'deal' | 'reveal' | 'shift' | 'clash' | 'verdict' | 'settle';
@@ -81,21 +83,37 @@ export const DUEL_BEAT_GAP_MS: Readonly<Record<DuelBeatPhase, number>> = {
   // before anything is known about them.
   deal: 260,
   // Both faces turn at once. Simultaneous, because simultaneous hidden
-  // selection is the game: neither side reveals first.
-  reveal: 640,
+  // selection is the game: neither side reveals first. Long enough to READ two
+  // cards, which is what the beat is for.
+  reveal: 620,
   // The effects land: a delta chip flies onto the card it moved, and the value
   // ticks. The longest gap, because this is the beat that explains the round.
-  shift: 400,
+  shift: 660,
   // The two cards lean in and strike.
-  clash: 260,
+  clash: 320,
   // The winner surges, the loser recoils, the banner reads the result.
-  verdict: 540,
+  verdict: 620,
   // The stage holds the finished picture until the next round replaces it.
   settle: 0,
 };
 
-/** Whether the timeline plays out or lands whole. */
-export type DuelMotion = 'full' | 'none';
+/**
+ * How a timeline is played.
+ *
+ * - `full`: every beat, with the CSS motion that goes with it.
+ * - `steps`: every beat, at the same times, with no motion at all. The stage
+ *   cuts from one settled picture to the next. This is what the LOWEST
+ *   GRAPHICS PRESET gets, and it exists because the alternative was worse:
+ *   collapsing the whole round into one frame there meant the cheapest machine
+ *   in the world, the one whose player has the least frame budget to spare for
+ *   reading, was the only one that never got to SEE the round happen. Motion is
+ *   the cosmetic part; the PACING is information, so the preset sheds the first
+ *   and keeps the second.
+ * - `none`: one settled beat at zero. Reduced motion (in-game or OS) means the
+ *   player asked for no staged sequence at all, so they get the finished
+ *   picture immediately, cues and all.
+ */
+export type DuelMotion = 'full' | 'steps' | 'none';
 
 /** Builds the stage picture for one resolved round. */
 export function buildDuelStage(input: DuelRoundInput): DuelStageModel {
@@ -133,10 +151,16 @@ function cueFor(phase: DuelBeatPhase, stage: DuelStageModel): DuelBeatCue | null
 /**
  * The timeline for one round.
  *
- * With `motion: 'none'` (reduced motion, or the lowest graphics preset) this
- * collapses to a SINGLE settle beat at zero: the finished picture, at once,
- * with every cue that would have played folded into it. That is the whole
- * reason the cues are named on the beats rather than fired by the caller.
+ * With `motion: 'none'` (reduced motion) this collapses to a SINGLE settle beat
+ * at zero: the finished picture, at once, with every cue that would have played
+ * folded into it. That is the whole reason the cues are named on the beats
+ * rather than fired by the caller.
+ *
+ * `motion: 'steps'` returns exactly the timeline `full` does. The two differ in
+ * the DOM, not here: at `steps` the stylesheet has already dropped every
+ * animation, so the same beats read as hard cuts between settled pictures. The
+ * beat NAMES are what each surface keys on, so a phase always means the same
+ * thing whatever the preset.
  *
  * A round where no effect moved either value has no `shift` beat at all, and
  * everything after it pulls forward: a plain round should not sit through a

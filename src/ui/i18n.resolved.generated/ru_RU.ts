@@ -7000,7 +7000,8 @@ export const ru_RU: EnTranslations = {
     "card": {
       "valueLabel": "Значение {value}",
       "effectiveLabel": "Действующее значение {value}",
-      "play": "Play {name}"
+      "play": "Play {name}",
+      "playDetail": "Сыграть {name}, значение {value}. {rules}"
     }
   },
   "skinEvent": {
@@ -7875,7 +7876,8 @@ export const ru_RU: EnTranslations = {
     "waitingThem": "Ожидание карты соперника",
     "waitingMe": "Соперник готов",
     "waitingReveal": "Раскрытие раунда",
-    "pipsAria": "{name}: выиграно раундов {won} из {total}",
+    "healthAria": "{name}: здоровье {hp} из {max}",
+    "roundsWon": "Выиграно раундов: {count}",
     "counterAria": "{name}: {count}",
     "oppoHandHidden": "Рука соперника: {count}",
     "oppoHandSeen": "Рука соперника: {count}, видно {seen}",
@@ -7887,6 +7889,12 @@ export const ru_RU: EnTranslations = {
     "pileDeck": "Deck: {count}",
     "pileDiscard": "Сброс: {count}",
     "stageIdle": "На столе пусто",
+    "beat": {
+      "deal": "Карты выложены",
+      "reveal": "Карты открываются",
+      "shift": "Эффекты сработали",
+      "clash": "Карты сходятся"
+    },
     "announce": "Вы сыграли {mine}, соперник сыграл {theirs}. {outcome}"
   },
   "cardDeck": {

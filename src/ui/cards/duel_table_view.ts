@@ -52,24 +52,46 @@ export function buildDuelClock(secondsLeft: number | null, total: number): DuelC
   return { seconds, ratio, band };
 }
 
-/** One pip on a score track: filled for a round already won. */
-export interface DuelPip {
-  index: number;
-  filled: boolean;
+/** How much health a seat has left, as a name the stylesheet can act on. */
+export type DuelHealthBand = 'healthy' | 'hurt' | 'critical';
+
+/** Below this share of the pool a seat reads as hurt, and below the second one
+ *  as critical. Named here so the bar and any future warning agree. */
+export const DUEL_HEALTH_HURT_RATIO = 0.5;
+export const DUEL_HEALTH_CRITICAL_RATIO = 0.25;
+
+export interface DuelHealthModel {
+  /** The exact number a player reads, floored at zero. */
+  hp: number;
+  max: number;
+  /** 0 to 1: what the bar fills to. */
+  ratio: number;
+  band: DuelHealthBand;
 }
 
 /**
- * The score as a track of pips, one per round needed to take the match.
+ * One seat's health.
  *
- * A count above the threshold still produces exactly `roundsToWin` pips, all
- * filled: the track states the match length, and a stale snapshot arriving one
- * round late must not grow the board.
+ * This replaced the score pips when health replaced best-of-three: the pips
+ * answered "how many rounds until this ends", and the bar answers the same
+ * question with the resolution the new rules actually have (a round can take
+ * one point or fifteen).
+ *
+ * A non-positive pool leaves the bar EMPTY rather than dividing by zero, and
+ * hp above the pool clamps to full: a bar that overflowed its track would be a
+ * rendering bug reported as a rules bug.
  */
-export function buildDuelPips(won: number, roundsToWin: number): DuelPip[] {
-  const total = Math.max(0, Math.floor(roundsToWin));
-  const pips: DuelPip[] = [];
-  for (let index = 0; index < total; index++) pips.push({ index, filled: index < won });
-  return pips;
+export function buildDuelHealth(hp: number, max: number): DuelHealthModel {
+  const pool = Math.max(0, Math.floor(max));
+  const left = Math.max(0, Math.min(pool, Math.floor(hp)));
+  const ratio = pool > 0 ? left / pool : 0;
+  const band: DuelHealthBand =
+    ratio <= DUEL_HEALTH_CRITICAL_RATIO
+      ? 'critical'
+      : ratio <= DUEL_HEALTH_HURT_RATIO
+        ? 'hurt'
+        : 'healthy';
+  return { hp: left, max: pool, ratio, band };
 }
 
 /** A counter a card put on a side (Web, Dread), as a token. */
@@ -150,7 +172,10 @@ export function buildDuelEffects(effects: readonly DuelEffectChip[]): DuelEffect
 
 export interface DuelSeatModel {
   commit: DuelSeatCommit;
-  pips: DuelPip[];
+  health: DuelHealthModel;
+  /** Rounds this seat has won. A readout now, not the win condition: cards
+   *  still read the round score, so it stays on the band beside the bar. */
+  roundWins: number;
   counters: DuelCounterToken[];
 }
 
@@ -160,12 +185,14 @@ export interface DuelSeatModel {
 export function buildDuelSeat(input: {
   committed: boolean;
   roundWins: number;
-  roundsToWin: number;
+  hp: number;
+  maxHp: number;
   counters: Record<string, number>;
 }): DuelSeatModel {
   return {
     commit: input.committed ? 'locked' : 'choosing',
-    pips: buildDuelPips(input.roundWins, input.roundsToWin),
+    health: buildDuelHealth(input.hp, input.maxHp),
+    roundWins: Math.max(0, Math.floor(input.roundWins)),
     counters: buildDuelCounters(input.counters),
   };
 }
@@ -175,7 +202,9 @@ export interface DuelTableInput {
   opponentCommitted: boolean;
   myRounds: number;
   opponentRounds: number;
-  roundsToWin: number;
+  myHp: number;
+  opponentHp: number;
+  maxHp: number;
   myCounters: Record<string, number>;
   opponentCounters: Record<string, number>;
   secondsLeft: number | null;
@@ -210,13 +239,15 @@ export function buildDuelTable(input: DuelTableInput): DuelTableModel {
     mine: buildDuelSeat({
       committed: iCommitted,
       roundWins: input.myRounds,
-      roundsToWin: input.roundsToWin,
+      hp: input.myHp,
+      maxHp: input.maxHp,
       counters: input.myCounters,
     }),
     theirs: buildDuelSeat({
       committed: input.opponentCommitted,
       roundWins: input.opponentRounds,
-      roundsToWin: input.roundsToWin,
+      hp: input.opponentHp,
+      maxHp: input.maxHp,
       counters: input.opponentCounters,
     }),
     clock: buildDuelClock(input.secondsLeft, input.roundWindow),

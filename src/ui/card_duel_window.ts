@@ -17,9 +17,11 @@
 //     rebuild the score.
 //  2. The round THEATER narrates what just happened, over that already-true
 //     picture, from the cardRoundResolved event. It owns exactly one element
-//     (the stage) and writes exactly one attribute per beat. Collapsing it
-//     (reduced motion, the low preset) is always safe and always shows the
-//     same numbers at the same instant.
+//     (the stage) and writes exactly one attribute per beat. How much of it
+//     plays is resolveDuelMotion's call: reduced motion collapses it to the
+//     finished picture, the lowest graphics preset keeps every beat and sheds
+//     only the animation. Either way the numbers are the same at the same
+//     instant.
 //
 // The stage is the only region the snapshot never touches: a snapshot-driven
 // stage would be stomped by the next render, and staging the snapshot itself
@@ -38,6 +40,8 @@ import {
   buildDuelStage,
   buildDuelTable,
   buildOpponentHand,
+  type CardFaceModel,
+  CardInspector,
   type CardRoundAudio,
   type CardRoundRevealInput,
   cardFaceHtml,
@@ -120,6 +124,14 @@ export class CardDuelWindow {
   private openerFocus: HTMLElement | null = null;
   private els: CardDuelRegions = emptyRegions();
   private theater: DuelTheater | null = null;
+  /** The last painted view, kept for exactly one job: answering the inspector's
+   *  "which card is this" from the same data the face was painted from, rather
+   *  than a second copy that could disagree with it. */
+  private lastView: CardDuelViewModel | null = null;
+  private readonly inspector = new CardInspector({
+    resolve: (iid) => this.inspectModel(iid),
+    catalog: CARD_CATALOG,
+  });
 
   constructor(private readonly deps: CardDuelWindowDeps) {}
 
@@ -151,6 +163,8 @@ export class CardDuelWindow {
     // A timeline still running would keep firing beats at an element nobody is
     // watching, and would be mid-phase if the window reopened.
     this.theater?.stop();
+    // A peek is anchored to a card that is about to be hidden.
+    this.inspector.hide();
     el.style.display = 'none';
     this.deps.restoreFocus(this.openerFocus);
     this.openerFocus = null;
@@ -176,8 +190,48 @@ export class CardDuelWindow {
       this.wire(el, world);
       this.cacheRegions(el);
     }
+    this.lastView = view;
     if (view.state !== 'inMatch') return;
     this.paintTable(view);
+  }
+
+  /**
+   * Keeps an open peek pointing at a real card after a region rebuilt under it.
+   *
+   * A hand repaints whenever a modifier re-prices it, several times a match, so
+   * a peek left alone would be describing a node that no longer exists. Same
+   * card: repaint it (with the new numbers). Card gone: drop the peek.
+   */
+  private refreshInspect(): void {
+    const iid = this.inspector.showing;
+    if (iid === null) return;
+    const el = this.deps.root().querySelector(`[data-inspect="${iid}"]`) as HTMLElement | null;
+    if (el) this.inspector.show(el);
+    else this.inspector.hide();
+  }
+
+  /**
+   * The face model behind one inspectable card, by instance id.
+   *
+   * Built from the SAME view the face was painted from, so the enlarged copy
+   * can never show a value the small card disagrees with: a card whose
+   * modifiers re-priced between renders re-prices in the peek too, and one that
+   * has left the hand resolves to null rather than to a stale picture.
+   */
+  private inspectModel(iid: number): CardFaceModel | null {
+    const view = this.lastView;
+    if (!view) return null;
+    const mine = view.hand.find((card) => card.iid === iid);
+    if (mine) {
+      return buildCardFaceModel(
+        { iid: mine.iid, cardId: mine.cardId, value: mine.value, textValues: mine.textValues },
+        CARD_CATALOG.get(mine.cardId),
+        { playable: mine.playable, effectiveValue: mine.value + mine.pendingDelta },
+      );
+    }
+    const theirs = view.opponentRevealed.find((card) => card.iid === iid);
+    if (!theirs) return null;
+    return buildCardFaceModel(theirs, CARD_CATALOG.get(theirs.cardId), { revealed: true });
   }
 
   /** The snapshot half: every region that carries information a player acts on. */
@@ -187,7 +241,9 @@ export class CardDuelWindow {
       opponentCommitted: view.opponentCommitted,
       myRounds: view.myRounds,
       opponentRounds: view.opponentRounds,
-      roundsToWin: view.roundsToWin,
+      myHp: view.myHp,
+      opponentHp: view.opponentHp,
+      maxHp: view.maxHp,
       myCounters: view.myCounters,
       opponentCounters: view.opponentCounters,
       secondsLeft: view.secondsLeft,
@@ -201,7 +257,9 @@ export class CardDuelWindow {
       opponentName,
       view.myRounds,
       view.opponentRounds,
-      view.roundsToWin,
+      view.myHp,
+      view.opponentHp,
+      view.maxHp,
       view.deckCount,
       view.discardCount,
       table.mine.commit,
@@ -270,10 +328,16 @@ export class CardDuelWindow {
                 effectiveValue: card.value + card.pendingDelta,
               },
             ),
-            { playAttribute: 'data-play', catalog: CARD_CATALOG },
+            // Inspectable: a 68x96 face has no room for the rules sentence,
+            // and the sentence is what a player is choosing between.
+            { playAttribute: 'data-play', catalog: CARD_CATALOG, inspect: true },
           ),
         )
         .join('');
+      // Only where a rebuild actually replaced the nodes, never on an unchanged
+      // frame: re-showing a peek costs a layout read, and this method runs on
+      // the HUD's poll.
+      this.refreshInspect();
     }
 
     const oppoSig = `${view.opponentHandCount}|${view.opponentRevealed.map((c) => c.iid).join(',')}`;
@@ -283,6 +347,7 @@ export class CardDuelWindow {
         buildOpponentHand(view.opponentHandCount, view.opponentRevealed),
         CARD_CATALOG,
       );
+      this.refreshInspect();
     }
 
     const effects = buildDuelEffects(view.activeEffects);
@@ -480,6 +545,9 @@ export class CardDuelWindow {
    * rebuild replaces is a leak waiting to happen.
    */
   private wire(el: HTMLElement, world: IWorld): void {
+    // Rebound with the shell, for the same reason the click handler is: the
+    // subtree it delegates over has just been replaced.
+    this.inspector.attach(el);
     el.addEventListener('click', (ev) => {
       const target = ev.target as HTMLElement | null;
       if (!target) return;

@@ -7000,7 +7000,8 @@ export const ja_JP: EnTranslations = {
     "card": {
       "valueLabel": "値{value}",
       "effectiveLabel": "実効値{value}",
-      "play": "Play {name}"
+      "play": "Play {name}",
+      "playDetail": "{name}を出す。値{value}。{rules}"
     }
   },
   "skinEvent": {
@@ -7875,7 +7876,8 @@ export const ja_JP: EnTranslations = {
     "waitingThem": "相手のカードを待っています",
     "waitingMe": "相手の準備が整いました",
     "waitingReveal": "ラウンドを公開しています",
-    "pipsAria": "{name}：{total}ラウンド中{won}勝",
+    "healthAria": "{name}：体力{hp}/{max}",
+    "roundsWon": "勝ちラウンド：{count}",
     "counterAria": "{name}: {count}",
     "oppoHandHidden": "相手の手札：{count}",
     "oppoHandSeen": "相手の手札：{count}、うち{seen}枚が見えています",
@@ -7887,6 +7889,12 @@ export const ja_JP: EnTranslations = {
     "pileDeck": "Deck: {count}",
     "pileDiscard": "捨て札：{count}",
     "stageIdle": "テーブルにカードはありません",
+    "beat": {
+      "deal": "カードを伏せた",
+      "reveal": "カードが表に",
+      "shift": "効果が発動",
+      "clash": "カードが激突"
+    },
     "announce": "あなたは{mine}、相手は{theirs}を出しました。{outcome}"
   },
   "cardDeck": {

@@ -64,6 +64,11 @@ function modifierStrip(model: CardFaceModel): string {
 export interface CardFacePaintOptions {
   /** Marks the face as the play target the window wires a click to. */
   playAttribute?: string;
+  /** Marks the face as inspectable: hover, focus or press-and-hold shows the
+   *  whole card at a readable size (src/ui/cards/card_inspect.ts). Opt-in,
+   *  because the enlarged copy is only worth showing over a face too small to
+   *  carry its own rules sentence. */
+  inspect?: boolean;
   catalog: CardCatalog;
 }
 
@@ -89,9 +94,17 @@ export function cardFaceHtml(model: CardFaceModel, opts: CardFacePaintOptions): 
     .filter(Boolean)
     .join(' ');
   const play = opts.playAttribute ? ` data-play="${model.iid}"` : '';
+  const inspect = opts.inspect ? ` data-inspect="${model.iid}"` : '';
   const tag = opts.playAttribute ? 'button' : 'div';
+  // The button's own name carries what the face cannot always show: the hand
+  // size hides the rules sentence for want of room, and a hidden node is out of
+  // the accessibility tree too, so the sentence rides the label instead. That is
+  // also why the enlarged inspect popup is aria-hidden: this is the one reading.
+  const label = rules
+    ? t('cards.card.playDetail', { name, value: num(model.effectiveValue), rules })
+    : t('cards.card.play', { name });
   const buttonBits = opts.playAttribute
-    ? ` type="button"${model.playable ? '' : ' disabled'} aria-label="${esc(t('cards.card.play', { name }))}"`
+    ? ` type="button"${model.playable ? '' : ' disabled'} aria-label="${esc(label)}"`
     : '';
   // The effective value is the corner plate: it is what the comparison uses,
   // so it is the number that must be readable first. The printed value rides
@@ -99,7 +112,7 @@ export function cardFaceHtml(model: CardFaceModel, opts: CardFacePaintOptions): 
   const cornerBase =
     model.delta === 0 ? '' : `<span class="cf-base">${esc(num(model.baseValue))}</span>`;
   return (
-    `<${tag} class="${classes}"${play}${buttonBits}>` +
+    `<${tag} class="${classes}"${play}${inspect}${buttonBits}>` +
     `<div class="cf-frame">` +
     artPanel(model) +
     `<div class="cf-corner"><span class="cf-value">${esc(num(model.effectiveValue))}</span>${cornerBase}</div>` +

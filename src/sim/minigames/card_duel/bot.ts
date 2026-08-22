@@ -24,7 +24,12 @@ export interface CardBotView {
   discardCount: number;
   myRounds: number;
   opponentRounds: number;
-  roundsToWin: number;
+  /** Health both seats have left, and the pool they started from. What the
+   *  match is actually decided on, so a policy that ignored it would be
+   *  playing a different game from the human across the table. */
+  myHp: number;
+  opponentHp: number;
+  maxHp: number;
   round: number;
   myCounters: Readonly<Record<string, number>>;
   opponentCounters: Readonly<Record<string, number>>;
@@ -53,10 +58,19 @@ function lowest(hand: readonly CardInstance[]): CardInstance {
   return [...hand].sort((a, b) => a.value - b.value || a.iid - b.iid)[0];
 }
 
-/** Is this the round that decides the match for one side or the other? */
+/**
+ * Could this round finish somebody?
+ *
+ * A card can swing a round by a wide margin, so "in range" is measured
+ * against the biggest ordinary hit rather than a single point: once either
+ * seat is inside that, the round is worth spending a high card on. This is the
+ * health-era replacement for the old best-of-three test (one round win off the
+ * match), and it asks the same question against the new win condition.
+ */
+export const CARD_BOT_LETHAL_RANGE = 10;
+
 function roundMatters(view: CardBotView): boolean {
-  const oneOff = view.roundsToWin - 1;
-  return view.myRounds >= oneOff || view.opponentRounds >= oneOff;
+  return view.myHp <= CARD_BOT_LETHAL_RANGE || view.opponentHp <= CARD_BOT_LETHAL_RANGE;
 }
 
 /**

@@ -7000,7 +7000,8 @@ export const zh_TW: EnTranslations = {
     "card": {
       "valueLabel": "數值 {value}",
       "effectiveLabel": "實際數值 {value}",
-      "play": "Play {name}"
+      "play": "Play {name}",
+      "playDetail": "打出{name}，數值{value}。{rules}"
     }
   },
   "skinEvent": {
@@ -7875,7 +7876,8 @@ export const zh_TW: EnTranslations = {
     "waitingThem": "等待對手出牌",
     "waitingMe": "對手已就緒",
     "waitingReveal": "正在揭曉本輪",
-    "pipsAria": "{name}：已贏 {won}/{total} 輪",
+    "healthAria": "{name}：生命 {hp}/{max}",
+    "roundsWon": "已勝回合：{count}",
     "counterAria": "{name}: {count}",
     "oppoHandHidden": "對手手牌：{count}",
     "oppoHandSeen": "對手手牌：{count}，已看到 {seen}",
@@ -7887,6 +7889,12 @@ export const zh_TW: EnTranslations = {
     "pileDeck": "Deck: {count}",
     "pileDiscard": "棄牌堆：{count}",
     "stageIdle": "牌桌上還沒有牌",
+    "beat": {
+      "deal": "牌已蓋下",
+      "reveal": "翻開牌面",
+      "shift": "效果生效",
+      "clash": "兩牌交鋒"
+    },
     "announce": "你打出 {mine}，對手打出 {theirs}。{outcome}"
   },
   "cardDeck": {

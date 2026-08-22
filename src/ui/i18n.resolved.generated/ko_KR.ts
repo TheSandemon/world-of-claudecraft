@@ -7000,7 +7000,8 @@ export const ko_KR: EnTranslations = {
     "card": {
       "valueLabel": "값 {value}",
       "effectiveLabel": "실효 값 {value}",
-      "play": "Play {name}"
+      "play": "Play {name}",
+      "playDetail": "{name} 내기, 값 {value}. {rules}"
     }
   },
   "skinEvent": {
@@ -7875,7 +7876,8 @@ export const ko_KR: EnTranslations = {
     "waitingThem": "상대의 카드를 기다리는 중",
     "waitingMe": "상대가 준비되었습니다",
     "waitingReveal": "라운드를 공개하는 중",
-    "pipsAria": "{name}: {total}라운드 중 {won}승",
+    "healthAria": "{name}: 체력 {hp}/{max}",
+    "roundsWon": "이긴 라운드: {count}",
     "counterAria": "{name}: {count}",
     "oppoHandHidden": "상대 손패: {count}",
     "oppoHandSeen": "상대 손패: {count}, {seen}장 확인됨",
@@ -7887,6 +7889,12 @@ export const ko_KR: EnTranslations = {
     "pileDeck": "Deck: {count}",
     "pileDiscard": "버린 카드: {count}",
     "stageIdle": "테이블이 비어 있습니다",
+    "beat": {
+      "deal": "카드를 내려놓음",
+      "reveal": "카드 공개",
+      "shift": "효과 적용",
+      "clash": "카드 격돌"
+    },
     "announce": "나는 {mine}, 상대는 {theirs}을(를) 냈습니다. {outcome}"
   },
   "cardDeck": {

@@ -27,7 +27,9 @@ function liveInfo(over: Partial<NonNullable<CardMinigameInfo['match']>> = {}): C
       discardCount: 2,
       myRounds: 0,
       opponentRounds: 0,
-      roundsToWin: 2,
+      myHp: 100,
+      opponentHp: 100,
+      maxHp: 100,
       round: 1,
       waitingOnOpponent: false,
       opponentCommitted: false,
@@ -172,19 +174,38 @@ describe('card duel window clock and round theater', () => {
     expect(band.textContent).toBe('Ossa');
   });
 
-  it('shows the score as pips, one per round the match needs', () => {
+  it('shows health as a bar carrying its own numbers, on both seats', () => {
+    // Health decides the match, so it is the one thing on the band that must
+    // read at a glance AND state the exact figure: "can that card finish me"
+    // is not a question a bar alone can answer.
     const { win, root, setInfo } = makeWindow();
     win.render();
-    const pips = (sel: string) => [...root.querySelectorAll(`${sel} .dt-pip`)];
-    expect(pips('[data-cd-seats-mine]').length).toBe(2);
-    expect(
-      pips('[data-cd-seats-mine]').filter((p) => p.classList.contains('dt-pip-on')).length,
-    ).toBe(0);
-    setInfo(liveInfo({ myRounds: 1 }));
+    const bar = (sel: string) => root.querySelector(`${sel} .dt-hp`) as HTMLElement;
+    expect(bar('[data-cd-seats-mine]').textContent).toBe('100/100');
+    expect(bar('[data-cd-seats-mine]').dataset.band).toBe('healthy');
+
+    setInfo(liveInfo({ myHp: 42, opponentHp: 88 }));
     win.render();
+    expect(bar('[data-cd-seats-mine]').textContent).toBe('42/100');
+    expect(bar('[data-cd-seats-mine]').dataset.band).toBe('hurt');
     expect(
-      pips('[data-cd-seats-mine]').filter((p) => p.classList.contains('dt-pip-on')).length,
-    ).toBe(1);
+      (bar('[data-cd-seats-mine]').querySelector('.dt-hp-fill') as HTMLElement).style.width,
+    ).toBe('42.0%');
+    expect(bar('[data-cd-seats-them]').textContent).toBe('88/100');
+
+    setInfo(liveInfo({ myHp: 7 }));
+    win.render();
+    expect(bar('[data-cd-seats-mine]').dataset.band).toBe('critical');
+  });
+
+  it('keeps the round score as a readout beside the bar', () => {
+    // Cards still read the round score (scoreCompare, the score expression), so
+    // it stays on the table; it just stopped being what ends the match.
+    const { win, root, setInfo } = makeWindow();
+    setInfo(liveInfo({ myRounds: 2 }));
+    win.render();
+    const rounds = root.querySelector('[data-cd-seats-mine] .dt-rounds') as HTMLElement;
+    expect(rounds.textContent).toBe('Rounds won: 2');
   });
 
   it('puts the viewer own pile counts on the viewer own band, and none on the opponent', () => {
@@ -272,6 +293,34 @@ describe('card duel window clock and round theater', () => {
     // The source card's own sentence is the explanation, so it is the chip's
     // accessible name rather than a second copy of the wording.
     expect(chips[0].getAttribute('aria-label')).toContain('Beast');
+  });
+
+  it('lets a player read what a hand card DOES, and follows it across a repaint', () => {
+    // The complaint this answers: a hand card is too small to show its rules
+    // sentence, so a player could see what a card was worth and not what it did.
+    const { win, root, setInfo } = makeWindow();
+    setInfo(liveInfo({ hand: [{ iid: 11, cardId: 'pack_alpha', value: 6 }] }));
+    win.render();
+    const card = root.querySelector('[data-cd-hand] [data-inspect]') as HTMLElement;
+    expect(card.dataset.inspect).toBe('11');
+    const hover = new window.MouseEvent('pointerover', { bubbles: true });
+    Object.defineProperty(hover, 'pointerType', { value: 'mouse' });
+    card.dispatchEvent(hover);
+    const peek = () => document.querySelector('.cf-inspect') as HTMLElement | null;
+    expect(peek()?.textContent).toContain('Pack Alpha');
+    expect(peek()?.querySelector('.cf-rules')?.textContent).toContain('Beast');
+
+    // A repricing repaints the hand under the peek: it must follow the card,
+    // with the new numbers, rather than describe a node that is gone.
+    setInfo(liveInfo({ hand: [{ iid: 11, cardId: 'pack_alpha', value: 6, pendingDelta: 2 }] }));
+    win.render();
+    expect(peek()?.style.display).toBe('block');
+    expect(peek()?.querySelector('.cf-value')?.textContent).toBe('8');
+
+    // Played out of the hand: nothing to describe, so nothing is shown.
+    setInfo(liveInfo({ hand: [{ iid: 12, cardId: 'forest_wolf', value: 3 }] }));
+    win.render();
+    expect(peek()?.style.display).toBe('none');
   });
 
   it('shows a hand card at what it is worth, with the printed value beside it', () => {
@@ -391,7 +440,11 @@ describe('card duel window clock and round theater', () => {
     }
   });
 
-  it('collapses the whole timeline at the lowest graphics preset, cues and all', () => {
+  it('still plays every beat at the lowest graphics preset, sheds only the motion', () => {
+    // The complaint this answers: at the low preset the whole round used to
+    // land in one frame, so the cheapest machine was the only one that never
+    // got to watch the round happen. The preset sheds ANIMATION (the CSS tier
+    // block does that); the PACING is how a round is read, so it stays.
     vi.useFakeTimers();
     try {
       document.documentElement.dataset.fxLevel = 'low';
@@ -407,15 +460,79 @@ describe('card duel window clock and round theater', () => {
           cardShuffle: () => cues.push('shuffle'),
         },
       );
-      // Settled at once, with no timer left to fire: a tier that sheds motion
-      // shows the same result at the same instant, and still owes every cue.
+      expect(stage.dataset.beat).toBe('deal');
+      vi.advanceTimersByTime(300);
+      expect(stage.dataset.beat).toBe('reveal');
+      expect(cues).toEqual(['reveal']);
+      vi.advanceTimersByTime(3000);
       expect(stage.dataset.beat).toBe('settle');
       expect(cues).toEqual(['reveal', 'shuffle']);
-      expect(vi.getTimerCount()).toBe(0);
     } finally {
       document.documentElement.removeAttribute('data-fx-level');
       vi.useRealTimers();
     }
+  });
+
+  it('lands the whole round at once when the player asked for reduced motion', () => {
+    // Reduced motion is a different request from a cheap preset: no staged
+    // sequence at all, and every cue folded into the one beat.
+    vi.useFakeTimers();
+    try {
+      document.body.classList.add('reduce-motion');
+      const { win, root } = makeWindow();
+      win.render();
+      const cues: string[] = [];
+      const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
+      win.showReveal(
+        { mine: 6, theirs: 2, outcome: 'win', reshuffled: true },
+        {
+          cardReveal: () => cues.push('reveal'),
+          cardRoundPush: () => cues.push('push'),
+          cardShuffle: () => cues.push('shuffle'),
+        },
+      );
+      expect(stage.dataset.beat).toBe('settle');
+      expect(cues).toEqual(['reveal', 'shuffle']);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      document.body.classList.remove('reduce-motion');
+      vi.useRealTimers();
+    }
+  });
+
+  it('names every beat in words, so a motionless round is still readable', () => {
+    // At the low preset nothing animates, so the clash has nothing but this
+    // line to tell it apart from the beat before it.
+    const { win, root } = makeWindow();
+    win.render();
+    const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
+    win.showReveal({
+      mine: 6,
+      theirs: 2,
+      mineBase: 4,
+      theirsBase: 2,
+      outcome: 'win',
+      reshuffled: false,
+    });
+    const captions = [...stage.querySelectorAll('.dt-beat')] as HTMLElement[];
+    expect(captions.map((el) => el.dataset.phase)).toEqual(['deal', 'reveal', 'shift', 'clash']);
+    expect(captions.map((el) => el.textContent)).toEqual([
+      'Cards down',
+      'Cards turn',
+      'Effects land',
+      'The cards clash',
+    ]);
+    // One line per beat, written once with the stage: the beats only move the
+    // attribute, and the stylesheet shows the matching caption.
+    for (const phase of ['deal', 'reveal', 'shift', 'clash']) {
+      expect(CARDS_CSS).toContain(
+        `.dt-stage[data-beat="${phase}"] .dt-beat[data-phase="${phase}"]`,
+      );
+    }
+    // Not read aloud: the announce line already says the whole round once.
+    expect((stage.querySelector('.dt-beats') as HTMLElement).getAttribute('aria-hidden')).toBe(
+      'true',
+    );
   });
 
   it('a closed window hands the cues back rather than eating them', () => {
@@ -465,7 +582,7 @@ describe('card duel window clock and round theater', () => {
     // acts on. Pinned against the stylesheet, since that is where a tier rule
     // would be written.
     const actionable =
-      /\.dt-clock-num|\.dt-plate-value|\.dt-plate-base|\.dt-chip|\.dt-pip|\.dt-token|\.cf-value|\.cf-delta|\.cf-base/;
+      /\.dt-clock-num|\.dt-plate-value|\.dt-plate-base|\.dt-chip|\.dt-hp-num|\.dt-token|\.cf-value|\.cf-delta|\.cf-base/;
     const gated = CARDS_CSS.split('\n').filter((line) => {
       const tiered = line.includes('data-fx-level') || line.includes('prefers-reduced-motion');
       return tiered && actionable.test(line);

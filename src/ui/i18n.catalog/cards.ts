@@ -138,5 +138,9 @@ export const cardsStrings = {
     valueLabel: 'Value {value}',
     effectiveLabel: 'Effective value {value}',
     play: 'Play {name}',
+    // The accessible name for a playable card. The hand size has no room for
+    // the rules sentence, and a hidden node is out of the accessibility tree,
+    // so the sentence rides the button label instead.
+    playDetail: 'Play {name}, worth {value}. {rules}',
   },
 };

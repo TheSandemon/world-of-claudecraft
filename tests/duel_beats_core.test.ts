@@ -110,6 +110,14 @@ describe('duel beat timeline', () => {
     expect(beats.filter((b) => b.cue !== null).map((b) => b.cue)).toEqual(['reveal']);
   });
 
+  it('gives the low preset the same beats as the full timeline, not a collapse', () => {
+    // 'steps' sheds the motion, never the pacing: the difference between it and
+    // 'full' lives in the stylesheet, so the beats and their times must match
+    // exactly. A collapse here would be the bug this mode exists to fix.
+    const stage = buildDuelStage({ ...plainWin, mine: 9, mineBase: 7 });
+    expect(buildDuelBeats(stage, 'steps')).toEqual(buildDuelBeats(stage, 'full'));
+  });
+
   it('collapses to a single settled beat at zero when motion is off', () => {
     // The whole reason the collapse is legal: it shows the same result at the
     // same instant, so reduced motion and the low preset cost no information.

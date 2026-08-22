@@ -7000,7 +7000,8 @@ export const tr_TR: EnTranslations = {
     "card": {
       "valueLabel": "Value {value}",
       "effectiveLabel": "Effective value {value}",
-      "play": "Play {name}"
+      "play": "Play {name}",
+      "playDetail": "Play {name}, worth {value}. {rules}"
     }
   },
   "skinEvent": {
@@ -7875,7 +7876,8 @@ export const tr_TR: EnTranslations = {
     "waitingThem": "Waiting on your opponent",
     "waitingMe": "Your opponent is ready",
     "waitingReveal": "Revealing the round",
-    "pipsAria": "{name}: {won} of {total} rounds won",
+    "healthAria": "{name}: {hp} of {max} health",
+    "roundsWon": "Rounds won: {count}",
     "counterAria": "{name}: {count}",
     "oppoHandHidden": "Their hand: {count}",
     "oppoHandSeen": "Their hand: {count}, {seen} seen",
@@ -7887,6 +7889,12 @@ export const tr_TR: EnTranslations = {
     "pileDeck": "Deck: {count}",
     "pileDiscard": "Discard: {count}",
     "stageIdle": "The table is empty",
+    "beat": {
+      "deal": "Cards down",
+      "reveal": "Cards turn",
+      "shift": "Effects land",
+      "clash": "The cards clash"
+    },
     "announce": "You played {mine}, your opponent played {theirs}. {outcome}"
   },
   "cardDeck": {

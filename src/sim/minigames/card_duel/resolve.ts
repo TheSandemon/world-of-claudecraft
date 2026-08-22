@@ -20,6 +20,7 @@ import { type CardRefillResult, refillHand } from './deck';
 import { applyEffect } from './effects';
 import type { CardEvalContext } from './expressions';
 import {
+  applyRoundDamage,
   applyRoundResult,
   boardSide,
   buildBoard,
@@ -32,6 +33,7 @@ import {
   sideOf,
 } from './match_state';
 import { consumeTriggered, expireModifiers, pendingModifiersFor } from './modifiers';
+import { roundDamage } from './rules';
 import { resolveTargets } from './selectors';
 import type {
   CardDefinition,
@@ -122,6 +124,14 @@ export interface CardRoundResolution {
   bValue: number;
   aResult: CardRoundResult;
   bResult: CardRoundResult;
+  /** Health the losing seat lost this round (rules.ts `roundDamage`). Zero on
+   *  a push, and zero when the winning margin rounded to nothing. */
+  damage: number;
+  /** Health each seat has AFTER this round's damage. Reported rather than read
+   *  back off the state so a caller narrating the round has the before/after
+   *  pair without re-deriving it. */
+  aHp: number;
+  bHp: number;
   /** Effects applied, for the ceiling test and the standalone slice's
    *  step-through view. */
   steps: number;
@@ -370,6 +380,14 @@ export function resolveCardRound(
 
   run.runPhase('onDiscard');
   applyRoundResult(state, winner);
+  // The margin, on the values the comparison actually used, applied to the seat
+  // that lost. A seat that played nothing counts as a zero, which is what makes
+  // a timeout cost the full value of the card that beat it.
+  let damage = 0;
+  if (winner !== null) {
+    damage = roundDamage(winner === 'a' ? aValue : bValue, winner === 'a' ? bValue : aValue);
+    applyRoundDamage(state, winner, damage, sideOf(state, winner).playedThisRound?.cardId ?? null);
+  }
 
   const refillA: CardRefillResult = opts.skipRefill
     ? { drawn: [], reshuffled: false }
@@ -400,6 +418,9 @@ export function resolveCardRound(
     bValue,
     aResult: resultFor('a'),
     bResult: resultFor('b'),
+    damage,
+    aHp: state.a.hp,
+    bHp: state.b.hp,
     steps: run.steps,
     overflow: run.overflow,
     refillA,

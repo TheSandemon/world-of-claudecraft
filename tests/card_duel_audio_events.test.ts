@@ -162,13 +162,13 @@ describe('Card Duel audio event wiring', () => {
   it('emits cardDuelMatchEnd with won:true for the winner and won:false for the loser', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);
-    // A wins both rounds straight to close the match (CARD_DUEL_ROUNDS_TO_WIN = 2).
-    for (let round = 0; round < 2; round++) {
-      const live = sim.cardDuelMatchFor(a)!;
-      forceHands(live, 9, 1);
-      sim.playCardInDuel(live.state.a.cards.hand[0].iid, a);
-      sim.playCardInDuel(live.state.b.cards.hand[0].iid, b);
-    }
+    // Health closes the match: B is one hit from zero and A wins the round by
+    // a margin bigger than that.
+    const live = sim.cardDuelMatchFor(a)!;
+    live.state.b.hp = 5;
+    forceHands(live, 9, 1);
+    sim.playCardInDuel(live.state.a.cards.hand[0].iid, a);
+    sim.playCardInDuel(live.state.b.cards.hand[0].iid, b);
     const ended = sim
       .tick()
       .filter(

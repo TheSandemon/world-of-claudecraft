@@ -10,6 +10,13 @@
 // Usage:
 //   node scripts/card_duel_window_shot.mjs
 //   BASE=http://localhost:5174 TAG=before node scripts/card_duel_window_shot.mjs
+//   FX=low node scripts/card_duel_window_shot.mjs          the lowest graphics preset
+//   PEEK=1 node scripts/card_duel_window_shot.mjs          hovering a hand card
+//
+// FX stamps the tier the applier would stamp (`html[data-fx-level]`), which is
+// the whole input to the Card Duel tier rules, so a low-preset table can be
+// photographed without driving the settings window. PEEK hovers a hand card so
+// the shot carries the card inspector rather than the bare table.
 import { mkdirSync } from 'node:fs';
 import puppeteer from 'puppeteer-core';
 import { BROWSER_PATH } from './browser_path.mjs';
@@ -18,6 +25,8 @@ import { enterOfflineGame } from './enter_offline_game.mjs';
 const BASE = process.env.BASE ?? 'http://localhost:5173';
 const OUT = process.env.OUT ?? 'docs/screenshots/card-duel-table';
 const TAG = process.env.TAG ?? 'after';
+const FX = process.env.FX ?? '';
+const PEEK = process.env.PEEK === '1';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 mkdirSync(OUT, { recursive: true });
@@ -62,6 +71,8 @@ async function shot(name, width, height, mobile) {
     p.pos.y = npc.pos.y;
     p.prevPos = { ...p.pos };
   });
+  if (FX)
+    await page.evaluate((tier) => document.documentElement.setAttribute('data-fx-level', tier), FX);
   await page.evaluate(() => window.__game.hud.toggleCardDuel());
   await page.waitForSelector('#card-duel-window .cd-regular');
   // Sit down against the first regular: a bot match starts immediately, which
@@ -75,6 +86,19 @@ async function shot(name, width, height, mobile) {
   });
   // The bot's commit delay plus the whole round timeline, with margin.
   await sleep(6000);
+  if (PEEK) {
+    // The card inspector, over a card still in hand: hover it and give the one
+    // layout read a frame to land. The popup is fixed-position on <body>, so a
+    // peeked shot is always the whole viewport.
+    const card = await page.$('#card-duel-window [data-cd-hand] [data-inspect]');
+    if (!card) throw new Error('no inspectable card in hand');
+    await card.hover();
+    await sleep(400);
+    await page.screenshot({ path: `${OUT}/${name}-peek-${TAG}.png` });
+    console.log('wrote', `${OUT}/${name}-peek-${TAG}.png`);
+    await page.close();
+    return;
+  }
   if (mobile) {
     // The whole viewport on a phone: the window is a full-width sheet there,
     // and what a player actually sees INCLUDES how much of the table fits.

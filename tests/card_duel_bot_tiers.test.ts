@@ -24,7 +24,9 @@ function view(over: Partial<CardBotView> = {}): CardBotView {
     discardCount: 4,
     myRounds: 0,
     opponentRounds: 0,
-    roundsToWin: 2,
+    myHp: 100,
+    opponentHp: 100,
+    maxHp: 100,
     round: 1,
     myCounters: {},
     opponentCounters: {},
@@ -57,11 +59,12 @@ describe('card_duel bot tiers', () => {
     }
   });
 
-  it('Steady commits its highest card on the round that decides the match', () => {
-    // One win from the threshold, either way: this round matters.
-    const mine = view({ myRounds: 1 });
+  it('Steady commits its highest card on a round that could finish somebody', () => {
+    // Health decides the match now, so "this round matters" is a health test:
+    // either seat inside one big hit of zero, from either direction.
+    const mine = view({ myHp: 8 });
     expect(pickedValue(mine, steadyPolicy(mine, new Rng(1)))).toBe(9);
-    const theirs = view({ opponentRounds: 1 });
+    const theirs = view({ opponentHp: 8 });
     expect(pickedValue(theirs, steadyPolicy(theirs, new Rng(1)))).toBe(9);
   });
 
@@ -106,8 +109,8 @@ describe('card_duel bot tiers', () => {
     expect(beatChance(5, [])).toBe(1);
   });
 
-  it('Master plays the surest card when the round decides the match', () => {
-    const v = view({ myRounds: 1, opponentPlayedValues: [] });
+  it('Master plays the surest card when the round could finish somebody', () => {
+    const v = view({ myHp: 8, opponentPlayedValues: [] });
     expect(pickedValue(v, masterPolicy(v, new Rng(1)))).toBe(9);
   });
 
@@ -117,7 +120,7 @@ describe('card_duel bot tiers', () => {
   });
 
   it('Master exploits a counted-out deck: nothing left can beat a 9 once both tens are gone', () => {
-    const v = view({ myRounds: 1, opponentPlayedValues: [10, 10] });
+    const v = view({ myHp: 8, opponentPlayedValues: [10, 10] });
     const remaining = opponentRemainingValues(v);
     // A 9 can still be TIED by the two remaining nines (a push, counted as
     // half), but it can no longer be beaten, which is what the count buys.

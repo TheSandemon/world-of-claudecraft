@@ -10,7 +10,7 @@
 import { cardOpponentById } from '../content/cards';
 import { cardMasterInRange } from '../instances/card_master';
 import {
-  CARD_DUEL_ROUNDS_TO_WIN,
+  CARD_DUEL_START_HP,
   type CardBotView,
   chooseCard,
   playCardByInstance,
@@ -92,7 +92,9 @@ function botViewOf(match: CardDuelMatch): CardBotView {
     discardCount: me.cards.discard.length,
     myRounds: me.roundWins,
     opponentRounds: them.roundWins,
-    roundsToWin: CARD_DUEL_ROUNDS_TO_WIN,
+    myHp: me.hp,
+    opponentHp: them.hp,
+    maxHp: CARD_DUEL_START_HP,
     round: match.state.round,
     myCounters: me.counters,
     opponentCounters: them.counters,
