@@ -39,6 +39,7 @@ import type {
   CardDefinition,
   CardEffect,
   CardEffectType,
+  CardId,
   CardInstance,
   CardRoundResult,
   CardSeat,
@@ -117,6 +118,53 @@ function compareQueued(x: QueuedEffect, y: QueuedEffect): number {
   return x.seat === y.seat ? 0 : x.seat === 'a' ? -1 : 1;
 }
 
+/**
+ * One narrated moment of a resolved round: an effect that actually did
+ * something, and what it did.
+ *
+ * This exists so a client can tell the story of a round instead of announcing
+ * its result. Before it, a round arrived as two final numbers, so "Stablemaster
+ * gave your wolf +2, then their Nullstone silenced it" was unrecoverable at
+ * every host: the client could see that a value had moved but never why.
+ *
+ * Kept to what a player can SEE (a value moved, a card was silenced, values
+ * swapped): the log is narration, never a rule input, and nothing in the engine
+ * reads it back.
+ */
+export interface CardRoundStep {
+  /** The seat whose card authored the effect. */
+  seat: CardSeat;
+  /** The card that did it, so the narration can name and show it. */
+  source: CardId;
+  effect: CardEffectType;
+  /** The side whose value moved, or null when nothing moved (a flag effect, or
+   *  a swap that moved both). */
+  target: CardSeat | null;
+  /** The signed change to `target`'s value, or null when nothing moved. */
+  amount: number | null;
+  /** `target`'s value after the effect, for a narration that ticks a number. */
+  valueAfter: number | null;
+}
+
+/**
+ * How many steps a round narrates. A cap because the narration costs a BEAT
+ * each: a pathological card chain must not be able to hold the table for a
+ * minute, and past a dozen the player has stopped following anyway. Well above
+ * any shipped card's output (a busy round logs three or four).
+ */
+export const MAX_NARRATED_STEPS = 12;
+
+/** The effect kinds worth a beat even when no value moved: each is a visible
+ *  change of state on the board, and each has its own line in the narration. */
+const NARRATED_FLAG_EFFECTS: readonly CardEffectType[] = [
+  'silence',
+  'reveal',
+  'draw',
+  'winTies',
+  'reverseComparison',
+  'shuffleDiscardIntoDeck',
+];
+
 /** What one resolved round produced. */
 export interface CardRoundResolution {
   winner: CardSeat | null;
@@ -135,6 +183,9 @@ export interface CardRoundResolution {
   /** Effects applied, for the ceiling test and the standalone slice's
    *  step-through view. */
   steps: number;
+  /** The narratable moments, in the order they resolved. Bounded by
+   *  MAX_NARRATED_STEPS. */
+  log: CardRoundStep[];
   /** True when the ceiling stopped resolution early. */
   overflow: boolean;
   refillA: CardRefillResult;
@@ -177,6 +228,7 @@ export function decideWinner(board: CardBoard, aValue: number, bValue: number): 
 class Resolution {
   steps = 0;
   overflow = false;
+  readonly log: CardRoundStep[] = [];
   private readonly pending: QueuedEffect[] = [];
 
   constructor(
@@ -242,6 +294,50 @@ class Resolution {
     this.state.lastTriggerRound[key] = this.state.round;
   }
 
+  /** Both sides' working values, for the before/after an effect is judged on. */
+  private valuesNow(): [number, number] {
+    return [this.board.a.effectiveValue, this.board.b.effectiveValue];
+  }
+
+  /**
+   * Records what one applied effect DID, if a player could see it.
+   *
+   * Judged on the board rather than on the effect's declaration: an effect
+   * whose conditions passed but whose target resolved to nothing changed
+   * nothing, and narrating it would be the client claiming something happened.
+   * Called by both application sites (a card's own effects, and a modifier
+   * parked in an earlier round), so a buff that was promised last round is
+   * narrated the same way as one that lands now.
+   */
+  noteStep(
+    seat: CardSeat,
+    source: CardId,
+    effect: CardEffectType,
+    before: readonly [number, number],
+  ): void {
+    if (this.log.length >= MAX_NARRATED_STEPS) return;
+    const [a, b] = this.valuesNow();
+    const movedA = a !== before[0];
+    const movedB = b !== before[1];
+    if (movedA !== movedB) {
+      const target: CardSeat = movedA ? 'a' : 'b';
+      this.log.push({
+        seat,
+        source,
+        effect,
+        target,
+        amount: (movedA ? a : b) - (movedA ? before[0] : before[1]),
+        valueAfter: movedA ? a : b,
+      });
+      return;
+    }
+    // Both moved (a swap) or neither did: no single number to tick, so the step
+    // is only worth a beat when the effect is a visible change of its own.
+    if (movedA || NARRATED_FLAG_EFFECTS.includes(effect)) {
+      this.log.push({ seat, source, effect, target: null, amount: null, valueAfter: null });
+    }
+  }
+
   private applyOne(entry: QueuedEffect): void {
     // A silenced card's own effects stop resolving for the round. The silence
     // itself resolved earlier (priority 10), which is what makes this work
@@ -251,6 +347,7 @@ class Resolution {
     if (!conditionsHold(entry.effect.conditions, ctx)) return;
     if (!this.limitsAllow(entry)) return;
     this.noteFired(entry);
+    const before = this.valuesNow();
     applyEffect(
       entry.effect.effect,
       entry.effect.duration ?? 'thisComparison',
@@ -260,6 +357,7 @@ class Resolution {
       this.rng,
       this,
     );
+    this.noteStep(entry.seat, entry.def.id, entry.effect.effect.type, before);
   }
 
   /** Drains whatever earlier work queued (a drawn card's onDraw effects),
@@ -326,6 +424,7 @@ export function resolveCardRound(
     if (!card) continue;
     const fired = pendingModifiersFor(state, seat, card, catalog);
     for (const mod of fired) {
+      const before: [number, number] = [board.a.effectiveValue, board.b.effectiveValue];
       applyEffect(
         mod.effect,
         'thisComparison',
@@ -335,6 +434,11 @@ export function resolveCardRound(
         rng,
         run,
       );
+      // Narrated under the card that PARKED it, not the card receiving it: the
+      // player is owed "your Stablemaster is what did this", and a buff promised
+      // a round ago is the step most likely to look like a number changing for
+      // no reason.
+      run.noteStep(mod.seat, mod.source, mod.effect.type, before);
     }
     consumeTriggered(fired);
   }
@@ -422,6 +526,7 @@ export function resolveCardRound(
     aHp: state.a.hp,
     bHp: state.b.hp,
     steps: run.steps,
+    log: run.log,
     overflow: run.overflow,
     refillA,
     refillB,

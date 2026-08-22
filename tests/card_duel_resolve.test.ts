@@ -4,6 +4,7 @@ import { constant } from '../src/sim/minigames/card_duel/expressions';
 import { recordHistory } from '../src/sim/minigames/card_duel/match_state';
 import {
   EFFECT_PRIORITY,
+  MAX_NARRATED_STEPS,
   MAX_RESOLUTION_STEPS,
   NON_COMMUTATIVE_EFFECTS,
   resolveCardRound,
@@ -471,5 +472,82 @@ describe('card_duel resolve', () => {
     const rng = countingRng();
     playRound(plain7, plain5, undefined, { rng, skipRefill: true });
     expect(rng.draws).toBe(0);
+  });
+});
+
+// The narration log: what a client needs to tell the story of a round instead
+// of announcing its result. Nothing in the engine reads it back, so these are
+// the only assertions that hold its shape.
+describe('card_duel resolve: the narration log', () => {
+  it('records the card that moved a value, and by how much', () => {
+    // A Hexer that reads its opponent's tribe: the -2 it applies is exactly the
+    // kind of number that used to appear on the table with no explanation.
+    const human = defineCard('human5', { value: 5, tribes: ['Human'] });
+    const localCatalog = makeCatalog([sablewebHexer, human]);
+    const hexer = instanceOf(sablewebHexer);
+    const target = instanceOf(human);
+    const state = makeMatch([target], [hexer]);
+    lockIn(state, target, hexer);
+    const res = resolveCardRound(state, localCatalog, new Rng(1), { skipRefill: true });
+    const step = res.log.find((entry) => entry.source === 'sableweb_hexer');
+    expect(step).toBeDefined();
+    expect(step?.seat).toBe('b');
+    // It moved the OPPONENT's card, which is the half a "who did this to whom"
+    // narration cannot get wrong.
+    expect(step?.target).toBe('a');
+    expect(step?.amount).toBe(-2);
+    expect(step?.valueAfter).toBe(3);
+  });
+
+  it('records nothing for an effect whose conditions did not hold', () => {
+    // A Hexer against a Beast does nothing, and narrating a beat for it would
+    // be the client claiming something happened.
+    const { res } = playRound(forestWolf, sablewebHexer, undefined, {
+      rng: countingRng(),
+      skipRefill: true,
+    });
+    expect(res.log.some((entry) => entry.source === 'sableweb_hexer')).toBe(false);
+  });
+
+  it('leaves a plain round with nothing to narrate', () => {
+    const { res } = playRound(plain7, plain5, undefined, { skipRefill: true });
+    expect(res.log).toEqual([]);
+  });
+
+  it('bounds the log however long the round runs', () => {
+    // The same closed cycle the resolution ceiling exists for: the narration
+    // must not be able to hold the table for a minute either, so it has its own
+    // much smaller bound.
+    const churn = defineCard('churn', {
+      value: 6,
+      effects: [
+        effect({
+          target: { type: 'player', owner: 'self' },
+          effect: { type: 'draw', amount: constant(1) },
+        }),
+        effect({
+          trigger: 'onDraw',
+          target: { type: 'zone', owner: 'self', zone: 'hand', select: 'first' },
+          effect: { type: 'discard' },
+        }),
+        effect({
+          trigger: 'onDiscard',
+          target: { type: 'player', owner: 'self' },
+          effect: { type: 'draw', amount: constant(1) },
+        }),
+      ],
+    });
+    const cyclic = makeCatalog([churn, plain3]);
+    const opener = instanceOf(churn);
+    const state = makeMatch([opener], [instanceOf(plain3)]);
+    state.a.cards.deck = [instanceOf(churn), instanceOf(churn)];
+    lockIn(state, opener, state.b.cards.hand[0]);
+    const res = resolveCardRound(state, cyclic, new Rng(2), {
+      skipRefill: true,
+      onOverflow: () => {},
+    });
+    expect(res.overflow).toBe(true);
+    expect(res.log.length).toBeLessThanOrEqual(MAX_NARRATED_STEPS);
+    expect(res.log.length).toBeLessThan(res.steps);
   });
 });

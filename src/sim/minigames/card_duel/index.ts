@@ -15,6 +15,7 @@ export * from './effects';
 export * from './expressions';
 export * from './match_state';
 export * from './modifiers';
+export * from './narration';
 export * from './preview';
 export * from './resolve';
 export * from './rules';

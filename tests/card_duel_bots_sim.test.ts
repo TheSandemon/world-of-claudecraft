@@ -22,6 +22,23 @@ function seatAtCardMaster(sim: Sim, name: string): number {
 
 /** Drives ticks until the match ends or the cap is hit, playing the human seat
  *  as soon as it is that seat's turn. */
+/**
+ * Brings both seats within a couple of rounds of zero.
+ *
+ * A match runs to 100 health at margin damage, which is 20-plus rounds and
+ * (played tick by tick against a bot that thinks between them) minutes of sim
+ * time. Every one of those rounds takes the SAME code path, so the tests here
+ * shorten the health rather than the path: what they are checking is that a bot
+ * match resolves through the shipping resolver and ends, not how long 100
+ * health takes to spend.
+ */
+function shortenMatch(sim: Sim, pid: number): void {
+  const match = sim.cardDuelMatchFor(pid);
+  if (!match) throw new Error('expected a live match to shorten');
+  match.state.a.hp = 12;
+  match.state.b.hp = 12;
+}
+
 function playOut(sim: Sim, pid: number, maxTicks = 20 * 240): void {
   for (let i = 0; i < maxTicks; i++) {
     const match = sim.cardDuelMatchFor(pid);
@@ -101,6 +118,7 @@ describe('Card Duel against a named regular', () => {
     const sim = makeWorld();
     const pid = seatAtCardMaster(sim, 'Aleph');
     sim.startCardDuelAgainstOpponent('gravedigger_ossa', pid);
+    shortenMatch(sim, pid);
     playOut(sim, pid);
     expect(sim.cardDuelMatchFor(pid)).toBeNull();
   });
@@ -112,6 +130,7 @@ describe('Card Duel against a named regular', () => {
     if (!meta) throw new Error('expected player meta');
     const before = meta.deedStats.counters.cardDuelsWon ?? 0;
     sim.startCardDuelAgainstOpponent('dockhand_pell', pid);
+    shortenMatch(sim, pid);
     playOut(sim, pid);
     expect(sim.cardDuelMatchFor(pid)).toBeNull();
     // Whoever won, the pvp stat is untouched: pvp_card_duel_first_win reads it,

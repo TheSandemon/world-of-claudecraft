@@ -35,6 +35,7 @@ import {
   type CardMatchState,
   type CardParkedDuration,
   type CardSeat,
+  cardNarrationSeconds,
   createCardHand,
   createMatchState,
   pendingValueDelta,
@@ -44,6 +45,7 @@ import {
   validateDeck,
 } from '../minigames/card_duel';
 import type { SimContext } from '../sim_context';
+import { type CardDuelSummaryEvent, TICK_RATE } from '../types';
 import {
   type CardDuelQueue,
   isQueuedForCardDuel,
@@ -68,6 +70,16 @@ export interface CardDuelMatch {
   /** The engine's live match: both seats' zones, modifiers, counters, history. */
   state: CardMatchState;
   roundDeadline: number; // ctx.time this round's AFK deadline expires
+  /**
+   * ctx.time the last round finishes being TOLD, and the next round opens.
+   *
+   * The round clock is stopped for this window (roundDeadline starts counting
+   * from it), so no think time is spent watching the round a player has already
+   * finished playing. A card played INSIDE the window is still accepted (see
+   * playCardInDuel): the clock is the thing being protected, not the animation.
+   * Zero before the first round resolves.
+   */
+  resolvingUntil: number;
   /**
    * Whether ANY card has been played this match. The discriminator between a
    * recorded DRAW (both clocks expired, cards were played) and an unrecorded
@@ -171,6 +183,21 @@ export interface CardMinigameInfo {
     waitingOnOpponent: boolean;
     /** Seconds left on this round's clock, floored at zero. */
     secondsLeft: number;
+    /**
+     * The card this viewer has locked in for this round, or null before they
+     * commit. Their OWN card, so revealing it to them leaks nothing: it is what
+     * puts a played card on the table between the commit and the reveal, which
+     * is where a card physically goes when it leaves the hand.
+     */
+    myPlayedCard: CardMinigameCard | null;
+    /**
+     * True while the last round is still being TOLD. The round clock is stopped
+     * for this window, so a client shows the clock as held rather than counting
+     * (a number that had frozen with no explanation would read as a stall).
+     */
+    resolving: boolean;
+    /** Seconds left of that telling, floored at zero. */
+    resolveSecondsLeft: number;
     /**
      * True once the opponent has locked a card in for this round. The card
      * itself stays hidden (simultaneous hidden selection is the game), but
@@ -327,6 +354,7 @@ export function startCardDuelMatch(
       createCardHand(ctx.rng, 'b', deckB),
     ),
     roundDeadline: ctx.time + CARD_DUEL_ROUND_DEADLINE_S,
+    resolvingUntil: 0,
     anyCardPlayed: false,
     bot: opponent
       ? {
@@ -435,6 +463,12 @@ export function playCardInDuel(ctx: SimContext, cardIid: number, pid?: number): 
     ctx.error(r.meta.entityId, "You can't do that while dead.");
     return;
   }
+  // A card played while the last round is still being TOLD is accepted, not
+  // refused: the clock is stopped for that window anyway, and eating a click to
+  // protect an animation is the worse trade. The client's stage cuts the story
+  // short and shows the new commit (the theater finishes a running timeline
+  // before it starts the next), which is what a player who is already moving on
+  // wants.
   const side = sideFor(match, r.meta.entityId);
   if (side.playedThisRound !== null) {
     ctx.error(r.meta.entityId, 'You already played a card this round.');
@@ -468,14 +502,27 @@ export function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
       console.warn(`[card duel] ${message}`);
     },
   });
-  match.roundDeadline = ctx.time + CARD_DUEL_ROUND_DEADLINE_S;
+  // The round clock does NOT run while the round is being told. The telling is
+  // as long as the round earned (one beat per effect that did something), both
+  // sides are held for exactly that, and the next round's think time starts
+  // after it. A player must never lose seconds to a story about a round they
+  // have already finished playing.
+  const narration = cardNarrationSeconds(res);
+  match.resolvingUntil = ctx.time + narration;
+  match.roundDeadline = match.resolvingUntil + CARD_DUEL_ROUND_DEADLINE_S;
   if (match.bot) {
-    match.bot.commitAt = ctx.tickCount + botCommitDelayTicks(match.bot.tier, ctx.rng);
+    // The bot waits out the same telling before it starts thinking, or it would
+    // commit the next round into a table still showing the last one.
+    match.bot.commitAt =
+      ctx.tickCount +
+      Math.ceil(narration * TICK_RATE) +
+      botCommitDelayTicks(match.bot.tier, ctx.rng);
   }
   for (const pid of [match.a, match.b]) {
     const isA = pid === match.a;
     const mine = isA ? res.aValue : res.bValue;
     const theirs = isA ? res.bValue : res.aValue;
+    const mySeat: CardSeat = isA ? 'a' : 'b';
     ctx.emit({
       type: 'log',
       text: `Card Duel round: you played ${mine}, opponent played ${theirs}.`,
@@ -495,6 +542,25 @@ export function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
       theirsCardId: isA ? playedB.cardId : playedA.cardId,
       outcome: mine > theirs ? 'win' : mine < theirs ? 'lose' : 'push',
       reshuffled: isA ? res.refillA.reshuffled : res.refillB.reshuffled,
+      // What the round DID, rewritten from seats to this viewer's point of
+      // view, so a client can narrate the cause of every number it shows.
+      steps: res.log.map((step) => ({
+        side: step.seat === mySeat ? ('mine' as const) : ('theirs' as const),
+        cardId: step.source,
+        effect: step.effect,
+        ...(step.target
+          ? { target: step.target === mySeat ? ('mine' as const) : ('theirs' as const) }
+          : {}),
+        ...(step.amount === null ? {} : { amount: step.amount }),
+        ...(step.valueAfter === null ? {} : { valueAfter: step.valueAfter }),
+      })),
+      damage: res.damage,
+      ...(res.winner === null
+        ? {}
+        : { damageTo: res.winner === mySeat ? ('theirs' as const) : ('mine' as const) }),
+      myHp: isA ? res.aHp : res.bHp,
+      theirHp: isA ? res.bHp : res.aHp,
+      maxHp: CARD_DUEL_START_HP,
       pid,
     });
   }
@@ -522,6 +588,34 @@ export function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
     if (match.state.a.hp === match.state.b.hp) drawMatch(ctx, match);
     else endCardDuelMatch(ctx, match, match.state.a.hp > match.state.b.hp ? match.a : match.b);
   }
+}
+
+/**
+ * What the match came to, from one seat's point of view.
+ *
+ * Built HERE, at the end, rather than left for the client to accumulate from
+ * the round events it happened to receive: a player who reconnected mid-match
+ * would otherwise get a summary of the half they watched. The summary is a
+ * report, never a rule input, and it carries no English (the opponent is a
+ * player name or a content id, exactly like the seat band).
+ */
+function matchSummaryFor(match: CardDuelMatch, pid: number, ctx: SimContext): CardDuelSummaryEvent {
+  const isA = pid === match.a;
+  const me = isA ? match.state.a : match.state.b;
+  const them = isA ? match.state.b : match.state.a;
+  const oppMeta = ctx.players.get(isA ? match.b : match.a);
+  return {
+    // `round` counts the one about to start, so the finished count is one less.
+    rounds: Math.max(0, match.state.round - 1),
+    myHp: me.hp,
+    theirHp: them.hp,
+    maxHp: CARD_DUEL_START_HP,
+    damageDealt: me.damageDealt,
+    damageTaken: them.damageDealt,
+    ...(me.bestHit ? { bestHit: { ...me.bestHit } } : {}),
+    ...(match.bot ? { opponentId: match.bot.opponentId } : {}),
+    ...(oppMeta ? { opponentName: oppMeta.name } : {}),
+  };
 }
 
 function endCardDuelMatch(ctx: SimContext, match: CardDuelMatch, winnerPid: number): void {
@@ -563,7 +657,12 @@ function endCardDuelMatch(ctx: SimContext, match: CardDuelMatch, winnerPid: numb
         pid,
       });
     }
-    ctx.emit({ type: 'cardDuelMatchEnd', won: pid === winnerPid, pid });
+    ctx.emit({
+      type: 'cardDuelMatchEnd',
+      won: pid === winnerPid,
+      summary: matchSummaryFor(match, pid, ctx),
+      pid,
+    });
   }
 }
 
@@ -606,7 +705,12 @@ function forfeitMatch(ctx: SimContext, match: CardDuelMatch, forfeiterPid: numbe
       color: '#fa6',
       pid: forfeiterPid,
     });
-    ctx.emit({ type: 'cardDuelMatchEnd', won: false, pid: forfeiterPid });
+    ctx.emit({
+      type: 'cardDuelMatchEnd',
+      won: false,
+      summary: matchSummaryFor(match, forfeiterPid, ctx),
+      pid: forfeiterPid,
+    });
   }
   if (winnerMeta) {
     ctx.emit({
@@ -615,7 +719,12 @@ function forfeitMatch(ctx: SimContext, match: CardDuelMatch, forfeiterPid: numbe
       color: '#fa6',
       pid: winnerPid,
     });
-    ctx.emit({ type: 'cardDuelMatchEnd', won: true, pid: winnerPid });
+    ctx.emit({
+      type: 'cardDuelMatchEnd',
+      won: true,
+      summary: matchSummaryFor(match, winnerPid, ctx),
+      pid: winnerPid,
+    });
   }
 }
 
@@ -632,7 +741,13 @@ function drawMatch(ctx: SimContext, match: CardDuelMatch): void {
       color: '#fa6',
       pid,
     });
-    ctx.emit({ type: 'cardDuelMatchEnd', won: false, draw: true, pid });
+    ctx.emit({
+      type: 'cardDuelMatchEnd',
+      won: false,
+      draw: true,
+      summary: matchSummaryFor(match, pid, ctx),
+      pid,
+    });
   }
 }
 
@@ -775,6 +890,11 @@ export function buildCardMinigameInfo(ctx: SimContext, pid: number): CardMinigam
         duration: effect.duration,
       })),
       secondsLeft: Math.max(0, match.roundDeadline - ctx.time),
+      myPlayedCard: me.playedThisRound
+        ? wireOwnCard(me.playedThisRound, match.state, isA ? 'a' : 'b')
+        : null,
+      resolving: ctx.time < match.resolvingUntil,
+      resolveSecondsLeft: Math.max(0, match.resolvingUntil - ctx.time),
       myCounters: { ...me.counters },
       opponentCounters: { ...them.counters },
       opponentRevealed: revealed,
