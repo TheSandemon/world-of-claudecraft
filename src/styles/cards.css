@@ -220,10 +220,14 @@
     background: #00000055;
     overflow: hidden;
   }
+  /* The fill sits UNDER the numbers, so it is held at part strength: a
+     saturated bar with figures on top of it is a bar you cannot read the
+     figures off, which defeats the point of putting them there. */
   .dt-hp-fill {
     position: absolute;
     inset: 0 auto 0 0;
     background: var(--color-stat-bonus);
+    opacity: 0.55;
     transition: width 320ms ease-out;
   }
   .dt-hp[data-band="hurt"] .dt-hp-fill {
@@ -243,7 +247,7 @@
     text-shadow: 0 1px 2px #000;
   }
   .dt-hp-max {
-    color: var(--color-text-muted);
+    opacity: 0.7;
   }
   /* Rounds won, now a readout rather than the win condition: small, beside the
      bar, and still there because cards read the round score. */
@@ -1307,10 +1311,15 @@
       grid-column: 1 / -1;
       order: 4;
     }
-    /* Last row of the side-by-side stage: the caption reads under both cards,
-       the way it reads under the stacked one. */
-    .dt-beats {
+    /* The last two rows of the side-by-side stage, in the order they are read:
+       the hit, then the line saying what just happened. Without an explicit
+       order they land wherever the source put them, which on this layout was
+       above the two cards they are about. */
+    .dt-damage {
       order: 5;
+    }
+    .dt-beats {
+      order: 6;
     }
     .dt-stage[data-beat="clash"] .dt-slot-theirs {
       animation-name: dt-lunge-right;
@@ -1450,14 +1459,39 @@
     /* The hand keeps its full touch height, so the BOARD takes the squeeze:
        it is bounded to whatever is left over and scrolls inside itself, rather
        than growing under the pinned hand where half of it cannot be seen. The
-       13rem is the pinned furniture around it (the hand's 122px tap box plus
-       the window title and the body padding), the one place in this sheet that
-       number is spelled. */
+       16rem is the pinned furniture around it, MEASURED on a 844x430 landscape
+       phone rather than estimated: the window title, the body padding, the
+       hand's 122px tap box, and the sticky Forfeit row beside it. It was 13rem,
+       which left the bottom of the board underneath the hand rather than above
+       it, and what sat there was the player's own health bar. */
     .dt-board,
     .dt-side {
-      max-height: calc(var(--app-vh, 100vh) - 13rem);
+      max-height: calc(var(--app-vh, 100vh) - 16rem);
       overflow-y: auto;
       overscroll-behavior: contain;
+    }
+    /* Both HEALTH bars stay in view while the middle of the board scrolls.
+       Health decides the match, and a landscape phone is short enough that the
+       player's own band was scrolling off the bottom of that column: the one
+       number the whole game is about was the first thing to leave the screen.
+       Sticky rather than moved out of the column, because position is ownership
+       here (opponent above, you below) and reordering the board to save space
+       would trade one confusion for another. They need an opaque background of
+       their own, since the stage now scrolls under them. */
+    /* The WRAPPERS are what stick, not the bands inside them: a sticky element
+       can only travel inside its own parent's box, and each band's wrapper hugs
+       it exactly, so sticking the band itself moves nothing at all. */
+    .dt-board > [data-cd-seats-them],
+    .dt-board > [data-cd-seats-mine] {
+      position: sticky;
+      z-index: 1;
+      background: var(--panel-base, #15151f);
+    }
+    .dt-board > [data-cd-seats-them] {
+      top: 0;
+    }
+    .dt-board > [data-cd-seats-mine] {
+      bottom: 0;
     }
   }
 
