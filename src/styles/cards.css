@@ -311,6 +311,13 @@
   .dt-clock-ring[data-band="out"] {
     background: var(--mkt-name-legendary);
   }
+  /* Held: the sim has genuinely stopped the clock while the round is told, so
+     the ring stops draining and stops pulsing instead of freezing mid-tick and
+     looking like a stall. */
+  .dt-clock-ring[data-band="held"] {
+    background: #ffffff20;
+    animation: none;
+  }
   .dt-clock-num {
     font-family: var(--title-font);
     font-size: 13px;
@@ -1140,6 +1147,79 @@
     font-size: 11px;
   }
 
+  /* ---------- the end of a match (src/ui/cards/duel_summary_view.ts) ------- */
+  /* A match used to simply stop: the projection's match went null and the
+     window flipped to the Join screen mid-thought. The summary lands in the
+     window instead, over the table it replaces, and holds it until the player
+     leaves or sits down again.
+
+     Rows arrive one at a time, each carrying its own delay as a custom
+     property, so the panel reads in the order it is meant to be read without a
+     timer per row. Dropping the animation (the tier block at the bottom) leaves
+     every row in place and readable, which is the same bargain the round
+     theater makes. */
+  .dt-sum {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 8px;
+  }
+  .dt-sum-title {
+    font-family: var(--title-font);
+    font-size: 20px;
+    text-align: center;
+    color: var(--gold);
+  }
+  .dt-sum[data-outcome="win"] .dt-sum-title {
+    color: var(--color-stat-bonus);
+  }
+  .dt-sum[data-outcome="loss"] .dt-sum-title {
+    color: var(--mkt-name-legendary);
+  }
+  .dt-sum-who {
+    margin-top: -4px;
+    font-size: 11px;
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+  .dt-sum-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 4px 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dt-sum-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 3px 6px;
+    border-radius: var(--radius-sm);
+    background: #ffffff08;
+    animation: dt-sum-row-in 220ms ease-out backwards;
+    animation-delay: var(--dt-sum-delay, 0ms);
+  }
+  .dt-sum-label {
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .dt-sum-value {
+    font-family: var(--title-font);
+    font-size: 13px;
+    color: var(--color-text-light);
+  }
+  .dt-sum-row[data-kind="bestHit"] .dt-sum-value {
+    color: var(--gold);
+  }
+  @keyframes dt-sum-row-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
   /* ---------- the card flight (src/ui/cards/card_flight.ts) ---------- */
   /* A card physically leaving the hand and landing on the table. Fixed to the
      viewport and mounted on <body>, because it crosses the duel window's own
@@ -1416,7 +1496,8 @@
     }
     .dt-stage *,
     .dt-lamp,
-    .dt-clock-ring {
+    .dt-clock-ring,
+    .dt-sum-row {
       animation: none;
     }
   }
@@ -1430,7 +1511,8 @@
   }
   :root[data-fx-level="low"] .dt-stage *,
   :root[data-fx-level="low"] .dt-lamp,
-  :root[data-fx-level="low"] .dt-clock-ring {
+  :root[data-fx-level="low"] .dt-clock-ring,
+  :root[data-fx-level="low"] .dt-sum-row {
     animation: none;
   }
 }

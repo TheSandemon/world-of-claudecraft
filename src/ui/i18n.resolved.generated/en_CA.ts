@@ -7863,6 +7863,7 @@ export const en_CA: EnTranslations = {
     "clock": "{seconds}s left",
     "clockAria": "Seconds left in this round: {seconds}",
     "clockOut": "Time is up",
+    "clockHeld": "Resolving the round",
     "revealMine": "You played",
     "revealTheirs": "Opponent played",
     "revealWin": "You win the round",
@@ -7906,6 +7907,20 @@ export const en_CA: EnTranslations = {
       "damage": "{target} takes {amount}",
       "you": "You",
       "them": "Your opponent"
+    },
+    "summary": {
+      "win": "You win the duel",
+      "loss": "You lose the duel",
+      "draw": "The duel ends level",
+      "against": "against {name}",
+      "health": "Health left",
+      "rounds": "Rounds played",
+      "dealt": "Damage dealt",
+      "taken": "Damage taken",
+      "bestHit": "Biggest hit",
+      "bestHitValue": "{amount} with {card}, round {round}",
+      "rematch": "Play again",
+      "done": "Leave the table"
     },
     "announce": "You played {mine}, your opponent played {theirs}. {outcome}"
   },

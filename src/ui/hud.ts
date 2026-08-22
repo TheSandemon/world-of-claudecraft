@@ -12892,6 +12892,22 @@ export class Hud {
         case 'cardDuelMatchEnd':
           if (ev.won) audio.duelEnd();
           else audio.arenaLoss();
+          // The match ends ON the table: the window keeps the summary up until
+          // the player leaves it or sits down again. Without the payload there
+          // is nothing to summarize (a void match), and the window falls back
+          // to its ordinary idle body.
+          if (ev.summary) {
+            this.cardWindows.cardDuel.showMatchEnd({ won: ev.won, draw: ev.draw, ...ev.summary });
+          }
+          this.showBanner(
+            t(
+              ev.draw
+                ? 'cardDuel.summary.draw'
+                : ev.won
+                  ? 'cardDuel.summary.win'
+                  : 'cardDuel.summary.loss',
+            ),
+          );
           break;
         case 'fiestaWord': {
           const { text, tier, color } = this.fiestaWordParts(ev.flavor, ev.n);

@@ -7863,6 +7863,7 @@ export const zh_CN: EnTranslations = {
     "clock": "剩余 {seconds} 秒",
     "clockAria": "本回合剩余秒数：{seconds}",
     "clockOut": "时间到",
+    "clockHeld": "正在结算本回合",
     "revealMine": "你出的牌",
     "revealTheirs": "对手出的牌",
     "revealWin": "你赢下本回合",
@@ -7906,6 +7907,20 @@ export const zh_CN: EnTranslations = {
       "damage": "{target}受到 {amount} 点伤害",
       "you": "你",
       "them": "对手"
+    },
+    "summary": {
+      "win": "你赢下这场对决",
+      "loss": "你输掉这场对决",
+      "draw": "这场对决打平",
+      "against": "对手：{name}",
+      "health": "剩余生命",
+      "rounds": "回合数",
+      "dealt": "造成伤害",
+      "taken": "承受伤害",
+      "bestHit": "最大一击",
+      "bestHitValue": "第 {round} 回合用{card}打出 {amount}",
+      "rematch": "再来一局",
+      "done": "离开牌桌"
     },
     "announce": "你打出 {mine}，对手打出 {theirs}。{outcome}"
   },

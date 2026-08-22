@@ -273,6 +273,11 @@ const ANSWERED: readonly AnsweredSurface[] = [
       'lastEffects',
       'lastHand',
       'lastOppoHand',
+      // The between-rounds stage picture (who has committed). Text-independent
+      // by construction (a round number and two booleans), and reset with
+      // every other region memo when the shell rebuilds, so the relocalize arm
+      // covers it like the rest.
+      'lastPending',
       'lastRatio',
       'lastSeats',
       'lastShell',

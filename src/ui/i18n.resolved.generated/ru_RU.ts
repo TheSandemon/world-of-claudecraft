@@ -7863,6 +7863,7 @@ export const ru_RU: EnTranslations = {
     "clock": "Осталось {seconds} с",
     "clockAria": "Секунд до конца раунда: {seconds}",
     "clockOut": "Время вышло",
+    "clockHeld": "Подводим итог раунда",
     "revealMine": "Вы сыграли",
     "revealTheirs": "Соперник сыграл",
     "revealWin": "Вы выигрываете раунд",
@@ -7906,6 +7907,20 @@ export const ru_RU: EnTranslations = {
       "damage": "{target} получает {amount}",
       "you": "Вы",
       "them": "Противник"
+    },
+    "summary": {
+      "win": "Вы выиграли дуэль",
+      "loss": "Вы проиграли дуэль",
+      "draw": "Дуэль окончена вничью",
+      "against": "против {name}",
+      "health": "Осталось здоровья",
+      "rounds": "Сыграно раундов",
+      "dealt": "Нанесено урона",
+      "taken": "Получено урона",
+      "bestHit": "Лучший удар",
+      "bestHitValue": "{amount} картой {card}, раунд {round}",
+      "rematch": "Сыграть снова",
+      "done": "Встать из-за стола"
     },
     "announce": "Вы сыграли {mine}, соперник сыграл {theirs}. {outcome}"
   },

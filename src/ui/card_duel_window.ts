@@ -38,6 +38,7 @@ import {
   buildDuelClock,
   buildDuelEffects,
   buildDuelStage,
+  buildDuelSummary,
   buildDuelTable,
   buildOpponentHand,
   type CardFaceModel,
@@ -46,6 +47,8 @@ import {
   type CardRoundRevealInput,
   cardFaceHtml,
   type DuelStageModel,
+  type DuelSummaryInput,
+  type DuelSummaryModel,
   DuelTheater,
   duelBeatCaption,
   duelClockHtml,
@@ -55,6 +58,7 @@ import {
   duelStageHtml,
   duelStageIdleHtml,
   duelStagePendingHtml,
+  duelSummaryHtml,
   duelTokensHtml,
   duelWaitingText,
   flyCard,
@@ -140,6 +144,13 @@ export class CardDuelWindow {
    *  latched only when it is actually painted: while a round is being told the
    *  stage belongs to the theater, and the change waits. */
   private lastPending = '';
+  /** The finished match on the table, until the player dismisses it. Held here
+   *  rather than in the projection because the projection's match is already
+   *  gone by then: a finished match is not a state the server keeps. */
+  private summary: DuelSummaryModel | null = null;
+  /** Whether the projection has reported "no match" since the last one ended.
+   *  What tells a NEW match apart from the tail of the one being summarized. */
+  private sawNoMatch = false;
   private readonly inspector = new CardInspector({
     resolve: (iid) => this.inspectModel(iid),
     catalog: CARD_CATALOG,
@@ -195,8 +206,22 @@ export class CardDuelWindow {
     if (!this.isOpen) return;
     const world = this.deps.world();
     const view = buildCardDuelView(world.cardMinigameInfo);
-    if (view.state !== this.lastShell) {
-      this.lastShell = view.state;
+    // A NEW match clears whatever summary is up: the table is the answer to
+    // "what now" once there is a table again. New, not merely live: the
+    // match-end event can land a beat before the snapshot drops the match it
+    // describes, and clearing on that would delete the summary in the same
+    // frame it was written.
+    if (view.state === 'inMatch' && this.sawNoMatch) {
+      this.summary = null;
+      this.sawNoMatch = false;
+    } else if (view.state !== 'inMatch') {
+      this.sawNoMatch = true;
+    }
+    // The summary is part of the shell's identity, so the window rebuilds into
+    // it and back out of it exactly once each.
+    const shell = this.summary ? `summary:${this.summary.outcome}` : view.state;
+    if (shell !== this.lastShell) {
+      this.lastShell = shell;
       const el = this.deps.root();
       el.innerHTML = this.html(view);
       this.wire(el, world);
@@ -372,7 +397,7 @@ export class CardDuelWindow {
     }
 
     this.paintPendingStage(view);
-    this.paintClock(view.secondsLeft);
+    this.paintClock(view.secondsLeft, view.resolving);
   }
 
   /**
@@ -439,13 +464,19 @@ export class CardDuelWindow {
    * two writes, each elided against its last value: the figures a player
    * reads, and the ratio the ring draws itself from.
    */
-  private paintClock(secondsLeft: number | null): void {
+  private paintClock(secondsLeft: number | null, resolving = false): void {
     const el = this.els.clock;
     if (!el) return;
     const clock = buildDuelClock(secondsLeft, CARD_DUEL_ROUND_DEADLINE_S);
     const shown = num(clock.seconds);
-    const text =
-      clock.band === 'out' ? t('cardDuel.clockOut') : t('cardDuel.clock', { seconds: shown });
+    // While the last round is being told, the sim is genuinely holding the
+    // clock: it says so rather than showing a number frozen for no visible
+    // reason, which is what a stalled client looks like.
+    const text = resolving
+      ? t('cardDuel.clockHeld')
+      : clock.band === 'out'
+        ? t('cardDuel.clockOut')
+        : t('cardDuel.clock', { seconds: shown });
     if (text !== this.lastClock) {
       this.lastClock = text;
       el.textContent = text;
@@ -456,10 +487,27 @@ export class CardDuelWindow {
     // One decimal is all the ring can show: rounding here is what keeps a
     // 20 Hz snapshot from writing a new custom property on every single frame.
     const ratio = clock.ratio.toFixed(2);
-    if (ratio === this.lastRatio && ring.dataset.band === clock.band) return;
+    const band = resolving ? 'held' : clock.band;
+    if (ratio === this.lastRatio && ring.dataset.band === band) return;
     this.lastRatio = ratio;
-    ring.dataset.band = clock.band;
+    ring.dataset.band = band;
     ring.style.setProperty('--dt-clock-ratio', ratio);
+  }
+
+  /**
+   * Ends the match ON the table.
+   *
+   * The projection's match goes null the instant a match ends, so without this
+   * the window's shell flips to the Join screen and the board a player was
+   * reading is replaced mid-thought. The summary holds the window until they
+   * choose to leave it or sit down again.
+   */
+  showMatchEnd(input: DuelSummaryInput): void {
+    this.summary = buildDuelSummary(input);
+    // A running timeline is over: the match it was narrating has finished.
+    this.theater?.stop();
+    this.lastPending = '';
+    if (this.isOpen) this.render();
   }
 
   /**
@@ -534,7 +582,11 @@ export class CardDuelWindow {
 
   private html(view: CardDuelViewModel): string {
     let body = '';
-    if (view.state === 'unavailable') {
+    if (this.summary) {
+      // The finished match owns the window until it is dismissed, whatever the
+      // projection now says about queues and availability.
+      body = duelSummaryHtml(this.summary, CARD_CATALOG) + this.deckButtonHtml();
+    } else if (view.state === 'unavailable') {
       // No human to pair with, but the regulars are always at the table: the
       // queue gate never takes the whole minigame away from a lone player.
       body =
@@ -641,6 +693,18 @@ export class CardDuelWindow {
       }
       if (target.closest('[data-decks]')) {
         this.deps.openDeckBuilder();
+        return;
+      }
+      const rematch = target.closest('[data-rematch]') as HTMLElement | null;
+      if (rematch) {
+        this.summary = null;
+        world.startCardDuelAgainstOpponent(rematch.dataset.rematch ?? '');
+        this.render();
+        return;
+      }
+      if (target.closest('[data-sumclose]')) {
+        this.summary = null;
+        this.render();
         return;
       }
       const regular = target.closest('[data-opponent]') as HTMLElement | null;

@@ -315,6 +315,7 @@ const UI_PURE_CORES = [
   // The duel table and its round theater: what a match reads like between
   // reveals, and the beat timeline one resolved round plays out over.
   'src/ui/cards/duel_beats_core.ts',
+  'src/ui/cards/duel_summary_view.ts',
   'src/ui/cards/duel_table_view.ts',
   // The deck builder's row model: ten value rows, two slots each.
   'src/ui/deck_builder_view.ts',

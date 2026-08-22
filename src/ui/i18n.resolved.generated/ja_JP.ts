@@ -7863,6 +7863,7 @@ export const ja_JP: EnTranslations = {
     "clock": "残り{seconds}秒",
     "clockAria": "このラウンドの残り秒数：{seconds}",
     "clockOut": "時間切れ",
+    "clockHeld": "ラウンドを処理中",
     "revealMine": "あなたのカード",
     "revealTheirs": "相手のカード",
     "revealWin": "このラウンドはあなたの勝ち",
@@ -7906,6 +7907,20 @@ export const ja_JP: EnTranslations = {
       "damage": "{target}に{amount}ダメージ",
       "you": "あなた",
       "them": "相手"
+    },
+    "summary": {
+      "win": "あなたの勝ち",
+      "loss": "あなたの負け",
+      "draw": "引き分け",
+      "against": "対戦相手：{name}",
+      "health": "残り体力",
+      "rounds": "ラウンド数",
+      "dealt": "与えたダメージ",
+      "taken": "受けたダメージ",
+      "bestHit": "最大の一撃",
+      "bestHitValue": "第{round}ラウンド、{card}で{amount}",
+      "rematch": "もう一度",
+      "done": "席を立つ"
     },
     "announce": "あなたは{mine}、相手は{theirs}を出しました。{outcome}"
   },

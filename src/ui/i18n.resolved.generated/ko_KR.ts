@@ -7863,6 +7863,7 @@ export const ko_KR: EnTranslations = {
     "clock": "{seconds}초 남음",
     "clockAria": "이번 라운드 남은 초: {seconds}",
     "clockOut": "시간 종료",
+    "clockHeld": "라운드 정산 중",
     "revealMine": "내가 낸 카드",
     "revealTheirs": "상대가 낸 카드",
     "revealWin": "이번 라운드 승리",
@@ -7906,6 +7907,20 @@ export const ko_KR: EnTranslations = {
       "damage": "{target} {amount} 피해",
       "you": "당신",
       "them": "상대"
+    },
+    "summary": {
+      "win": "당신의 승리",
+      "loss": "당신의 패배",
+      "draw": "무승부",
+      "against": "상대: {name}",
+      "health": "남은 체력",
+      "rounds": "진행한 라운드",
+      "dealt": "가한 피해",
+      "taken": "받은 피해",
+      "bestHit": "최대 타격",
+      "bestHitValue": "{round}라운드, {card}로 {amount}",
+      "rematch": "다시 하기",
+      "done": "자리 떠나기"
     },
     "announce": "나는 {mine}, 상대는 {theirs}을(를) 냈습니다. {outcome}"
   },

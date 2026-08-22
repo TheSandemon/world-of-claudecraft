@@ -13,12 +13,13 @@
 
 import type { CardCatalog } from '../../sim/minigames/card_duel/match_state';
 import type { CardMinigameCard } from '../../sim/social/card_duel';
-import { cardName, cardRulesTextFrom } from '../card_i18n';
+import { cardName, cardOpponentName, cardRulesTextFrom } from '../card_i18n';
 import { esc } from '../esc';
 import { formatNumber, t } from '../i18n';
 import { cardFaceHtml } from './card_face_markup';
 import { buildCardFaceModel } from './card_face_view';
 import type { DuelBeat, DuelStageModel, DuelStageSide, DuelStageStep } from './duel_beats_core';
+import { type DuelSummaryModel, type DuelSummaryRow, summaryRowDelayMs } from './duel_summary_view';
 import type {
   DuelCounterToken,
   DuelEffectChip,
@@ -483,4 +484,79 @@ export function duelWaitingText(model: DuelTableModel): string {
     default:
       return t('cardDuel.waitingReveal');
   }
+}
+
+/**
+ * The end of a match, as a panel the window holds until the player dismisses
+ * it.
+ *
+ * Deliberately IN the window rather than a banner over the world: the table it
+ * replaces is where the player was looking, and the numbers only mean anything
+ * next to the board they came from. Rows carry their own landing delay as a
+ * CSS custom property, so they arrive one at a time without a timer per row.
+ */
+export function duelSummaryHtml(model: DuelSummaryModel, catalog: CardCatalog): string {
+  const title = t(
+    model.outcome === 'win'
+      ? 'cardDuel.summary.win'
+      : model.outcome === 'loss'
+        ? 'cardDuel.summary.loss'
+        : 'cardDuel.summary.draw',
+  );
+  const who = model.opponentId ? cardOpponentName(model.opponentId) : model.opponentName;
+  const rows = model.rows
+    .map((row, index) => {
+      const delay = summaryRowDelayMs(index);
+      return (
+        `<li class="dt-sum-row" data-kind="${row.kind}" style="--dt-sum-delay:${delay}ms">` +
+        `<span class="dt-sum-label">${esc(summaryRowLabel(row))}</span>` +
+        `<span class="dt-sum-value">${esc(summaryRowValue(row, catalog))}</span>` +
+        '</li>'
+      );
+    })
+    .join('');
+  const rematch = model.canRematch
+    ? `<button type="button" class="cd-action-btn" data-rematch="${esc(model.opponentId)}">${esc(
+        t('cardDuel.summary.rematch'),
+      )}</button>`
+    : '';
+  return (
+    `<div class="dt-sum" data-outcome="${model.outcome}" role="group" aria-label="${esc(title)}">` +
+    `<div class="dt-sum-title">${esc(title)}</div>` +
+    (who
+      ? `<div class="dt-sum-who">${esc(t('cardDuel.summary.against', { name: who }))}</div>`
+      : '') +
+    `<ul class="dt-sum-rows">${rows}</ul>` +
+    rematch +
+    `<button type="button" class="cd-action-btn" data-sumclose>${esc(t('cardDuel.summary.done'))}</button>` +
+    '</div>'
+  );
+}
+
+function summaryRowLabel(row: DuelSummaryRow): string {
+  switch (row.kind) {
+    case 'health':
+      return t('cardDuel.summary.health');
+    case 'rounds':
+      return t('cardDuel.summary.rounds');
+    case 'dealt':
+      return t('cardDuel.summary.dealt');
+    case 'taken':
+      return t('cardDuel.summary.taken');
+    default:
+      return t('cardDuel.summary.bestHit');
+  }
+}
+
+function summaryRowValue(row: DuelSummaryRow, catalog: CardCatalog): string {
+  if (row.kind === 'health') return `${num(row.value)}/${num(row.of ?? 0)}`;
+  if (row.kind === 'bestHit') {
+    const def = row.cardId ? catalog.get(row.cardId) : undefined;
+    return t('cardDuel.summary.bestHitValue', {
+      amount: num(row.value),
+      card: def ? cardName(def) : (row.cardId ?? ''),
+      round: num(row.round ?? 0),
+    });
+  }
+  return num(row.value);
 }

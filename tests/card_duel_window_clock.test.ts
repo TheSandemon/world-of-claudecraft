@@ -634,6 +634,60 @@ describe('card duel window clock and round theater', () => {
     }
   });
 
+  it('holds the clock, in words, while the round is being told', () => {
+    // The sim really has stopped the clock for the narration. A number frozen
+    // with no explanation is what a stalled client looks like.
+    const { win, root, setInfo } = makeWindow();
+    win.render();
+    const clock = root.querySelector('[data-cd-clock]') as HTMLElement;
+    const ring = root.querySelector('[data-cd-clockring]') as HTMLElement;
+    setInfo(liveInfo({ resolving: true, resolveSecondsLeft: 1.4 }));
+    win.render();
+    expect(clock.textContent).toBe('Resolving the round');
+    expect(ring.dataset.band).toBe('held');
+
+    setInfo(liveInfo({ resolving: false, secondsLeft: 45 }));
+    win.render();
+    expect(clock.textContent).toContain('45');
+    expect(ring.dataset.band).toBe('calm');
+  });
+
+  it('ends the match on the table, and holds it there', () => {
+    // The complaint this answers: the projection's match goes null the instant
+    // a match ends, so the window used to flip to the Join screen mid-thought
+    // with no statement of what had happened.
+    const { win, root, setInfo } = makeWindow();
+    win.render();
+    win.showMatchEnd({
+      won: true,
+      rounds: 9,
+      myHp: 34,
+      theirHp: 0,
+      maxHp: 100,
+      damageDealt: 100,
+      damageTaken: 66,
+      bestHit: { round: 4, cardId: 'pack_alpha', amount: 14 },
+      opponentId: 'gravedigger_ossa',
+    });
+    const panel = () => root.querySelector('.dt-sum') as HTMLElement | null;
+    expect(panel()).not.toBeNull();
+    expect(panel()?.textContent).toContain('You win the duel');
+    expect(panel()?.textContent).toContain('Ossa');
+    expect(panel()?.textContent).toContain('34/100');
+    expect(panel()?.textContent).toContain('14 with Pack Alpha, round 4');
+
+    // The snapshot has already gone back to "no match", and the summary
+    // survives it.
+    setInfo({ queued: false, available: true, decks: noDecks, match: null });
+    win.render();
+    expect(panel()).not.toBeNull();
+
+    // Leaving the table is what dismisses it.
+    (root.querySelector('[data-sumclose]') as HTMLElement).click();
+    expect(panel()).toBeNull();
+    expect(root.querySelector('[data-join]')).not.toBeNull();
+  });
+
   it('a closed window hands the cues back rather than eating them', () => {
     const { win, root } = makeWindow();
     win.render();

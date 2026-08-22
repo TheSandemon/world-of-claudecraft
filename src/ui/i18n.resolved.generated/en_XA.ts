@@ -7863,6 +7863,7 @@ export const en_XA: EnTranslations = {
     "clock": "[{seconds}š ļéƒţ]",
     "clockAria": "[Šéçóñðš ļéƒţ íñ ţĥíš ŕóúñð: {seconds}]",
     "clockOut": "[Ţíɱé íš úþ]",
+    "clockHeld": "[Ŕéšóļʋíñĝ ţĥé ŕóúñð]",
     "revealMine": "[Ýóú þļáýéð]",
     "revealTheirs": "[Óþþóñéñţ þļáýéð]",
     "revealWin": "[Ýóú ŵíñ ţĥé ŕóúñð]",
@@ -7906,6 +7907,20 @@ export const en_XA: EnTranslations = {
       "damage": "[{target} ţáķéš {amount}]",
       "you": "[Ýóú]",
       "them": "[Ýóúŕ óþþóñéñţ]"
+    },
+    "summary": {
+      "win": "[Ýóú ŵíñ ţĥé ðúéļ]",
+      "loss": "[Ýóú ļóšé ţĥé ðúéļ]",
+      "draw": "[Ţĥé ðúéļ éñðš ļéʋéļ]",
+      "against": "[áĝáíñšţ {name}]",
+      "health": "[Ĥéáļţĥ ļéƒţ]",
+      "rounds": "[Ŕóúñðš þļáýéð]",
+      "dealt": "[Ðáɱáĝé ðéáļţ]",
+      "taken": "[Ðáɱáĝé ţáķéñ]",
+      "bestHit": "[Ɓíĝĝéšţ ĥíţ]",
+      "bestHitValue": "[{amount} ŵíţĥ {card}, ŕóúñð {round}]",
+      "rematch": "[Þļáý áĝáíñ]",
+      "done": "[Ļéáʋé ţĥé ţáƀļé]"
     },
     "announce": "[Ýóú þļáýéð {mine}, ýóúŕ óþþóñéñţ þļáýéð {theirs}. {outcome}]"
   },

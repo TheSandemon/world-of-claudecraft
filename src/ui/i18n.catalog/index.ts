@@ -1144,6 +1144,9 @@ export const en = {
     clock: '{seconds}s left',
     clockAria: 'Seconds left in this round: {seconds}',
     clockOut: 'Time is up',
+    // The round clock while the last round is being told: the sim really has
+    // stopped it, so the clock says so instead of freezing silently.
+    clockHeld: 'Resolving the round',
     // The reveal stage, shown from the round-resolved event.
     revealMine: 'You played',
     revealTheirs: 'Opponent played',
@@ -1206,6 +1209,23 @@ export const en = {
       damage: '{target} takes {amount}',
       you: 'You',
       them: 'Your opponent',
+    },
+    // The end of a match. It lands IN the window, over the table it replaces:
+    // the numbers only mean anything next to the board they came from, and a
+    // match that simply stopped was the complaint.
+    summary: {
+      win: 'You win the duel',
+      loss: 'You lose the duel',
+      draw: 'The duel ends level',
+      against: 'against {name}',
+      health: 'Health left',
+      rounds: 'Rounds played',
+      dealt: 'Damage dealt',
+      taken: 'Damage taken',
+      bestHit: 'Biggest hit',
+      bestHitValue: '{amount} with {card}, round {round}',
+      rematch: 'Play again',
+      done: 'Leave the table',
     },
     // The screen-reader line for a resolved round: the stage tells the story
     // in pictures, and this says the same thing in one sentence.

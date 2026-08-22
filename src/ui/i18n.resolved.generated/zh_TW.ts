@@ -7863,6 +7863,7 @@ export const zh_TW: EnTranslations = {
     "clock": "剩餘 {seconds} 秒",
     "clockAria": "本回合剩餘秒數：{seconds}",
     "clockOut": "時間到",
+    "clockHeld": "正在結算本回合",
     "revealMine": "你出的牌",
     "revealTheirs": "對手出的牌",
     "revealWin": "你贏下本回合",
@@ -7906,6 +7907,20 @@ export const zh_TW: EnTranslations = {
       "damage": "{target}受到 {amount} 點傷害",
       "you": "你",
       "them": "對手"
+    },
+    "summary": {
+      "win": "你贏下這場對決",
+      "loss": "你輸掉這場對決",
+      "draw": "這場對決打平",
+      "against": "對手：{name}",
+      "health": "剩餘生命",
+      "rounds": "回合數",
+      "dealt": "造成傷害",
+      "taken": "承受傷害",
+      "bestHit": "最大一擊",
+      "bestHitValue": "第 {round} 回合用{card}打出 {amount}",
+      "rematch": "再來一局",
+      "done": "離開牌桌"
     },
     "announce": "你打出 {mine}，對手打出 {theirs}。{outcome}"
   },
