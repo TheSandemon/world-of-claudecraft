@@ -187,7 +187,7 @@ const VIEW_SIG_BLOCK = 'if (view.sig !== this.lastSig) {';
 // live match keeps one shell for its whole length, so a playing round theater
 // is never rebuilt out from under itself), and each region inside it carries
 // its own memo.
-const SHELL_BLOCK = 'if (view.state !== this.lastShell) {';
+const SHELL_BLOCK = 'if (shell !== this.lastShell) {';
 
 /**
  * Every statement-position call `Hud.update()` makes, in SOURCE ORDER, so the table reads as
@@ -1658,7 +1658,9 @@ describe('Hud.update() drives exactly the registered set, on the registered band
       // v0.40.0 sync merge back in.
       // chrome 82 -> 83: the controller-tutorial merge's gamepad control
       // hint apply.
-    ).toEqual({ window: 44, chrome: 83, none: 17 });
+      // window 44 -> 45: the Card Duel deck builder's render row (the duel
+      // window's own row was already counted).
+    ).toEqual({ window: 45, chrome: 83, none: 17 });
     const windows = HUD_UPDATE_DRIVES.filter((r) => r.surface === 'window');
     expect(windows.map((r) => r.call)).toContain('this.spellbookWindow.tickOpen');
     expect(windows.map((r) => r.call)).toContain('this.refreshOpenTownFocusIfChanged');
@@ -1679,7 +1681,9 @@ describe('Hud.update() drives exactly the registered set, on the registered band
       // Up to 23 with the v0.40.0 sync merge: the release arm's
       // woc_market_window row plus the trade-window row (its guard moved from
       // a hud latch to the woc_trade controller in the extraction).
-      module: 23,
+      // Up one for the Card Duel deck builder's own module guard
+      // (deck_builder_window.ts holds its signature).
+      module: 24,
       // 6 = Phase 20's refreshCharSheetIfChanged and its siblings. Their
       // latches are HUD fields (lastCharSheetSig et al) because the cold
       // char_window painter holds no signature of its own to diff. Down one
@@ -1721,7 +1725,7 @@ describe('Hud.update() drives exactly the registered set, on the registered band
         'bags_window.ts: if (!bagsMoneyRowStale(el.style.display, this.deps.world().copper, this.lastMoneyCopper)) return;',
         'bank_window.ts: if (sig === this.lastSig) return;',
         'calendar_window.ts: if (sig === this.lastSig) return;',
-        'card_duel_window.ts: if (view.state !== this.lastShell) {',
+        'card_duel_window.ts: if (shell !== this.lastShell) {',
         'deck_builder_window.ts: if (sig === this.lastSig) return;',
         'deeds_window.ts: if (sig === this.lastSig) return;',
         'dungeon_finder_proposal_popup.ts: if (view.sig !== this.lastSig) {',

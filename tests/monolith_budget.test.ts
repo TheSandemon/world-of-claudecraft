@@ -128,7 +128,11 @@ const MONOLITHS: MonolithRow[] = [
     // Card Duel rebase onto release/v0.41.0: the duel window and deck
     // builder live in src/ui/cards/, so hud.ts only gains the thin open,
     // close and relocalize wiring. Exact count, zero slack.
-    ceiling: 18488,
+    // Re-pinned +15 on the Card Duel rebase onto release/v0.41.0: the duel
+    // window and the deck builder live in src/ui/cards/, so hud.ts carries
+    // only the createCardWindows bag plus its open, close, render and
+    // relocalize wiring. Exact count, zero slack.
+    ceiling: 18503,
     seam: 'pure view core + thin painter on PainterHost (src/ui/CLAUDE.md)',
   },
   {
@@ -233,7 +237,10 @@ const MONOLITHS: MonolithRow[] = [
     // Plus 7 at the v0.39.3 main back-merge: the Double Honor port grew the
     // sim arm on main while the release pin sat at zero slack (the known
     // both-arms compound). Exact merged count, zero slack.
-    ceiling: 12538,
+    // Re-pinned +48 for the Card Duel work: the engine and the round
+    // resolution live under src/sim/minigames/card_duel/ and src/sim/social/,
+    // so sim.ts carries the IWorldCardMinigame delegates. Exact count.
+    ceiling: 12586,
     seam: 'a sim system module behind SimContext (src/sim/CLAUDE.md)',
   },
   {
@@ -318,7 +325,10 @@ const MONOLITHS: MonolithRow[] = [
     // then re-pinned when the mirror gained the trust-boundary row
     // validation and the 404-vs-transport-failure split, plus the roster
     // class field. Exact count, zero slack.
-    ceiling: 5855,
+    // Re-pinned +24 for the Card Duel mirror: the deck fields on
+    // cardMinigameInfo plus the four IWorldCardMinigame command senders.
+    // Exact count, zero slack.
+    ceiling: 5879,
     seam: 'a src/net sibling module (the refactor/net-online split is the template)',
   },
   {

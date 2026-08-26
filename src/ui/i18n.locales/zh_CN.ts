@@ -13489,7 +13489,6 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.nightshade_coating.name': '夜影涂层',
   'entities.abilities.nightshade_coating.description':
     '用夜影覆盖目标，造成 {damage} 点自然伤害，并使其受到的治疗降低 25%，持续 12 秒。',
-  'cards.appTitle': '卡牌对决试玩',
   'cards.basicName': '普通 {value}',
   'cards.card.effectiveLabel': '实际数值 {value}',
   'cards.card.valueLabel': '数值 {value}',

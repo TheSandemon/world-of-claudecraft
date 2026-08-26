@@ -13777,7 +13777,6 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.nightshade_coating.name': '가지독 코팅',
   'entities.abilities.nightshade_coating.description':
     '대상을 가지독으로 뒤덮어 {damage}의 자연 피해를 주고 12초 동안 받는 치유 효과를 25% 감소시킵니다.',
-  'cards.appTitle': '카드 듀얼 플레이테스트',
   'cards.basicName': '평범한 {value}',
   'cards.card.effectiveLabel': '실효 값 {value}',
   'cards.card.valueLabel': '값 {value}',

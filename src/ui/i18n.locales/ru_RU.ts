@@ -13957,7 +13957,6 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.nightshade_coating.name': 'Покрытие паслёном',
   'entities.abilities.nightshade_coating.description':
     'Покрывает цель паслёном, нанося {damage} ед. урона от сил природы и снижая получаемое ею исцеление на 25% на 12 сек.',
-  'cards.appTitle': 'Плейтест карточной дуэли',
   'cards.basicName': 'Простая {value}',
   'cards.card.effectiveLabel': 'Действующее значение {value}',
   'cards.card.valueLabel': 'Значение {value}',

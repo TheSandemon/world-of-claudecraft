@@ -2153,7 +2153,6 @@ const UI_DOM_MODULES = [
   'src/ui/bank_window.ts',
   'src/ui/breath_bar.ts',
   'src/ui/calendar_window.ts',
-  'src/ui/camera_prompt.ts',
   'src/ui/card_duel_window.ts',
   'src/ui/cards/card_flight.ts',
   'src/ui/cards/duel_theater_host.ts',

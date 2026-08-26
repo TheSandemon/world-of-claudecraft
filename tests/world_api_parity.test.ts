@@ -607,10 +607,11 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
     // removing cupInfo (data) plus the cup methods, and the tutorial greeting
     // adds startTutorial (IWorldQuests, a method). The merged tree carries
     // both arms.
-    // The Card Duel deck builder and the named regulars then add
-    // startCardDuelAgainstOpponent, saveCardDeck, selectCardDeck and
-    // deleteCardDeck (IWorldCardMinigame methods) plus the deck data on
-    // cardMinigameInfo.
+    // The Card Duel deck builder and the named regulars then add four
+    // IWorldCardMinigame METHODS (startCardDuelAgainstOpponent, saveCardDeck,
+    // selectCardDeck, deleteCardDeck), taking 238 -> 242 and the total to
+    // 327. The saved decks ride the existing cardMinigameInfo data member,
+    // so the data count is unchanged. Read off a suite run.
     //
     // NOTE for the next merge, four syncs run now: BOTH sides of this pin move
     // it independently every cycle. Twice git merged identical numbers with no
@@ -620,9 +621,9 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
     // even when the total agrees. Only running the suite says what these
     // numbers really are; never reconcile them by arithmetic in the diff (the
     // numbers below were set from a suite run, not from this narrative).
-    expect(IWORLD_MEMBERS.length).toBe(326);
+    expect(IWORLD_MEMBERS.length).toBe(327);
     expect(DATA_MEMBERS.length).toBe(85);
-    expect(METHOD_MEMBERS.length).toBe(241);
+    expect(METHOD_MEMBERS.length).toBe(242);
   });
   it('has no duplicate member names', () => {
     const names = IWORLD_MEMBERS.map((m) => m.name);
