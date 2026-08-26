@@ -75,8 +75,11 @@ export interface CardDuelMatch {
    *
    * The round clock is stopped for this window (roundDeadline starts counting
    * from it), so no think time is spent watching the round a player has already
-   * finished playing. A card played INSIDE the window is still accepted (see
-   * playCardInDuel): the clock is the thing being protected, not the animation.
+   * finished playing. It is also the INPUT LOCK: a card played inside the
+   * window is refused (see playCardInDuel), so the round being told cannot be
+   * interrupted by the next one. The two go together, which is why they are
+   * one number: play is closed for exactly as long as the clock is held, and
+   * the hand unlocks the instant the clock starts counting again.
    * Zero before the first round resolves.
    */
   resolvingUntil: number;
@@ -463,12 +466,19 @@ export function playCardInDuel(ctx: SimContext, cardIid: number, pid?: number): 
     ctx.error(r.meta.entityId, "You can't do that while dead.");
     return;
   }
-  // A card played while the last round is still being TOLD is accepted, not
-  // refused: the clock is stopped for that window anyway, and eating a click to
-  // protect an animation is the worse trade. The client's stage cuts the story
-  // short and shows the new commit (the theater finishes a running timeline
-  // before it starts the next), which is what a player who is already moving on
-  // wants.
+  // A card played while the last round is still being TOLD is REFUSED. This
+  // used to be accepted, on the theory that eating a click to protect an
+  // animation was the worse trade; playing it proved otherwise. The round that
+  // was still resolving (health coming off, effects landing, the cards being
+  // swept away) would be interrupted mid-sentence by the next one, so a player
+  // could neither see what had just happened to them nor tell whether their
+  // click had registered. The clock is stopped for exactly this window, so the
+  // refusal costs no think time: the hand unlocks at the same instant the
+  // clock starts counting again.
+  if (ctx.time < match.resolvingUntil) {
+    ctx.error(r.meta.entityId, 'Wait for the round to finish playing out.');
+    return;
+  }
   const side = sideFor(match, r.meta.entityId);
   if (side.playedThisRound !== null) {
     ctx.error(r.meta.entityId, 'You already played a card this round.');

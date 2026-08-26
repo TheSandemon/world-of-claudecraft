@@ -125,6 +125,21 @@ export interface DuelRoundInput {
   maxHp?: number;
 }
 
+/**
+ * What a beat is POINTING AT: the one thing on the table this moment is about.
+ *
+ * The beats were legible as a sequence and illegible as a story: a value
+ * ticked, a bar dropped, and a player watching the middle of the table had no
+ * way to know which of the two cards a `+2` had just landed on. Naming the
+ * subject here (rather than leaving the stylesheet to guess from the phase)
+ * lets one gold outline say "this one" on exactly the card or bar that moved.
+ *
+ * `mine`/`theirs` are the two stage cards; the `-hp` pair are the seat health
+ * bars, which live OUTSIDE the stage element, which is why the attribute this
+ * resolves into is written on the table container (see duel_theater_host.ts).
+ */
+export type DuelSpotlight = 'mine' | 'theirs' | 'both' | 'mine-hp' | 'theirs-hp' | null;
+
 export interface DuelBeat {
   phase: DuelBeatPhase;
   /** Milliseconds from the start of the timeline. */
@@ -133,6 +148,9 @@ export interface DuelBeat {
   cue: DuelBeatCue | null;
   /** The effect this beat narrates, on a `step` beat only. */
   step: DuelStageStep | null;
+  /** What this beat is pointing at, for the gold outline. Null on a beat that
+   *  is about the table as a whole. */
+  spotlight: DuelSpotlight;
 }
 
 /**
@@ -144,9 +162,9 @@ export interface DuelBeat {
  * a story that finishes after the clock restarts, or a clock held for a story
  * that already ended.
  *
- * The pacing rule they encode: one clear moment per thing that happened. A
- * plain round runs a little over a second; a three-effect round about two and
- * a half, because it had three times as much to say.
+ * The pacing rule they encode: one clear moment per thing that happened, each
+ * long enough to WATCH. A plain round runs about four seconds; a three-effect
+ * round under seven, because it had three times as much to say.
  */
 export const DUEL_BEAT_GAP_MS: Readonly<Record<DuelBeatPhase, number>> = {
   // The cards land face-down on the stage: where they came from is legible
@@ -172,20 +190,29 @@ export const DUEL_BEAT_GAP_MS: Readonly<Record<DuelBeatPhase, number>> = {
 /**
  * How a timeline is played.
  *
- * - `full`: every beat, with the CSS motion that goes with it.
- * - `steps`: every beat, at the same times, with no motion at all. The stage
- *   cuts from one settled picture to the next. This is what the LOWEST
- *   GRAPHICS PRESET gets, and it exists because the alternative was worse:
- *   collapsing the whole round into one frame there meant the cheapest machine
- *   in the world, the one whose player has the least frame budget to spare for
- *   reading, was the only one that never got to SEE the round happen. Motion is
- *   the cosmetic part; the PACING is information, so the preset sheds the first
- *   and keeps the second.
- * - `none`: one settled beat at zero. Reduced motion (in-game or OS) means the
- *   player asked for no staged sequence at all, so they get the finished
- *   picture immediately, cues and all.
+ * THE RULE ABOVE BOTH OF THEM: a round is never told all at once, at any
+ * performance level. The beats are how a round is READ; a table that drops the
+ * whole result into one frame cannot be followed by anyone, and the machine
+ * with the least frame budget is exactly the one whose player has the least
+ * attention to spare for catching up. So every level below gets every beat, at
+ * the same times, and they differ only in how much the picture MOVES.
+ *
+ * - `full`: every beat with the motion that goes with it (cards land and lunge,
+ *   chips fly, the value ticks, the ring flashes).
+ * - `calm`: every beat, same times, with the movement dropped and only the
+ *   cheap channel kept: opacity fades and the gold ring. Nothing translates,
+ *   scales or lunges, so a beat costs a composited opacity and nothing else.
+ *   This is what the LOWEST GRAPHICS PRESET gets, and what REDUCED MOTION gets:
+ *   the two ask for different things (one is a frame budget, the other is a
+ *   comfort request) and both are answered by removing MOVEMENT rather than
+ *   information. A fade and an outline are not the motion a reduced-motion
+ *   player is protecting themselves from; a round they cannot follow is a real
+ *   loss.
+ * - `none`: one settled beat at zero. Nothing SELECTS this any more; it stays
+ *   for the driver's own catch-up path (`finishNow`, a stage nobody is
+ *   watching), where the finished picture is the only correct answer.
  */
-export type DuelMotion = 'full' | 'steps' | 'none';
+export type DuelMotion = 'full' | 'calm' | 'none';
 
 /** Builds the stage picture for one resolved round. */
 export function buildDuelStage(input: DuelRoundInput): DuelStageModel {
@@ -237,6 +264,32 @@ function cueFor(phase: DuelBeatPhase, stage: DuelStageModel): DuelBeatCue | null
   return null;
 }
 
+/**
+ * What one beat points at.
+ *
+ * A `step` follows the VALUE, not the author: their card silencing yours is a
+ * moment about YOUR card, because yours is the number that moved. Only when a
+ * step moved no value at all (a draw, a reveal) does it fall back to the card
+ * that did it, which is then the only thing on the table it could mean.
+ */
+function spotlightFor(
+  phase: DuelBeatPhase,
+  stage: DuelStageModel,
+  step: DuelStageStep | null,
+): DuelSpotlight {
+  if (phase === 'reveal' || phase === 'clash') return 'both';
+  if (phase === 'step') return step ? (step.target ?? step.side) : null;
+  if (phase === 'damage') return stage.damageTo === 'mine' ? 'mine-hp' : 'theirs-hp';
+  if (phase === 'verdict') {
+    if (stage.outcome === 'win') return 'mine';
+    if (stage.outcome === 'lose') return 'theirs';
+    return 'both';
+  }
+  // deal (nothing is known yet) and settle (the round is over, and the picture
+  // it leaves is the whole table) point at nothing.
+  return null;
+}
+
 /** Whether this round has a damage beat: a hit is only worth a moment when one
  *  actually landed. */
 function hasDamageBeat(stage: DuelStageModel): boolean {
@@ -246,16 +299,17 @@ function hasDamageBeat(stage: DuelStageModel): boolean {
 /**
  * The timeline for one round.
  *
- * With `motion: 'none'` (reduced motion) this collapses to a SINGLE settle beat
- * at zero: the finished picture, at once, with every cue that would have played
- * folded into it. That is the whole reason the cues are named on the beats
- * rather than fired by the caller.
+ * `motion: 'calm'` returns exactly the timeline `full` does. The two differ in
+ * the DOM, not here: at `calm` the stylesheet keeps the fades and the ring and
+ * drops everything that moves, so the same beats land at the same moments with
+ * a quieter picture. The beat NAMES are what each surface keys on, so a phase
+ * always means the same thing whatever the preset.
  *
- * `motion: 'steps'` returns exactly the timeline `full` does. The two differ in
- * the DOM, not here: at `steps` the stylesheet has already dropped every
- * animation, so the same beats read as hard cuts between settled pictures. The
- * beat NAMES are what each surface keys on, so a phase always means the same
- * thing whatever the preset.
+ * With `motion: 'none'` this collapses to a SINGLE settle beat at zero: the
+ * finished picture, at once, with every cue that would have played folded into
+ * it. That is the whole reason the cues are named on the beats rather than
+ * fired by the caller. Nothing a player can configure selects it: it is the
+ * driver's catch-up answer for a stage nobody is watching.
  *
  * The timeline is CONTENT-SHAPED. A plain round has no step beats at all and a
  * round that dealt no damage has no damage beat, so nothing ever sits through
@@ -264,12 +318,18 @@ function hasDamageBeat(stage: DuelStageModel): boolean {
  */
 export function buildDuelBeats(stage: DuelStageModel, motion: DuelMotion = 'full'): DuelBeat[] {
   if (motion === 'none') {
-    return [{ phase: 'settle', at: 0, cue: null, step: null }];
+    return [{ phase: 'settle', at: 0, cue: null, step: null, spotlight: null }];
   }
   const beats: DuelBeat[] = [];
   let at = 0;
   const push = (phase: DuelBeatPhase, step: DuelStageStep | null = null) => {
-    beats.push({ phase, at, cue: cueFor(phase, stage), step });
+    beats.push({
+      phase,
+      at,
+      cue: cueFor(phase, stage),
+      step,
+      spotlight: spotlightFor(phase, stage, step),
+    });
     at += DUEL_BEAT_GAP_MS[phase];
   };
   push('deal');

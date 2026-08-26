@@ -90,6 +90,16 @@ export interface DuelSeatBandOptions {
    *  own in game, both seats at a hot-seat table. Omitted rather than zeroed
    *  for the opponent, because a zero would be a claim. */
   piles?: { deck: number; discard: number };
+  /**
+   * A discard pile with no figure on it, for the seat whose count this viewer
+   * is not entitled to.
+   *
+   * It exists so a spent card has somewhere to GO. Cards used to leave the
+   * opponent's side of the stage by simply ceasing to exist, which is the one
+   * thing a card game never does. A place with no number claims nothing about
+   * how many cards are in it.
+   */
+  discardPlace?: boolean;
 }
 
 /** One seat's identity band: who it is, whether it has committed, its score,
@@ -121,7 +131,11 @@ export function duelSeatBandHtml(
     duelHealthHtml(seat.health, healthLabel) +
     `<span class="dt-rounds">${esc(rounds)}</span>` +
     duelTokensHtml(seat.counters) +
-    (opts.piles ? duelPilesHtml(opts.piles.deck, opts.piles.discard) : '') +
+    (opts.piles
+      ? duelPilesHtml(opts.piles.deck, opts.piles.discard)
+      : opts.discardPlace
+        ? duelDiscardPlaceHtml()
+        : '') +
     '</div>'
   );
 }
@@ -134,6 +148,23 @@ export function duelClockHtml(): string {
     '<div class="dt-clock" role="status">' +
     '<span class="dt-clock-ring" data-cd-clockring aria-hidden="true"></span>' +
     '<span class="dt-clock-num" data-cd-clock></span>' +
+    '</div>'
+  );
+}
+
+/**
+ * A discard pile with no count on it: the place the opponent's spent cards go.
+ *
+ * Same node shape as the counted pile above (same class, same `data-pile`), so
+ * the flight that clears the stage finds both seats' piles by one selector and
+ * the two sides of the table are laid out alike.
+ */
+export function duelDiscardPlaceHtml(): string {
+  return (
+    '<div class="dt-piles dt-piles-place">' +
+    `<span class="dt-pile" data-pile="discard" aria-label="${esc(t('cardDuel.pileDiscardTheirs'))}">` +
+    '<span class="dt-pile-stack" aria-hidden="true"></span>' +
+    '</span>' +
     '</div>'
   );
 }
@@ -298,7 +329,11 @@ function stageCardHtml(
   return (
     `<div class="dt-slot dt-slot-${which}">` +
     `<div class="dt-slot-label">${esc(label)}</div>` +
-    `<div class="dt-slot-card">${face}<span class="dt-back" aria-hidden="true"></span></div>` +
+    // The same `data-cd-slot` anchor the pending stage writes: one selector
+    // finds a side's card whether the stage is waiting or finished, which is
+    // what lets the flight that clears the table measure it.
+    `<div class="dt-slot-card" data-cd-slot="${which}">${face}` +
+    '<span class="dt-back" aria-hidden="true"></span></div>' +
     '<div class="dt-plate">' +
     `<span class="dt-plate-value">${esc(num(side.value))}</span>` +
     (side.delta === 0

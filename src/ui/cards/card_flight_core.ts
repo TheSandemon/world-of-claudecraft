@@ -67,11 +67,13 @@ export function flightTransformCss(t: FlightTransform): string {
  *
  * Distance-scaled between a floor and a ceiling: a card moving two inches and
  * a card crossing the table should not take the same time, and neither should
- * outlast the beat it belongs to. Bounded above by the deal beat, because the
- * flight is what that beat IS.
+ * outlast the beat it belongs to. Bounded above by the deal beat
+ * (CARD_NARRATION_BEATS.deal), because the flight is what that beat IS: the
+ * ceiling moved with the beat when the beats were lengthened, and it may never
+ * pass it.
  */
-export const FLIGHT_MIN_MS = 140;
-export const FLIGHT_MAX_MS = 260;
+export const FLIGHT_MIN_MS = 200;
+export const FLIGHT_MAX_MS = 460;
 
 export function flightDurationMs(t: FlightTransform): number {
   const distance = Math.hypot(t.dx, t.dy);

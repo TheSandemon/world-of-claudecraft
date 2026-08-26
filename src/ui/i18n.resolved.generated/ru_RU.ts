@@ -7889,6 +7889,7 @@ export const ru_RU: EnTranslations = {
     "durationMatchEnd": "до конца матча",
     "pileDeck": "Deck: {count}",
     "pileDiscard": "Сброс: {count}",
+    "pileDiscardTheirs": "Opponent's discard pile",
     "stageIdle": "На столе пусто",
     "damageMine": "Вы получаете {amount}",
     "damageTheirs": "Противник получает {amount}",

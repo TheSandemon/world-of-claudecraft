@@ -679,6 +679,7 @@ const baseEnTable = {
   'error.cardDuelNotAtMaster': 'You must be at the Card Master to queue for a Card Duel.',
   'error.cardDuelNotInMatch': 'You are not in a Card Duel.',
   'error.cardDuelAlreadyPlayed': 'You already played a card this round.',
+  'error.cardDuelRoundResolving': 'Wait for the round to finish playing out.',
   'error.cardDuelNotHeld': "You don't hold that card.",
   'error.cardDuelAlreadyInDuel': 'You are already in a Card Duel.',
   'error.cardDuelAlreadyQueued': 'You are already queued for a Card Duel.',
@@ -12307,6 +12308,10 @@ const RULES: Rule[] = [
   {
     re: /^You already played a card this round\.$/,
     build: () => tSim('error.cardDuelAlreadyPlayed'),
+  },
+  {
+    re: /^Wait for the round to finish playing out\.$/,
+    build: () => tSim('error.cardDuelRoundResolving'),
   },
   { re: /^You don't hold that card\.$/, build: () => tSim('error.cardDuelNotHeld') },
   {

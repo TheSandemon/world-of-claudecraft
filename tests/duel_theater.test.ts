@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildDuelStage,
+  DUEL_BEAT_GAP_MS,
   type DuelBeatCue,
   type DuelBeatPhase,
 } from '../src/ui/cards/duel_beats_core';
@@ -53,12 +54,17 @@ const winStage = buildDuelStage({
   damageTo: 'theirs',
 });
 
+/** Comfortably past the end of any timeline: the beat lengths are retuned as a
+ *  set (they have doubled twice), so a test that means "let the whole round
+ *  finish" says that rather than pinning a length it does not care about. */
+const PAST_THE_ROUND = 60_000;
+
 describe('duel theater', () => {
   it('opens the first beat synchronously, then walks the rest on the clock', () => {
     const rig = fakeHost();
     new DuelTheater(rig.host).play(winStage, 'full');
     expect(rig.phases).toEqual(['deal']);
-    rig.advance(5000);
+    rig.advance(PAST_THE_ROUND);
     expect(rig.phases).toEqual(['deal', 'reveal', 'clash', 'damage', 'verdict', 'settle']);
     expect(rig.pending()).toBe(0);
   });
@@ -68,9 +74,11 @@ describe('duel theater', () => {
     const push = buildDuelStage({ mine: 4, theirs: 4, outcome: 'push', reshuffled: true });
     new DuelTheater(rig.host).play(push, 'full');
     expect(rig.cues).toEqual([]);
-    rig.advance(300);
+    // Far enough for the reveal to open, taken from the beat itself rather
+    // than a literal that goes stale the next time the pacing is retuned.
+    rig.advance(DUEL_BEAT_GAP_MS.deal);
     expect(rig.cues).toEqual(['reveal']);
-    rig.advance(5000);
+    rig.advance(PAST_THE_ROUND);
     expect(rig.cues).toEqual(['reveal', 'push', 'shuffle']);
   });
 
@@ -90,11 +98,11 @@ describe('duel theater', () => {
     const rig = fakeHost();
     const theater = new DuelTheater(rig.host);
     theater.play(winStage, 'full');
-    rig.advance(300);
+    rig.advance(DUEL_BEAT_GAP_MS.deal);
     expect(rig.phases).toEqual(['deal', 'reveal']);
     theater.play(winStage, 'full');
     expect(rig.phases).toEqual(['deal', 'reveal', 'settle', 'deal']);
-    rig.advance(5000);
+    rig.advance(PAST_THE_ROUND);
     expect(rig.phases[rig.phases.length - 1]).toBe('settle');
   });
 
@@ -104,7 +112,7 @@ describe('duel theater', () => {
     theater.play(winStage, 'full');
     theater.stop();
     expect(rig.pending()).toBe(0);
-    rig.advance(5000);
+    rig.advance(PAST_THE_ROUND);
     // A closed window paints no further beats at an element nobody is watching.
     expect(rig.phases).toEqual(['deal']);
     expect(theater.current).toBeNull();
@@ -116,7 +124,7 @@ describe('duel theater', () => {
     theater.play(winStage, 'full');
     theater.finishNow();
     expect(rig.phases).toEqual(['deal', 'settle']);
-    rig.advance(5000);
+    rig.advance(PAST_THE_ROUND);
     expect(rig.phases).toEqual(['deal', 'settle']);
   });
 });

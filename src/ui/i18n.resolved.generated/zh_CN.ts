@@ -7889,6 +7889,7 @@ export const zh_CN: EnTranslations = {
     "durationMatchEnd": "本局剩余时间",
     "pileDeck": "Deck: {count}",
     "pileDiscard": "弃牌堆：{count}",
+    "pileDiscardTheirs": "Opponent's discard pile",
     "stageIdle": "牌桌上还没有牌",
     "damageMine": "你受到 {amount} 点伤害",
     "damageTheirs": "对手受到 {amount} 点伤害",

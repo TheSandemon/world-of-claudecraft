@@ -94,6 +94,20 @@ function playHighLow(ctx: SimContext, match: CardDuelMatch): void {
   playCardInDuel(ctx, match.state.b.cards.hand[0].iid, 2);
 }
 
+/**
+ * Moves the clock past the telling of the round that just resolved.
+ *
+ * Play is CLOSED for that window (the round is still being narrated and the
+ * round clock is held for exactly it), so a test that drives round after round
+ * has to wait it out just as a player does. Without this, every play after the
+ * first is refused and the match never advances.
+ */
+function skipNarration(ctx: SimContext, match: CardDuelMatch): void {
+  if (match.resolvingUntil > ctx.time) {
+    (ctx as unknown as { time: number }).time = match.resolvingUntil;
+  }
+}
+
 describe('card_duel', () => {
   it('joining requires standing at the Card Master and queues the player', () => {
     const { ctx, error } = makeCtx();
@@ -198,6 +212,45 @@ describe('card_duel', () => {
     expect(cardDuelMatchFor(ctx, 1)?.state.a.playedThisRound).toBeNull();
   });
 
+  it('refuses a card played while the last round is still being told', () => {
+    const { ctx, error } = makeCtx();
+    joinCardMinigameQueue(ctx, 1);
+    joinCardMinigameQueue(ctx, 2);
+    updateCardDuelQueue(ctx);
+    const match = cardDuelMatchFor(ctx, 1);
+    if (!match) throw new Error('expected a live match');
+    playHighLow(ctx, match);
+    // The round has resolved and the hand has refilled, but the telling is
+    // still running and the round clock is held for exactly it. A card played
+    // now would interrupt the round the player is still watching.
+    expect(match.resolvingUntil).toBeGreaterThan(ctx.time);
+    const held = match.state.a.cards.hand[0];
+    playCardInDuel(ctx, held.iid, 1);
+    expect(error).toHaveBeenCalledWith(1, 'Wait for the round to finish playing out.');
+    // Refused, not silently swallowed: the card is still in hand and no commit
+    // was recorded, so the next round starts from an untouched seat.
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.cards.hand).toContain(held);
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.playedThisRound).toBeNull();
+  });
+
+  it('accepts a card the instant the telling ends, which is when the clock restarts', () => {
+    // The refusal above costs no think time BECAUSE the two are one number:
+    // play reopens at exactly the moment the round clock starts counting again.
+    const { ctx, error } = makeCtx();
+    joinCardMinigameQueue(ctx, 1);
+    joinCardMinigameQueue(ctx, 2);
+    updateCardDuelQueue(ctx);
+    const match = cardDuelMatchFor(ctx, 1);
+    if (!match) throw new Error('expected a live match');
+    playHighLow(ctx, match);
+    expect(match.roundDeadline).toBe(match.resolvingUntil + CARD_DUEL_ROUND_DEADLINE_S);
+    (ctx as unknown as { time: number }).time = match.resolvingUntil;
+    const card = match.state.a.cards.hand[0];
+    playCardInDuel(ctx, card.iid, 1);
+    expect(error).not.toHaveBeenCalled();
+    expect(cardDuelMatchFor(ctx, 1)?.state.a.playedThisRound).toBe(card);
+  });
+
   it('resolves a full match to a winner and bumps cardDuelsWon exactly once', () => {
     const { ctx, bumpDeedStat, players } = makeCtx();
     joinCardMinigameQueue(ctx, 1);
@@ -211,6 +264,7 @@ describe('card_duel', () => {
     while (cardDuelMatchFor(ctx, 1) !== null && guard < 500) {
       const match = cardDuelMatchFor(ctx, 1);
       if (!match) break;
+      skipNarration(ctx, match);
       playCardInDuel(ctx, highestCard(match.state.a.cards.hand).iid, 1);
       playCardInDuel(ctx, lowestCard(match.state.b.cards.hand).iid, 2);
       guard++;
@@ -414,6 +468,7 @@ describe('card_duel', () => {
     // Side A plays round 2; side B goes idle (an unresponsive opponent).
     const live = cardDuelMatchFor(ctx, 1);
     if (!live) throw new Error('expected a live match');
+    skipNarration(ctx, live);
     playCardInDuel(ctx, live.state.a.cards.hand[0].iid, 1);
     (ctx as unknown as { time: number }).time = live.roundDeadline + 1;
     updateCardDuelDeadlines(ctx);
@@ -445,6 +500,7 @@ describe('card_duel', () => {
     // other test) would go undetected.
     const live = cardDuelMatchFor(ctx, 1);
     if (!live) throw new Error('expected a live match');
+    skipNarration(ctx, live);
     playCardInDuel(ctx, live.state.b.cards.hand[0].iid, 2);
     (ctx as unknown as { time: number }).time = live.roundDeadline + 1;
     updateCardDuelDeadlines(ctx);

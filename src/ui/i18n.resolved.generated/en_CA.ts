@@ -7889,6 +7889,7 @@ export const en_CA: EnTranslations = {
     "durationMatchEnd": "rest of the match",
     "pileDeck": "Deck: {count}",
     "pileDiscard": "Discard: {count}",
+    "pileDiscardTheirs": "Opponent's discard pile",
     "stageIdle": "The table is empty",
     "damageMine": "You take {amount}",
     "damageTheirs": "Your opponent takes {amount}",

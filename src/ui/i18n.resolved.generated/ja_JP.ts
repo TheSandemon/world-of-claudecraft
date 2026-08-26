@@ -7889,6 +7889,7 @@ export const ja_JP: EnTranslations = {
     "durationMatchEnd": "この対戦の残り",
     "pileDeck": "Deck: {count}",
     "pileDiscard": "捨て札：{count}",
+    "pileDiscardTheirs": "Opponent's discard pile",
     "stageIdle": "テーブルにカードはありません",
     "damageMine": "あなたに{amount}ダメージ",
     "damageTheirs": "相手に{amount}ダメージ",

@@ -7889,6 +7889,7 @@ export const en_XA: EnTranslations = {
     "durationMatchEnd": "[ŕéšţ óƒ ţĥé ɱáţçĥ]",
     "pileDeck": "[Ðéçķ: {count}]",
     "pileDiscard": "[Ðíšçáŕð: {count}]",
+    "pileDiscardTheirs": "[Óþþóñéñţ'š ðíšçáŕð þíļé]",
     "stageIdle": "[Ţĥé ţáƀļé íš éɱþţý]",
     "damageMine": "[Ýóú ţáķé {amount}]",
     "damageTheirs": "[Ýóúŕ óþþóñéñţ ţáķéš {amount}]",

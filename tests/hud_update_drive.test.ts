@@ -186,7 +186,9 @@ const VIEW_SIG_BLOCK = 'if (view.sig !== this.lastSig) {';
 // its whole body: the shell rebuilds only when the window's STATE changes (a
 // live match keeps one shell for its whole length, so a playing round theater
 // is never rebuilt out from under itself), and each region inside it carries
-// its own memo.
+// its own memo. The shell identity is the window's state OR the finished-match
+// summary sitting on top of it, which is why the guard compares a resolved
+// `shell` rather than `view.state` directly.
 const SHELL_BLOCK = 'if (shell !== this.lastShell) {';
 
 /**

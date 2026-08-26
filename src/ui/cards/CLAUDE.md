@@ -17,13 +17,15 @@ on where it appears.
 | `card_face_view.ts` | pure core: ids, values, the signed delta, tribes, rarity, display states. In `UI_PURE_CORES`. |
 | `card_face_markup.ts` | thin consumer: face model in, markup out. Touches no DOM. |
 | `duel_table_view.ts` | pure core: the clock band, the score pips, the counter tokens, each seat's commit, whose commit the round waits on. In `UI_PURE_CORES`. |
-| `duel_beats_core.ts` | pure core: one resolved round as an ordered beat timeline, with the cue that rides each beat. In `UI_PURE_CORES`. |
+| `duel_beats_core.ts` | pure core: one resolved round as an ordered beat timeline, with the cue and the SPOTLIGHT that ride each beat. In `UI_PURE_CORES`. |
 | `duel_table_markup.ts` | thin consumer: table and stage models in, markup out. Touches no DOM. |
 | `duel_theater.ts` | the driver that walks a timeline against an injected host. No element, no timer API, no audio object. |
 | `duel_theater_host.ts` | the browser half: the real timer, the real element, and the one motion decision. In `UI_DOM_MODULES`. |
 | `card_round_feedback.ts` | what a resolved round does to the client: hands the round and its cues to the stage, and plays them itself only when no stage took it |
 | `card_inspect_view.ts` | pure core: where the enlarged copy of a hovered card sits. In `UI_PURE_CORES`. |
 | `card_inspect.ts` | the card inspector: hover, focus or press-and-hold shows a card at a readable size. Owns the popup element and one layout read per show. |
+| `card_flight.ts` + `card_flight_core.ts` | one card travelling between two rectangles: the FLIP-style transform (pure) and the node that flies it. |
+| `duel_card_motion.ts` | all four card MOVES on the table (both seats' hand to stage, both seats' stage to discard). The one module that measures a rectangle. |
 
 ## One card, one table, four sizes
 
@@ -71,10 +73,30 @@ second model that could disagree with the round.
 **The theater narrates.** A resolved round arrives as one `cardRoundResolved`
 event and is played out over that already-true picture: the cards land, both
 faces turn at once, the effects land with a delta chip on the card they moved,
-the two cards strike, the winner surges. It owns exactly ONE element (the
-stage) and writes exactly ONE attribute per beat (`data-beat`), so the whole
-timeline costs no markup, no layout read, and the same on a phone as a desktop.
-Every visual is a CSS rule keyed on that attribute.
+the two cards strike, the winner surges. It writes TWO attributes per beat and
+touches two elements, both of which survive every region repaint: `data-beat`
+on the stage, and `data-spot` on the BOARD. So the whole timeline costs no
+markup, no layout read, and the same on a phone as a desktop; every visual is a
+CSS rule keyed on one of those two attributes.
+
+The spotlight is the second one, and it is why the board is involved at all. A
+beat used to say WHEN something happened and never WHICH thing it happened to:
+a value ticked, a bar dropped, and a player watching the middle of the table
+could not tell which of the two cards had changed. `DuelSpotlight`
+(`duel_beats_core.ts`) names the subject per beat and a gold ring says "this
+one" on exactly that card or bar. A step follows the VALUE that moved, not the
+card that did the moving. The health bars are in the seat bands rather than the
+stage, which is the whole reason the attribute goes on their common ancestor.
+
+**The cards MOVE.** Every card a player sees enter or leave the table travels
+there (`duel_card_motion.ts`): the viewer's own card from the hand cell it was
+clicked in, the opponent's as a face-down back out of their hand row, and both
+spent cards into their seat's discard pile on the `settle` beat, shrinking as
+they go. The opponent's discard is a PLACE with no figure on it, because their
+count is not on the wire and a number there would be invented. Every flight is
+decoration over a state the snapshot already painted (the committed card is on
+the stage the instant the commit lands), so reduced motion drops all four and
+loses nothing.
 
 The stage is the only region the snapshot never touches. A snapshot-driven
 stage would be stomped by the next render, and staging the snapshot itself
@@ -83,22 +105,44 @@ would delay information.
 ## The fairness rule, concretely
 
 Animation is cosmetic; the numbers are not, and neither is the PACING. Motion
-lives entirely in CSS (`transform` and `opacity` only), and `resolveDuelMotion`
-resolves the two authorities that get a say, in the order they win:
+lives entirely in CSS (`transform` and `opacity` only).
 
-- **Reduced motion** (the in-game setting or the OS preference) collapses the
-  timeline to `none`: the finished picture at once, cues and all. The player
-  asked for no staged sequence.
-- **The lowest graphics preset** resolves to `steps`: every beat, at the same
-  times, with the stylesheet animation dropped. It used to collapse, and that
-  was a bug: the machine with the least frame budget was the only one that never
-  got to watch a round happen. A preset may shed richness, never legibility.
+**A ROUND IS NEVER TOLD ALL AT ONCE. There is no preset, no device and no
+comfort setting that collapses it.** `resolveDuelMotion` has exactly two
+answers for a live table:
 
-Because `steps` exists, every beat owes a STATIC state to cut to (the face-down
-back, the revealed face, the delta chip, the spark, the winner gold edge) plus
-its line in the caption strip (`duelBeatCaptionsHtml`), which is written once
-with the stage and switched by the same `data-beat` attribute. A beat a player
-cannot tell apart from its neighbour is not a beat.
+- **`full`**, the default: every beat with the movement that goes with it
+  (cards land and lunge, the chip flies onto the card it moved, the value ticks,
+  the ring flashes, the played cards fly to the stage and then to the piles).
+- **`calm`**, for BOTH the lowest graphics preset and reduced motion (in-game or
+  OS): every beat, at the same times, with the movement dropped and the cheap
+  channel kept, a composited opacity fade per beat plus the gold ring. Nothing
+  translates, scales or lunges; the card flights are skipped entirely.
+
+`none` still exists in the vocabulary, but nothing a player controls selects it.
+It is the driver's catch-up answer for a stage nobody is watching (`finishNow`,
+a closed window), where the finished picture is the only correct one.
+
+Reduced motion used to collapse the round, and that was the defect this ladder
+is written around: both cards, every effect, the hit and the winner arrived in
+one frame, so the player was handed a result with no account of what produced
+it. Reduced motion is owed the absence of MOVEMENT, not the absence of being
+told what happened, and the player on the cheapest machine is the last one who
+should have to reconstruct a round from its aftermath.
+
+Because `calm` exists, every beat owes both a STATIC state (the face-down back,
+the revealed face, the delta chip, the winner gold edge) AND something a player
+can watch arrive: the fade, the gold ring, and its line in the caption strip
+(`duelBeatCaptionsHtml`), written once with the stage and switched by the same
+`data-beat` attribute. A beat a player cannot tell apart from its neighbour is
+not a beat.
+
+The stylesheet keys the quiet version on ONE hook, `data-motion` on the board,
+written once per round by the theater. Two authorities (a media query and a root
+attribute) resolving to one behavior must not become two copies of every rule,
+and the ring's own animation rides a custom property (`--dt-spot-anim`) rather
+than a literal, because its lit selector is specific enough (0,3,1) that a tier
+rule trying to quiet it would lose the cascade silently.
 
 **Never tiered, at any preset, on any device, with no hover requirement and no
 animation delay:** the effective value, the printed value, the signed modifier
@@ -114,11 +158,13 @@ ways that are neither tiered nor device-dependent: the button own accessible
 name carries it (`cards.card.playDetail`), and the inspector shows it.
 
 **The one bounded exception**, written down so it stays bounded: the stage's
-`deal` beat holds the two cards face-down for one beat (under 300ms, pinned in
+`deal` beat holds the two cards face-down for one beat (the shortest beat in the
+timeline, and under two thirds of a second, both pinned in
 `tests/duel_beats_core.test.ts`). It narrates a round that is ALREADY decided,
 the pips and the hand underneath have already moved, the screen-reader line is
-written at once rather than on a beat, and any of the three motion authorities
-collapses it to zero. Nothing a player is still deciding on is ever staged.
+written at once rather than on a beat, and it holds an already-decided round
+whatever the motion level. Nothing a player is still deciding on is ever
+staged.
 
 ## The clock and the reveal
 
@@ -131,6 +177,14 @@ band name), elided the same way.
 
 The **reveal** is driven from the `cardRoundResolved` event, never the
 snapshot, for the reason in "Two cadences" above.
+
+**Play is CLOSED while a round is being told**, and it is the same number on
+both sides: the sim holds the round clock for `cardNarrationSeconds` and
+refuses a card played inside that window, and the hand paints itself unplayable
+for exactly it (`resolving` on the projection). The timeline's last beat opens
+at that same instant, pinned in `tests/duel_beats_core.test.ts`, so the hand
+comes back the moment the clock starts counting again and never a beat before
+the round finishes speaking.
 
 The **cues** ride the beats rather than firing at the switch arm: the reveal
 sound when the cards turn, the push sound on the verdict, the shuffle when the

@@ -534,6 +534,7 @@ export type TranslationKeyFlat =
   | 'cardDuel.oppoHandSeen'
   | 'cardDuel.pileDeck'
   | 'cardDuel.pileDiscard'
+  | 'cardDuel.pileDiscardTheirs'
   | 'cardDuel.playCardAria'
   | 'cardDuel.queued'
   | 'cardDuel.revealLose'

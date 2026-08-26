@@ -106,7 +106,12 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
       iid: card.iid,
       cardId: card.cardId,
       value: card.value,
-      playable: !m.waitingOnOpponent,
+      // Not while the last round is still being TOLD. The sim refuses a card
+      // played in that window (the round clock is held for exactly it), so a
+      // hand that stayed live there offered a click that would be thrown away,
+      // and taking it interrupted the round the player was still watching. The
+      // hand comes back the instant the clock starts counting again.
+      playable: !m.waitingOnOpponent && !m.resolving,
       pendingDelta: card.pendingDelta ?? 0,
       ...(card.textValues ? { textValues: { ...card.textValues } } : {}),
     })),

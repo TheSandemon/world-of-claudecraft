@@ -1184,6 +1184,10 @@ export const en = {
     durationMatchEnd: 'rest of the match',
     pileDeck: 'Deck: {count}',
     pileDiscard: 'Discard: {count}',
+    // The opponent's discard: a PLACE with no figure. Their count is not on
+    // the wire, and the pile is here so their spent cards have somewhere to go
+    // at the end of a round rather than vanishing off the table.
+    pileDiscardTheirs: "Opponent's discard pile",
     stageIdle: 'The table is empty',
     // The hit plate on the stage: the health a round took, and off whom.
     damageMine: 'You take {amount}',

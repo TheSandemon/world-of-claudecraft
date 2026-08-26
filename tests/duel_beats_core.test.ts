@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { CARD_NARRATION_MAX_S } from '../src/sim/minigames/card_duel/narration';
+import {
+  CARD_NARRATION_MAX_S,
+  cardNarrationSeconds,
+} from '../src/sim/minigames/card_duel/narration';
 import {
   buildDuelBeats,
   buildDuelStage,
@@ -123,12 +126,81 @@ describe('duel beat timeline', () => {
     expect(longest.filter((b) => b.phase === 'step').length).toBe(12);
   });
 
-  it('holds the face-down beat under a third of a second', () => {
+  it('keeps the face-down beat the shortest one in the timeline', () => {
     // The stage's ONE bounded delay: the cards of an already-decided round stay
-    // face-down while they land. Anything longer starts to read as a stall.
+    // face-down while they land. It is pinned RELATIVELY rather than to a
+    // number of milliseconds, because the beats are retuned as a set and an
+    // absolute bound here would just be re-edited every time; what must stay
+    // true is that the one beat showing nothing is the one that ends soonest.
     const beats = buildDuelBeats(buildDuelStage(plainWin));
     const reveal = beats.find((b) => b.phase === 'reveal');
-    expect(reveal?.at).toBeLessThan(300);
+    expect(reveal?.at).toBe(DUEL_BEAT_GAP_MS.deal);
+    const others = (['reveal', 'step', 'clash', 'damage', 'verdict'] as const).map(
+      (phase) => DUEL_BEAT_GAP_MS[phase],
+    );
+    expect(Math.min(...others)).toBeGreaterThan(DUEL_BEAT_GAP_MS.deal);
+  });
+
+  it('points each beat at the one thing it is about', () => {
+    // The gold outline's whole job: "which of these two cards did that". A
+    // step follows the VALUE that moved, not the card that did the moving, so
+    // their card silencing yours lights YOURS.
+    const beats = buildDuelBeats(
+      buildDuelStage({
+        ...plainWin,
+        steps: [{ ...step(2), side: 'theirs', target: 'mine' }],
+        damage: 3,
+        damageTo: 'theirs',
+      }),
+    );
+    const spotAt = (phase: string) => beats.find((b) => b.phase === phase)?.spotlight;
+    expect(spotAt('deal')).toBeNull();
+    expect(spotAt('reveal')).toBe('both');
+    expect(spotAt('step')).toBe('mine');
+    expect(spotAt('clash')).toBe('both');
+    // The hit points at the BAR that drained, not at a card: it is the only
+    // beat whose subject is not on the stage at all.
+    expect(spotAt('damage')).toBe('theirs-hp');
+    expect(spotAt('verdict')).toBe('mine');
+    expect(spotAt('settle')).toBeNull();
+  });
+
+  it('points the verdict at the winner, whichever side that is, and at both on a push', () => {
+    const spotOn = (input: DuelRoundInput) =>
+      buildDuelBeats(buildDuelStage(input)).find((b) => b.phase === 'verdict')?.spotlight;
+    expect(spotOn(plainWin)).toBe('mine');
+    expect(spotOn({ ...plainWin, mine: 4, theirs: 7, outcome: 'lose' })).toBe('theirs');
+    expect(spotOn({ ...plainWin, theirs: 7, outcome: 'push' })).toBe('both');
+  });
+
+  it('falls back to the acting card when a step moved no value at all', () => {
+    // A draw or a reveal has no target: the card that did it is then the only
+    // thing on the table the beat could mean.
+    const beats = buildDuelBeats(
+      buildDuelStage({
+        ...plainWin,
+        steps: [{ side: 'theirs', cardId: 'scout', effect: 'reveal' }],
+      }),
+    );
+    expect(beats.find((b) => b.phase === 'step')?.spotlight).toBe('theirs');
+  });
+
+  it('ends its last beat exactly when the sim stops holding the round clock', () => {
+    // The two halves of one number (see narration.ts): the sim holds play for
+    // cardNarrationSeconds and the client spends it walking these beats. Drift
+    // either way is a story still running after the clock restarts, or a clock
+    // held for a story that already ended. Now that play is CLOSED for that
+    // window, the drift would also be a hand that unlocks at the wrong moment.
+    for (const steps of [0, 1, 3]) {
+      const stage = buildDuelStage({
+        ...plainWin,
+        steps: Array.from({ length: steps }, (_, i) => step(i + 1)),
+        damage: 3,
+        damageTo: 'theirs',
+      });
+      const held = cardNarrationSeconds({ log: stage.steps, damage: stage.damage }) * 1000;
+      expect(duelBeatSpan(buildDuelBeats(stage))).toBeCloseTo(held, 6);
+    }
   });
 
   it('puts each cue on the beat it belongs to, one per effect included', () => {
@@ -156,19 +228,23 @@ describe('duel beat timeline', () => {
     expect(beats.filter((b) => b.cue !== null).map((b) => b.cue)).toEqual(['reveal']);
   });
 
-  it('gives the low preset the same beats as the full timeline, not a collapse', () => {
-    // 'steps' sheds the motion, never the pacing: the difference between it and
-    // 'full' lives in the stylesheet, so the beats and their times must match
-    // exactly. A collapse here would be the bug this mode exists to fix.
+  it('gives the calm level the same beats as the full timeline, never a collapse', () => {
+    // The rule the whole level exists for: 'calm' sheds MOVEMENT, never the
+    // pacing. The difference between it and 'full' lives entirely in the
+    // stylesheet, so the beats and their times must match exactly. Both the
+    // lowest preset and reduced motion resolve here, so a collapse in this
+    // arm would be the original bug back again for both of them.
     const stage = buildDuelStage({ ...plainWin, mine: 9, mineBase: 7 });
-    expect(buildDuelBeats(stage, 'steps')).toEqual(buildDuelBeats(stage, 'full'));
+    expect(buildDuelBeats(stage, 'calm')).toEqual(buildDuelBeats(stage, 'full'));
+    // And it is a real sequence, not one beat wearing a different name.
+    expect(buildDuelBeats(stage, 'calm').length).toBeGreaterThan(4);
   });
 
-  it('collapses to a single settled beat at zero when motion is off', () => {
-    // The whole reason the collapse is legal: it shows the same result at the
-    // same instant, so reduced motion and the low preset cost no information.
+  it('collapses to a single settled beat at zero only when motion is off', () => {
+    // 'none' is the driver's catch-up path (a stage nobody is watching), not
+    // anything a player can select: resolveDuelMotion never returns it.
     const beats = buildDuelBeats(buildDuelStage(plainWin), 'none');
-    expect(beats).toEqual([{ phase: 'settle', at: 0, cue: null, step: null }]);
+    expect(beats).toEqual([{ phase: 'settle', at: 0, cue: null, step: null, spotlight: null }]);
     expect(duelBeatSpan(beats)).toBe(0);
   });
 

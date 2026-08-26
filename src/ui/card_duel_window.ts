@@ -16,12 +16,14 @@
 //     counter changing does not rebuild the hand and a hand refill does not
 //     rebuild the score.
 //  2. The round THEATER narrates what just happened, over that already-true
-//     picture, from the cardRoundResolved event. It owns exactly one element
-//     (the stage) and writes exactly one attribute per beat. How much of it
-//     plays is resolveDuelMotion's call: reduced motion collapses it to the
-//     finished picture, the lowest graphics preset keeps every beat and sheds
-//     only the animation. Either way the numbers are the same at the same
-//     instant.
+//     picture, from the cardRoundResolved event. It writes two attributes per
+//     beat: the phase on the stage, and what the beat is POINTING AT on the
+//     board (the health bars a damage beat means are outside the stage). Both
+//     elements survive every region repaint. How much of it
+//     plays is resolveDuelMotion's call, and it never collapses the round: the
+//     lowest preset and reduced motion both keep every beat at its own moment
+//     and shed only the MOVEMENT. Either way the numbers are the same at the
+//     same instant.
 //
 // The stage is the only region the snapshot never touches: a snapshot-driven
 // stage would be stomped by the next render, and staging the snapshot itself
@@ -46,6 +48,7 @@ import {
   type CardRoundAudio,
   type CardRoundRevealInput,
   cardFaceHtml,
+  type DuelMotion,
   type DuelStageModel,
   type DuelSummaryInput,
   type DuelSummaryModel,
@@ -61,10 +64,17 @@ import {
   duelSummaryHtml,
   duelTokensHtml,
   duelWaitingText,
-  flyCard,
   resolveDuelMotion,
 } from './cards';
 import type { FlightRect } from './cards/card_flight_core';
+import {
+  clearSweptMark,
+  type DuelCommitted,
+  type DuelMotionAnchors,
+  flyOpponentCommit,
+  flyOwnCommit,
+  flyStageToDiscard,
+} from './cards/duel_card_motion';
 import { markDialogRoot } from './dialog_root';
 import { esc } from './esc';
 import { formatNumber, t } from './i18n';
@@ -86,6 +96,9 @@ export type CardDuelRevealInput = CardRoundRevealInput;
 
 /** The regions the snapshot repaints, each behind its own signature. */
 interface CardDuelRegions {
+  /** The board: both seat bands plus the stage. The spotlight attribute and
+   *  the discard flights both need an element that spans the two. */
+  board: HTMLElement | null;
   seatsThem: HTMLElement | null;
   seatsMine: HTMLElement | null;
   stage: HTMLElement | null;
@@ -100,6 +113,7 @@ interface CardDuelRegions {
 
 function emptyRegions(): CardDuelRegions {
   return {
+    board: null,
     seatsThem: null,
     seatsMine: null,
     stage: null,
@@ -311,6 +325,9 @@ export class CardDuelWindow {
         // not carry them, and a zero here would be a claim rather than a gap.
         this.els.seatsThem.innerHTML = duelSeatBandHtml(table.theirs, 'theirs', {
           name: opponentName,
+          // A discard PLACE with no figure: their count is not on the wire,
+          // and their spent cards still need somewhere to go.
+          discardPlace: true,
         });
       }
       if (this.els.seatsMine) {
@@ -418,6 +435,15 @@ export class CardDuelWindow {
     const sig = `${view.round}|${mine ? 'm' : '-'}|${theirs ? 't' : '-'}`;
     if (sig === this.lastPending) return;
     if (this.theater?.isPlaying) return;
+    // Which side is NEWLY down, read before the signature is latched: a
+    // repaint for the other seat must not re-fly a card that has been on the
+    // table for seconds. A different round is all new, whatever the flags say.
+    const [lastRound, lastMine, lastTheirs] = this.lastPending.split('|');
+    const sameRound = lastRound === String(view.round);
+    const landed = {
+      mine: mine && !(sameRound && lastMine === 'm'),
+      theirs: theirs && !(sameRound && lastTheirs === 't'),
+    };
     this.lastPending = sig;
     // Nobody has committed yet and the match is past its first round: the
     // stage is showing the round that just finished, and that picture is the
@@ -427,30 +453,31 @@ export class CardDuelWindow {
     el.innerHTML = duelStagePendingHtml({ mine, theirs });
     el.dataset.beat = 'idle';
     el.removeAttribute('data-outcome');
-    this.flyCommittedCard(el, mine);
+    // The last round's cards were swept into the piles; this stage is the next
+    // round's, and its cards are meant to be seen.
+    clearSweptMark(el);
+    this.els.board?.removeAttribute('data-spot');
+    this.flyCommittedCards(el, landed);
   }
 
   /**
-   * Sends the card the player just clicked to the place it now sits.
+   * Sends each newly committed card to the place it now sits.
    *
-   * Only the viewer's own card: the opponent's commit has no rectangle to fly
-   * FROM (their hand is a row of backs whose contents this client never sees),
-   * and inventing one would be animating a card that was never there.
+   * BOTH seats, from different origins, because the two commits are known
+   * differently. The viewer's own card flies from the hand cell it was clicked
+   * in, measured before the repaint that removed it. The opponent's flies as a
+   * face-down BACK from their hand row, which is honestly all this client
+   * knows: their card is not revealed until the round turns.
+   *
+   * Only on the paint where a side NEWLY committed, so a repaint for the other
+   * seat does not re-fly a card that has been on the table for seconds.
    */
-  private flyCommittedCard(stage: HTMLElement, mineCommitted: boolean): void {
+  private flyCommittedCards(stage: HTMLElement, committed: DuelCommitted): void {
     const flight = this.pendingFlight;
     this.pendingFlight = null;
-    if (!flight || !mineCommitted) return;
-    const slot = stage.querySelector('[data-cd-slot="mine"]') as HTMLElement | null;
-    if (!slot) return;
-    flyCard({
-      from: flight.from,
-      to: slot,
-      html: flight.html,
-      // The same authority the round theater reads: a player who asked for no
-      // motion gets the card already on the table, which it is.
-      animate: resolveDuelMotion(stage.ownerDocument) !== 'none',
-    });
+    const anchors = this.motionAnchors(stage);
+    if (flight && committed.mine) flyOwnCommit(anchors, flight);
+    if (committed.theirs) flyOpponentCommit(anchors);
   }
 
   /**
@@ -522,6 +549,10 @@ export class CardDuelWindow {
     if (!el || !this.isOpen) return false;
     const stage = buildDuelStage(input);
     el.innerHTML = duelStageHtml(stage, CARD_CATALOG);
+    // The mark the last round's sweep left: these cards have not been
+    // discarded yet, and a stage that opened already swept would narrate a
+    // whole round with nothing on it.
+    clearSweptMark(el);
     el.dataset.outcome = stage.outcome;
     if (this.els.announce) {
       const outcome = t(
@@ -537,8 +568,9 @@ export class CardDuelWindow {
         outcome,
       });
     }
-    const theater = this.ensureTheater(el, audio ?? null, stage);
-    theater.play(stage, resolveDuelMotion(el.ownerDocument));
+    const motion = resolveDuelMotion(el.ownerDocument);
+    const theater = this.ensureTheater(el, audio ?? null, stage, motion);
+    theater.play(stage, motion);
     return true;
   }
 
@@ -548,17 +580,39 @@ export class CardDuelWindow {
     el: HTMLElement,
     audio: CardRoundAudio | null,
     stage: DuelStageModel,
+    motion: DuelMotion,
   ): DuelTheater {
     this.theater?.stop();
     this.theater = new DuelTheater(
-      browserTheaterHost(el, audio, window, (beat) => duelBeatCaption(beat, stage, CARD_CATALOG)),
+      browserTheaterHost(el, audio, window, {
+        caption: (beat) => duelBeatCaption(beat, stage, CARD_CATALOG),
+        // Published for the stylesheet: the calm rules key on this one answer
+        // rather than re-deriving it from a media query and a root attribute.
+        motion,
+        // The BOARD, not the stage: a damage beat points at a seat's health
+        // bar, and the bars live in the seat bands beside the stage rather
+        // than in it. The board is their common ancestor and survives every
+        // region repaint, so one attribute lights whichever the beat means.
+        spotlight: this.els.board,
+        // The round is fully told: the two spent cards leave for the piles.
+        onBeat: (beat) => {
+          if (beat.phase === 'settle') flyStageToDiscard(this.motionAnchors(el));
+        },
+      }),
     );
     return this.theater;
+  }
+
+  /** Where the flights start and end, resolved from the regions this window
+   *  already caches. */
+  private motionAnchors(stage: HTMLElement): DuelMotionAnchors {
+    return { stage, board: this.els.board, oppoHand: this.els.oppoHand };
   }
 
   private cacheRegions(el: HTMLElement): void {
     const pick = (sel: string) => el.querySelector(sel) as HTMLElement | null;
     this.els = {
+      board: pick('[data-cd-board]'),
       seatsThem: pick('[data-cd-seats-them]'),
       seatsMine: pick('[data-cd-seats-mine]'),
       stage: pick('[data-cd-stage]'),
@@ -614,7 +668,7 @@ export class CardDuelWindow {
       // a landscape phone fits a table this tall.
       body =
         '<div class="dt">' +
-        '<div class="dt-board">' +
+        '<div class="dt-board" data-cd-board>' +
         '<div data-cd-seats-them></div>' +
         '<div data-cd-oppohand></div>' +
         '<div class="dt-stage" data-cd-stage data-beat="idle">' +

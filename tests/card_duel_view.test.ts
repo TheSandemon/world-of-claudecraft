@@ -112,6 +112,48 @@ describe('card_duel_view', () => {
     expect(view.hand.every((c) => !c.playable)).toBe(true);
   });
 
+  it('marks every hand card unplayable while the last round is still being told', () => {
+    // The user-visible bug this closes: the round resolved, the hand refilled,
+    // and the effects and health were still landing on screen when the next
+    // card could already be clicked, cutting the round off mid-sentence. The
+    // sim refuses such a play outright, so a live hand there offered a click
+    // that would be thrown away.
+    const info: CardMinigameInfo = {
+      queued: false,
+      available: true,
+      decks: noDecks,
+      match: {
+        opponent: { pid: 7, name: 'Aki' },
+        hand: [wireCard(21, 4), wireCard(22, 9)],
+        deckCount: 10,
+        discardCount: 4,
+        myRounds: 1,
+        opponentRounds: 0,
+        // Nobody is being waited on: this is the window AFTER a round resolved.
+        waitingOnOpponent: false,
+        opponentCommitted: false,
+        opponentHandCount: 4,
+        activeEffects: [],
+        ...matchDefaults,
+        resolving: true,
+        resolveSecondsLeft: 2.4,
+      },
+    };
+    const view = buildCardDuelView(info);
+    expect(view.resolving).toBe(true);
+    expect(view.waitingOnOpponent).toBe(false);
+    expect(view.hand.every((c) => !c.playable)).toBe(true);
+    // And it comes straight back when the telling ends, which is the same
+    // instant the round clock starts counting again.
+    const told = info.match;
+    if (!told) throw new Error('expected a match');
+    const after = buildCardDuelView({
+      ...info,
+      match: { ...told, resolving: false, resolveSecondsLeft: 0 },
+    });
+    expect(after.hand.every((c) => c.playable)).toBe(true);
+  });
+
   it('same input produces the same output regardless of Sim vs ClientWorld origin (data is host-agnostic)', () => {
     const info: CardMinigameInfo = {
       queued: false,

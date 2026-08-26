@@ -30,6 +30,15 @@ export interface CardFlightOptions {
   html: string;
   /** Skipped entirely when false (reduced motion). */
   animate: boolean;
+  /**
+   * What the card ends AT, as opacity.
+   *
+   * A card being PUT DOWN stays visible (the default), because the thing it
+   * flew to is now showing it. A card being cleared away ends at 0: the
+   * destination is a pile that shows a count, not the card, so it has to
+   * finish by disappearing INTO it rather than sitting on top of it.
+   */
+  endOpacity?: number;
 }
 
 /**
@@ -72,7 +81,7 @@ export function flyCard(opts: CardFlightOptions): void {
     view.requestAnimationFrame(() => {
       node.style.transition = `transform ${ms}ms ease-out, opacity ${ms}ms ease-in`;
       node.style.transform = flightTransformCss(move);
-      node.style.opacity = '0.85';
+      node.style.opacity = `${opts.endOpacity ?? 0.85}`;
     });
   });
   // Cleaned up on a TIMER rather than on transitionend: a transition that never

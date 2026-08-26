@@ -31,7 +31,7 @@ export interface DuelTheaterHost {
 
 /** The finished picture, as a beat: what a jumped-to or collapsed timeline
  *  opens. */
-const SETTLED: DuelBeat = { phase: 'settle', at: 0, cue: null, step: null };
+const SETTLED: DuelBeat = { phase: 'settle', at: 0, cue: null, step: null, spotlight: null };
 
 export class DuelTheater {
   private pending: number[] = [];

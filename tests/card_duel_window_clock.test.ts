@@ -4,6 +4,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CardDuelWindow } from '../src/ui/card_duel_window';
+import { DUEL_BEAT_GAP_MS } from '../src/ui/cards/duel_beats_core';
+import { resolveDuelMotion } from '../src/ui/cards/duel_theater_host';
 import type { CardMinigameInfo } from '../src/world_api';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -211,14 +213,18 @@ describe('card duel window clock and round theater', () => {
     expect(rounds.textContent).toBe('Rounds won: 2');
   });
 
-  it('puts the viewer own pile counts on the viewer own band, and none on the opponent', () => {
+  it('puts the viewer own pile counts on the viewer own band, and no figures on the opponent', () => {
     // The projection deliberately never carries the opponent's counts, so a
-    // pile shown on their band would be a number the client invented.
+    // pile COUNT on their band would be a number the client invented. Their
+    // discard is still a PLACE (their spent cards are swept to it at the end
+    // of a round), just one that claims nothing about what is in it.
     const { win, root } = makeWindow();
     win.render();
     const mine = [...root.querySelectorAll('[data-cd-seats-mine] .dt-pile-count')];
     expect(mine.map((el) => el.textContent)).toEqual(['14', '2']);
-    expect(root.querySelectorAll('[data-cd-seats-them] .dt-pile').length).toBe(0);
+    const theirs = [...root.querySelectorAll('[data-cd-seats-them] .dt-pile')];
+    expect(theirs.map((el) => (el as HTMLElement).dataset.pile)).toEqual(['discard']);
+    expect(root.querySelectorAll('[data-cd-seats-them] .dt-pile-count').length).toBe(0);
   });
 
   it('shows counters as tokens, and drops one spent back to zero', () => {
@@ -432,10 +438,12 @@ describe('card duel window clock and round theater', () => {
       // The first beat opens synchronously: the cards land face-down.
       expect(stage.dataset.beat).toBe('deal');
       expect(cues).toEqual([]);
-      vi.advanceTimersByTime(300);
+      // Taken from the beat itself: the pacing is retuned from one constant,
+      // and a literal here would pin the old numbers instead of the rule.
+      vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.deal);
       expect(stage.dataset.beat).toBe('reveal');
       expect(cues).toEqual(['reveal']);
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(10000);
       expect(stage.dataset.beat).toBe('settle');
       // The push cue rides the verdict and the shuffle rides the settle, so a
       // round no longer sounds like one undifferentiated noise.
@@ -468,10 +476,12 @@ describe('card duel window clock and round theater', () => {
         },
       );
       expect(stage.dataset.beat).toBe('deal');
-      vi.advanceTimersByTime(300);
+      // Taken from the beat itself: the pacing is retuned from one constant,
+      // and a literal here would pin the old numbers instead of the rule.
+      vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.deal);
       expect(stage.dataset.beat).toBe('reveal');
       expect(cues).toEqual(['reveal']);
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(10000);
       expect(stage.dataset.beat).toBe('settle');
       expect(cues).toEqual(['reveal', 'shuffle']);
     } finally {
@@ -480,9 +490,13 @@ describe('card duel window clock and round theater', () => {
     }
   });
 
-  it('lands the whole round at once when the player asked for reduced motion', () => {
-    // Reduced motion is a different request from a cheap preset: no staged
-    // sequence at all, and every cue folded into the one beat.
+  it('still plays every beat under reduced motion, and marks the round calm', () => {
+    // Reduced motion used to collapse the whole round into one frame, and that
+    // was the bug: both cards, the effects, the hit and the winner arrived
+    // together, so the player was left with a result and no idea what produced
+    // it. What reduced motion is owed is the absence of MOVEMENT, not the
+    // absence of being told what happened. So the beats stay, at their own
+    // times, and the stylesheet keys the quiet version off data-motion.
     vi.useFakeTimers();
     try {
       document.body.classList.add('reduce-motion');
@@ -490,6 +504,7 @@ describe('card duel window clock and round theater', () => {
       win.render();
       const cues: string[] = [];
       const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
+      const board = root.querySelector('[data-cd-board]') as HTMLElement;
       win.showReveal(
         { mine: 6, theirs: 2, outcome: 'win', reshuffled: true },
         {
@@ -500,9 +515,16 @@ describe('card duel window clock and round theater', () => {
           cardHit: () => cues.push('hit'),
         },
       );
+      expect(board.dataset.motion).toBe('calm');
+      expect(stage.dataset.beat).toBe('deal');
+      expect(cues).toEqual([]);
+      vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.deal);
+      expect(stage.dataset.beat).toBe('reveal');
+      expect(board.dataset.spot).toBe('both');
+      expect(cues).toEqual(['reveal']);
+      vi.advanceTimersByTime(10000);
       expect(stage.dataset.beat).toBe('settle');
       expect(cues).toEqual(['reveal', 'shuffle']);
-      expect(vi.getTimerCount()).toBe(0);
     } finally {
       document.body.classList.remove('reduce-motion');
       vi.useRealTimers();
@@ -545,15 +567,15 @@ describe('card duel window clock and round theater', () => {
       });
       const line = () => (stage.querySelector('[data-cd-beatline]') as HTMLElement).textContent;
       expect(line()).toBe('Cards down');
-      vi.advanceTimersByTime(300);
+      vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.deal);
       expect(line()).toBe('Cards turn');
-      vi.advanceTimersByTime(600);
+      vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.reveal);
       // The step beat: the card that did it, the number it moved, and whose
       // card it moved it on.
       expect(line()).toBe('Stablemaster: +2 to your card');
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.step);
       expect(line()).toBe('The cards clash');
-      vi.advanceTimersByTime(400);
+      vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.clash);
       expect(line()).toBe('Your opponent takes 4');
       // Not read aloud: the announce line already says the whole round once.
       expect((stage.querySelector('.dt-beats') as HTMLElement).getAttribute('aria-hidden')).toBe(
@@ -612,7 +634,10 @@ describe('card duel window clock and round theater', () => {
         outcome: 'win',
         reshuffled: false,
       });
-      vi.advanceTimersByTime(4000);
+      // Past the whole timeline: the stage belongs to the theater while it
+      // plays, so the "does the result survive" question is only meaningful
+      // once it has finished telling the round.
+      vi.advanceTimersByTime(20000);
       expect(stage.textContent).toContain('Forest Wolf');
 
       setInfo(liveInfo({ round: 2 }));
@@ -728,6 +753,136 @@ describe('card duel window clock and round theater', () => {
     expect(faces.length).toBe(2);
     expect(faces.map((f) => f.getAttribute('data-play'))).toEqual(['11', '12']);
     expect(root.textContent).toContain('Forest Wolf');
+  });
+
+  it('lights the one thing each beat is about, on the board that spans both seats', () => {
+    // The complaint this answers: the beats played in the right order and a
+    // player still could not tell WHICH card a number had just moved on.
+    vi.useFakeTimers();
+    try {
+      const { win, root } = makeWindow();
+      win.render();
+      const board = root.querySelector('[data-cd-board]') as HTMLElement;
+      win.showReveal({
+        mine: 6,
+        theirs: 2,
+        mineBase: 4,
+        theirsBase: 2,
+        outcome: 'win',
+        reshuffled: false,
+        steps: [
+          {
+            side: 'mine',
+            cardId: 'stablemaster',
+            effect: 'modifyValue',
+            target: 'mine',
+            amount: 2,
+            valueAfter: 6,
+          },
+        ],
+        damage: 4,
+        damageTo: 'theirs',
+        myHp: 100,
+        theirHp: 96,
+        maxHp: 100,
+      });
+      // The deal points at nothing: nothing is known yet.
+      expect(board.dataset.spot).toBe('');
+      vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.deal);
+      expect(board.dataset.spot).toBe('both');
+      vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.reveal);
+      // The effect moved THIS viewer's value, so it is this viewer's card that
+      // lights, whichever side's card did it.
+      expect(board.dataset.spot).toBe('mine');
+      vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.step + DUEL_BEAT_GAP_MS.clash);
+      // The hit points at the bar that drained, which is why the attribute
+      // lives on the BOARD: the health bars are not inside the stage.
+      expect(board.dataset.spot).toBe('theirs-hp');
+      vi.advanceTimersByTime(10000);
+      expect(board.dataset.spot).toBe('');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('locks the hand while the last round is still being told', () => {
+    // The playability bug: the round resolved, the hand refilled, and the next
+    // card could be clicked while the effects and the health were still
+    // landing. The sim refuses such a play outright, so a live hand here
+    // offered a click that would be thrown away.
+    const { win, root, setInfo } = makeWindow();
+    setInfo(liveInfo({ resolving: true, resolveSecondsLeft: 2.4 }));
+    win.render();
+    const cards = [...root.querySelectorAll('[data-cd-hand] [data-play]')] as HTMLButtonElement[];
+    expect(cards.length).toBe(2);
+    expect(cards.every((c) => c.disabled)).toBe(true);
+    // Back the instant the telling ends, which is when the clock restarts.
+    setInfo(liveInfo({ resolving: false, resolveSecondsLeft: 0 }));
+    win.render();
+    const after = [...root.querySelectorAll('[data-cd-hand] [data-play]')] as HTMLButtonElement[];
+    expect(after.every((c) => !c.disabled)).toBe(true);
+  });
+
+  it('shines the spotlight at every level, swapping the pop for a fade when calm', () => {
+    // The ring is what says WHICH card or bar a beat is about, so it is the one
+    // thing that never goes quiet. It is driven through a custom property
+    // because the lit selector is specific (0,3,1) and a tier rule trying to
+    // override its animation would lose the cascade silently: the sheet would
+    // claim a calm state it never produced. The variable sidesteps specificity.
+    const lit = CARDS_CSS.slice(CARDS_CSS.indexOf('.dt-board[data-spot="mine"]'));
+    const ring = lit.slice(0, lit.indexOf('}'));
+    expect(ring).toContain('opacity: 1');
+    expect(ring).toContain('animation: var(--dt-spot-anim');
+    // It PULSES for the whole beat rather than flashing once and holding: a
+    // single pop is over long before a two-second beat is, and two beats in a
+    // row on the same card would not restart it at all (same animation-name,
+    // so CSS never re-runs it).
+    expect(CARDS_CSS).toContain('dt-spot-pulse 1200ms ease-in-out 420ms infinite');
+    // Calm swaps the value rather than cancelling the animation: it drops the
+    // scale pop and keeps pulsing.
+    const calmVar = CARDS_CSS.slice(CARDS_CSS.indexOf('.dt-board[data-motion="calm"] {'));
+    expect(calmVar.slice(0, calmVar.indexOf('}'))).toContain('dt-spot-pulse');
+    expect(calmVar.slice(0, calmVar.indexOf('}'))).not.toContain('dt-spot-flash');
+    // And the pulse moves nothing: opacity keyframes only, at either level.
+    const pulse = CARDS_CSS.slice(CARDS_CSS.indexOf('@keyframes dt-spot-pulse'));
+    expect(pulse.slice(0, pulse.indexOf('}'))).not.toContain('transform');
+    // The tier blocks must NOT name the rings any more: a rule that cancelled
+    // the ring would be cancelling the beat's subject.
+    const tierBlock = CARDS_CSS.slice(CARDS_CSS.indexOf(':root[data-fx-level="low"] .cf-frame'));
+    expect(tierBlock).not.toContain('.dt-slot-card::after');
+    expect(tierBlock).not.toContain('.dt-hp::after');
+  });
+
+  it('keeps a calm round moving in the cheap channel only: fades, never travel', () => {
+    // The level exists so a player on the lowest preset (or one who asked for
+    // reduced motion) still SEES one thing happen per beat. What it may spend
+    // is a composited opacity; what it may not spend is layout or travel.
+    const calm = CARDS_CSS.slice(
+      CARDS_CSS.indexOf('.dt-board[data-motion="calm"] .dt-slot-theirs'),
+      CARDS_CSS.indexOf('/* The end of the round'),
+    );
+    expect(calm).toContain('animation: none');
+    expect(calm).toContain('transition: opacity');
+    // No movement of any kind in the calm block.
+    expect(calm).not.toContain('transform');
+    expect(calm).not.toMatch(/translate|scale\(/);
+  });
+
+  it('never resolves to a collapsed round, whatever the player has asked for', () => {
+    // The rule this whole level ladder exists to keep: a round is told beat by
+    // beat at EVERY performance level and under every comfort setting. Nothing
+    // a player can configure may drop them into a table that shows both cards,
+    // the effects, the hit and the winner in one frame. 'none' remains only as
+    // the driver's own catch-up path for a stage nobody is watching.
+    expect(resolveDuelMotion(document)).toBe('full');
+    document.body.classList.add('reduce-motion');
+    expect(resolveDuelMotion(document)).toBe('calm');
+    document.body.classList.remove('reduce-motion');
+    document.documentElement.dataset.fxLevel = 'low';
+    expect(resolveDuelMotion(document)).toBe('calm');
+    document.documentElement.dataset.fxLevel = 'ultra';
+    expect(resolveDuelMotion(document)).toBe('full');
+    document.documentElement.removeAttribute('data-fx-level');
   });
 
   it('fairness: no tier rule touches a number the player acts on', () => {

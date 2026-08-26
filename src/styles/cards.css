@@ -32,10 +32,13 @@
    on every device, with no hover requirement and no animation delay. The tier
    rules at the bottom of this file touch transitions and animations only. The
    ONE bounded exception is the stage's own deal beat: the two cards of an
-   ALREADY DECIDED round stay face-down for 260ms while they land. That
-   narrates a finished round, never a pending decision, the health bars and the
-   hand underneath have already moved, and any of the three motion authorities
-   collapses it to zero. */
+   ALREADY DECIDED round stay face-down for one beat while they land. The health
+   bars and the hand underneath have already moved, so nothing a player is still
+   deciding on is ever staged.
+
+   MOTION LEVELS. A round is never told all at once: `full` and `calm` both play
+   every beat, and differ only in whether the picture MOVES (see the calm block
+   further down, and src/ui/cards/CLAUDE.md). */
 @layer components {
   /* ---------- card duel (the Card Master minigame) ---------- */
   /* Wider than the old 340px: the table is now a real board (two seat bands, a
@@ -371,6 +374,12 @@
   }
   .dt-pile[data-pile="discard"] .dt-pile-stack {
     border-style: dashed;
+  }
+  /* The opponent's discard: a PLACE, not a readout. Their count is not on the
+     wire, so the pile carries no figure; it is here so their spent cards have
+     somewhere to be swept to at the end of a round. */
+  .dt-piles-place {
+    opacity: 0.7;
   }
   .dt-pile-count {
     font-family: var(--title-font);
@@ -749,6 +758,171 @@
     opacity: 0.55;
   }
 
+  /* ---------- the spotlight (duel_beats_core.ts, DuelSpotlight) ----------
+
+     Which THING a beat is about, in gold, on the one card or bar it means.
+     The beats told the round in the right order and still left the commonest
+     question unanswered: a value ticked and a bar dropped, and nothing on the
+     table said which of the two cards had just been changed.
+
+     Written by the theater as data-spot on the BOARD rather than the stage,
+     because a damage beat points at a seat's health bar and the bars live in
+     the bands beside the stage.
+
+     It KEEPS FLASHING for as long as its beat is the current one, rather than
+     flashing once and then holding steady. Two reasons, both learned the hard
+     way. A single pop is over in half a second of a beat that now runs two, so
+     the eye arrives after the only thing that moved; and when two beats in a
+     row point at the same card (a step then the verdict) the animation-name
+     never changes, so CSS does not restart it and the second beat gets no
+     flash at all. A steady pulse has neither problem.
+
+     Drawn on a pseudo-element, and the glow is a STATIC box-shadow with only
+     the opacity animated, so the whole thing stays a composited fade.
+
+     The pulse is deliberately NOT gated on --fx-ambient-anim like the idle
+     loops are. It is not ambient: it runs only while a beat is pointing at
+     something and stops the moment the attribute clears, on at most two
+     elements, and it is the one mark a player needs at the LOWEST preset as
+     much as the highest. */
+  .dt-slot-card::after,
+  .dt-hp::after {
+    content: "";
+    position: absolute;
+    /* Above the card face and the health fill: this is the one mark that must
+       never end up underneath what it is pointing at. */
+    z-index: 3;
+    border: 3px solid var(--gold);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 0 12px var(--gold);
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* Outside the card, which nothing clips; INSIDE the health bar, which clips
+     its own fill and would clip a ring drawn past its edge. */
+  .dt-slot-card::after {
+    inset: -3px;
+  }
+  .dt-hp::after {
+    inset: 0;
+  }
+  .dt-board[data-spot="mine"] .dt-slot-mine .dt-slot-card::after,
+  .dt-board[data-spot="both"] .dt-slot-mine .dt-slot-card::after,
+  .dt-board[data-spot="theirs"] .dt-slot-theirs .dt-slot-card::after,
+  .dt-board[data-spot="both"] .dt-slot-theirs .dt-slot-card::after,
+  .dt-board[data-spot="mine-hp"] .dt-seat-mine .dt-hp::after,
+  .dt-board[data-spot="theirs-hp"] .dt-seat-theirs .dt-hp::after {
+    opacity: 1;
+    /* Through a VARIABLE, not a literal, because this selector is specific
+       (0,3,1) and every rule that would want to change it is not. A tier block
+       overriding the animation here would silently lose the cascade and leave
+       the sheet claiming a calm state it never produced; a custom property
+       inherits from the board and sidesteps specificity entirely. */
+    animation: var(--dt-spot-anim, dt-spot-pulse 1200ms ease-in-out infinite);
+  }
+  /* The gold ring is the ONE thing that never goes quiet: it is what answers
+     "which of these two did that", and a beat whose subject is unmarked is a
+     beat a player cannot use. Full motion pops it in and then pulses; calm
+     drops only the pop, because a scale is the part reduced motion is owed and
+     a pulsing opacity is not. */
+  .dt-board {
+    --dt-spot-anim: dt-spot-flash 420ms ease-out, dt-spot-pulse 1200ms ease-in-out 420ms infinite;
+  }
+  .dt-board[data-motion="calm"] {
+    --dt-spot-anim: dt-spot-pulse 1500ms ease-in-out infinite;
+  }
+
+  /* ---------- calm motion (duel_theater_host.ts, data-motion) ----------
+
+     What the LOWEST PRESET and REDUCED MOTION get. Not a collapsed round and
+     not a silent one: every beat still opens at its own moment, and each one
+     still has something a player can SEE happen. What goes is MOVEMENT, which
+     is the expensive half on a cheap machine and the uncomfortable half for
+     someone who asked for less of it.
+
+     So: no landing, no lunge, no spark, no chip flight, no value pop, no
+     flying cards (the flights are skipped in duel_card_motion.ts). What stays
+     is an opacity fade per beat plus the gold ring, both composited, neither
+     moving a pixel of layout. One authority to key on (`data-motion`, written
+     once per round by the theater) rather than a media query and a root
+     attribute duplicating each other. */
+  .dt-board[data-motion="calm"] .dt-slot-theirs,
+  .dt-board[data-motion="calm"] .dt-slot-mine,
+  .dt-board[data-motion="calm"] .dt-spark,
+  .dt-board[data-motion="calm"] .dt-chip,
+  .dt-board[data-motion="calm"] .dt-plate-value,
+  .dt-board[data-motion="calm"] .dt-damage,
+  .dt-board[data-motion="calm"] .dt-verdict,
+  .dt-board[data-motion="calm"] .cf,
+  .dt-board[data-motion="calm"] .dt-back {
+    animation: none;
+  }
+  /* The fades that replace them. Transitions rather than keyframes on purpose:
+     every one of these states is already a static rule the beat switches, so a
+     transition needs no second description of the same picture and cannot fall
+     out of step with it. */
+  .dt-board[data-motion="calm"] .cf,
+  .dt-board[data-motion="calm"] .dt-back,
+  .dt-board[data-motion="calm"] .dt-verdict,
+  .dt-board[data-motion="calm"] .dt-damage,
+  .dt-board[data-motion="calm"] .dt-chip,
+  .dt-board[data-motion="calm"] .dt-plate-base {
+    transition: opacity 220ms ease-out;
+  }
+  /* The spark still marks the clash, as a pulse of light with no travel: the
+     clash is the beat with the least to show otherwise (both values are
+     already up, nothing has changed yet), so it is the one that most needs
+     something to happen. */
+  .dt-board[data-motion="calm"] .dt-stage[data-beat="clash"] .dt-spark {
+    opacity: 1;
+    animation: dt-spot-shine 420ms ease-out;
+  }
+
+  /* The end of the round: both spent cards fly to the discard piles
+     (src/ui/cards/duel_card_motion.ts) and the originals clear as they go. The
+     plates, the verdict and the caption stay: the RESULT is still being read,
+     it is the cards that are done with. */
+  .dt-stage[data-swept] .dt-slot-card {
+    opacity: 0;
+  }
+
+  /* The entry pop: the ring snaps on a touch oversized and settles. Full
+     motion only; the pulse below carries the rest of the beat. */
+  @keyframes dt-spot-flash {
+    from {
+      opacity: 0;
+      transform: scale(1.16);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  /* The steady flash, and the one that does the actual work: it runs for the
+     whole beat so the mark is still flashing when the eye gets there. Opacity
+     only, so it costs the same at every level. */
+  @keyframes dt-spot-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
+  /* One-shot opacity flash, for a mark that belongs to a single moment rather
+     than a whole beat (the clash spark at calm). */
+  @keyframes dt-spot-shine {
+    from {
+      opacity: 0;
+    }
+    26% {
+      opacity: 1;
+    }
+    58% {
+      opacity: 0.45;
+    }
+  }
   @keyframes dt-land {
     from {
       opacity: 0;
@@ -1528,6 +1702,10 @@
     .cf-playable:hover .cf-frame {
       transform: none;
     }
+    /* The stage's MOVEMENT only. The round still plays out beat by beat here
+       (the theater resolves to `calm`, not to a collapse) and the calm block
+       above puts back the fades and the ring, both of which are opacity and
+       neither of which is the motion this query is protecting anyone from. */
     .dt-stage *,
     .dt-lamp,
     .dt-clock-ring,
@@ -1543,6 +1721,10 @@
   :root[data-fx-level="low"] .cf-playable:hover .cf-frame {
     transform: none;
   }
+  /* Same shape as the reduced-motion block above: the preset sheds the stage's
+     MOVEMENT, and the calm block keeps the beats, the fades and the ring. The
+     rings are deliberately NOT named here; they shine at every preset, because
+     the gold ring is what says which card or bar a beat is about. */
   :root[data-fx-level="low"] .dt-stage *,
   :root[data-fx-level="low"] .dt-lamp,
   :root[data-fx-level="low"] .dt-clock-ring,
