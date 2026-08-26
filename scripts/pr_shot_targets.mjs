@@ -3996,14 +3996,22 @@ export const TARGETS = [
     label: 'Card Duel window (Card Master)',
     when: [
       'ui/card_duel',
+      'ui/cards/',
+      'styles/cards.css',
       'sim/social/card_duel',
       'sim/content/card_master',
       'sim/minigames/card_duel',
     ],
-    // Teleport next to the Card Master (Eastbrook zone1, {13, 2}) so joinCardDuelQueue's
-    // range gate passes, then open the Card Duel window directly (idle state: this target
-    // only covers the bring-up the diff implies; queued/in-match/complete states are
-    // fixture-driven separately for the PR screenshot set, see docs/screenshots/card-duel).
+    // Teleport next to the Card Master (Eastbrook zone1, {13, 2}) so the range gate
+    // passes, open the window, then SIT DOWN against one of his named regulars: a bot
+    // match starts immediately, which is the only way to reach a live table in a
+    // single-player world. The idle window shows an affordance; the played round shows
+    // the thing a reviewer needs to judge (the seats, the clock, the stage, the hand).
+    //
+    // Every step past the window itself degrades to the idle shot rather than failing
+    // the run, and each wait is a pollForSize (a laid-out, displayed element) rather
+    // than a bare selector match: the HUD's markup exists while the loading screen is
+    // still up, so a presence-only wait silently photographs a mid-boot frame.
     async capture(page) {
       await page.evaluate(() => {
         const p = window.__game?.sim?.player;
@@ -4015,8 +4023,21 @@ export const TARGETS = [
         if (el) el.style.display = 'none';
         window.__game?.hud?.toggleCardDuel?.();
       });
-      const open = await pollForSize(page, '#card-duel-window');
-      return open ? { clip: '#card-duel-window' } : {};
+      if (!(await pollForSize(page, '#card-duel-window'))) return {};
+      if (await pollForSize(page, '#card-duel-window .cd-regular')) {
+        await page.evaluate(() => {
+          document.querySelector('#card-duel-window .cd-regular')?.click();
+        });
+        if (await pollForSize(page, '#card-duel-window [data-cd-hand] .cf')) {
+          await page.evaluate(() => {
+            document.querySelector('#card-duel-window [data-cd-hand] .cf:not([disabled])')?.click();
+          });
+          // The bot's commit plus the whole round theater, which the engine caps at
+          // CARD_NARRATION_MAX_S, so the shot carries a told round and not a bare stage.
+          await wait(9000);
+        }
+      }
+      return { clip: '#card-duel-window' };
     },
   },
   {
