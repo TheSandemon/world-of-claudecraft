@@ -30,7 +30,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1004,
-      "state": "d325be88",
+      "state": "6dd3b303",
       "events": "43991e06",
       "rng": {
         "draws": 0,
@@ -51,6 +51,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -109,6 +112,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -170,6 +176,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -227,6 +236,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -283,6 +295,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -344,6 +359,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
@@ -405,6 +423,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -846,7 +867,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1004,
-      "state": "d325be88",
+      "state": "6dd3b303",
       "events": "e2291565",
       "rng": {
         "draws": 0,
@@ -867,6 +888,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -925,6 +949,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -986,6 +1013,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -1043,6 +1073,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -1099,6 +1132,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -1160,6 +1196,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
@@ -1221,6 +1260,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -1662,7 +1704,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1004,
-      "state": "7f2ee2e4",
+      "state": "2eadcc75",
       "events": "e79f63cb",
       "rng": {
         "draws": 0,
@@ -1683,6 +1725,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -1741,6 +1786,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -1802,6 +1850,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -1859,6 +1910,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -1915,6 +1969,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -1976,6 +2033,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
@@ -2039,6 +2099,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -2482,7 +2545,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1004,
-      "state": "7f2ee2e4",
+      "state": "2eadcc75",
       "events": "9592662e",
       "rng": {
         "draws": 0,
@@ -2503,6 +2566,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -2561,6 +2627,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -2622,6 +2691,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -2679,6 +2751,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -2735,6 +2810,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -2796,6 +2874,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
@@ -2859,6 +2940,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -3302,7 +3386,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1004,
-      "state": "7f2ee2e4",
+      "state": "2eadcc75",
       "events": "1297310c",
       "rng": {
         "draws": 0,
@@ -3323,6 +3407,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -3381,6 +3468,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -3442,6 +3532,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -3499,6 +3592,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -3555,6 +3651,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -3616,6 +3715,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
@@ -3679,6 +3781,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -4122,7 +4227,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1004,
-      "state": "7f2ee2e4",
+      "state": "2eadcc75",
       "events": "f8843d71",
       "rng": {
         "draws": 0,
@@ -4143,6 +4248,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -4201,6 +4309,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -4262,6 +4373,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -4319,6 +4433,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -4375,6 +4492,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -4436,6 +4556,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
@@ -4499,6 +4622,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -4942,7 +5068,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1004,
-      "state": "7f2ee2e4",
+      "state": "2eadcc75",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -4963,6 +5089,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -5021,6 +5150,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -5082,6 +5214,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -5139,6 +5274,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -5195,6 +5333,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -5256,6 +5397,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
@@ -5319,6 +5463,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},

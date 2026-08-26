@@ -32,7 +32,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 1002,
-      "state": "da64ba0c",
+      "state": "f2934eda",
       "events": "0b207508",
       "rng": {
         "draws": 0,
@@ -43,7 +43,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1002,
-      "state": "460bba96",
+      "state": "085a6be4",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -54,7 +54,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 1002,
-      "state": "1edce7cc",
+      "state": "fc8eb546",
       "events": "842deeb9",
       "rng": {
         "draws": 154,
@@ -65,7 +65,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 1002,
-      "state": "0aa211bd",
+      "state": "a7eea7d3",
       "events": "741638a5",
       "rng": {
         "draws": 328,
@@ -76,7 +76,7 @@
       "tick": 100,
       "time": 5,
       "nextId": 1002,
-      "state": "9861471d",
+      "state": "ce6817b3",
       "events": "9a546a60",
       "rng": {
         "draws": 508,
@@ -87,7 +87,7 @@
       "tick": 100,
       "time": 5,
       "nextId": 1002,
-      "state": "9861471d",
+      "state": "ce6817b3",
       "events": "741638a5",
       "rng": {
         "draws": 508,
@@ -108,6 +108,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {
@@ -207,6 +210,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
@@ -302,6 +308,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
@@ -397,6 +406,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -774,7 +786,7 @@
       "tick": 120,
       "time": 6,
       "nextId": 1002,
-      "state": "652898ce",
+      "state": "43df0860",
       "events": "e57f8ee0",
       "rng": {
         "draws": 696,
@@ -785,7 +797,7 @@
       "tick": 140,
       "time": 7,
       "nextId": 1002,
-      "state": "5d3a3df9",
+      "state": "73bed91f",
       "events": "741638a5",
       "rng": {
         "draws": 921,
@@ -796,7 +808,7 @@
       "tick": 160,
       "time": 8,
       "nextId": 1002,
-      "state": "8f783667",
+      "state": "213fd2c5",
       "events": "c584e2ed",
       "rng": {
         "draws": 1159,
@@ -807,7 +819,7 @@
       "tick": 180,
       "time": 9,
       "nextId": 1002,
-      "state": "bb3746a1",
+      "state": "7ec73d7f",
       "events": "741638a5",
       "rng": {
         "draws": 1423,
@@ -818,7 +830,7 @@
       "tick": 182,
       "time": 9.1,
       "nextId": 1002,
-      "state": "652b744b",
+      "state": "a3c90639",
       "events": "741638a5",
       "rng": {
         "draws": 1452,
@@ -839,6 +851,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {
@@ -938,6 +953,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {
@@ -1038,6 +1056,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
@@ -1133,6 +1154,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -1579,7 +1603,7 @@
       "tick": 200,
       "time": 10,
       "nextId": 1002,
-      "state": "b1fbe507",
+      "state": "21bb4155",
       "events": "1d9cc0d6",
       "rng": {
         "draws": 1710,
@@ -1590,7 +1614,7 @@
       "tick": 220,
       "time": 11,
       "nextId": 1002,
-      "state": "9b9244d0",
+      "state": "aebccffa",
       "events": "741638a5",
       "rng": {
         "draws": 1866,
@@ -1601,7 +1625,7 @@
       "tick": 224,
       "time": 11.2,
       "nextId": 1002,
-      "state": "a1b0e4ff",
+      "state": "65ad80ad",
       "events": "741638a5",
       "rng": {
         "draws": 1886,
@@ -1622,6 +1646,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {
@@ -1721,6 +1748,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {
@@ -1821,6 +1851,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
@@ -1916,6 +1949,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -2382,7 +2418,7 @@
       "tick": 240,
       "time": 12,
       "nextId": 1002,
-      "state": "0d6c0446",
+      "state": "62efc138",
       "events": "e578d714",
       "rng": {
         "draws": 2008,
@@ -2393,7 +2429,7 @@
       "tick": 260,
       "time": 13,
       "nextId": 1002,
-      "state": "30c51c51",
+      "state": "30e6a617",
       "events": "8e868a34",
       "rng": {
         "draws": 2177,
@@ -2404,7 +2440,7 @@
       "tick": 280,
       "time": 14,
       "nextId": 1002,
-      "state": "22c0e1a1",
+      "state": "2acef4e7",
       "events": "6ab3a31a",
       "rng": {
         "draws": 2341,
@@ -2415,7 +2451,7 @@
       "tick": 300,
       "time": 15,
       "nextId": 1002,
-      "state": "11584eab",
+      "state": "f93196d9",
       "events": "144a83e8",
       "rng": {
         "draws": 2541,
@@ -2426,7 +2462,7 @@
       "tick": 306,
       "time": 15.3,
       "nextId": 1002,
-      "state": "6ca832a4",
+      "state": "b076b836",
       "events": "741638a5",
       "rng": {
         "draws": 2588,
@@ -2447,6 +2483,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {
@@ -2546,6 +2585,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {
@@ -2646,6 +2688,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
@@ -2741,6 +2786,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -3216,7 +3264,7 @@
       "tick": 306,
       "time": 15.3,
       "nextId": 1002,
-      "state": "6ca832a4",
+      "state": "b076b836",
       "events": "741638a5",
       "rng": {
         "draws": 2588,
@@ -3237,6 +3285,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {
@@ -3336,6 +3387,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {
@@ -3436,6 +3490,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
@@ -3531,6 +3588,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},

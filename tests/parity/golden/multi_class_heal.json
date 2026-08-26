@@ -34,7 +34,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1006,
-      "state": "5c73a026",
+      "state": "475641dd",
       "events": "7c12e5ee",
       "rng": {
         "draws": 6,
@@ -55,6 +55,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {},
@@ -114,6 +117,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
@@ -175,6 +181,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "druid",
           "companionUpgrades": {},
           "counters": {},
@@ -234,6 +243,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
@@ -293,6 +305,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -853,7 +868,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1006,
-      "state": "c638a7fb",
+      "state": "e58b2ffe",
       "events": "d7078ad8",
       "rng": {
         "draws": 6,
@@ -874,6 +889,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {},
@@ -933,6 +951,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
@@ -994,6 +1015,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "druid",
           "companionUpgrades": {},
           "counters": {
@@ -1058,6 +1082,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
@@ -1117,6 +1144,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -1695,7 +1725,7 @@
       "tick": 5,
       "time": 0.25,
       "nextId": 1006,
-      "state": "1767e34f",
+      "state": "eaefb12a",
       "events": "0c3c841d",
       "rng": {
         "draws": 10,
@@ -1706,7 +1736,7 @@
       "tick": 8,
       "time": 0.4,
       "nextId": 1006,
-      "state": "b824e442",
+      "state": "c4824db9",
       "events": "0c3c841d",
       "rng": {
         "draws": 10,
@@ -1727,6 +1757,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {},
@@ -1786,6 +1819,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
@@ -1847,6 +1883,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "druid",
           "companionUpgrades": {},
           "counters": {
@@ -1911,6 +1950,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "shaman",
           "companionUpgrades": {},
           "counters": {},
@@ -1970,6 +2012,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},

@@ -16,7 +16,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "79b5aba1",
+      "state": "3a16fe44",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -38,6 +38,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -142,7 +145,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 999,
-      "state": "22dc0d66",
+      "state": "722f2b2d",
       "events": "f90bcfb8",
       "rng": {
         "draws": 1,
@@ -153,7 +156,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 999,
-      "state": "ea91094b",
+      "state": "208a3b3a",
       "events": "e9f6f385",
       "rng": {
         "draws": 2,
@@ -164,7 +167,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 999,
-      "state": "20326560",
+      "state": "0b232683",
       "events": "c31eb739",
       "rng": {
         "draws": 150,
@@ -175,7 +178,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 999,
-      "state": "b27110a2",
+      "state": "b14889a9",
       "events": "cde0c785",
       "rng": {
         "draws": 316,
@@ -186,7 +189,7 @@
       "tick": 84,
       "time": 4.2,
       "nextId": 999,
-      "state": "77b01079",
+      "state": "d6fd2634",
       "events": "18ec9a8a",
       "rng": {
         "draws": 356,
@@ -208,6 +211,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {
@@ -444,7 +450,7 @@
       "tick": 84,
       "time": 4.2,
       "nextId": 999,
-      "state": "77b01079",
+      "state": "d6fd2634",
       "events": "741638a5",
       "rng": {
         "draws": 356,
@@ -466,6 +472,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {

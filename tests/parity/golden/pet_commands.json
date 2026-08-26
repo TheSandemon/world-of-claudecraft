@@ -23,7 +23,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "8249773b",
+      "state": "90e5cdc0",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -45,6 +45,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -145,7 +148,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1000,
-      "state": "3dd94c85",
+      "state": "9ffbad1e",
       "events": "20b7ee6c",
       "rng": {
         "draws": 0,
@@ -167,6 +170,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -311,7 +317,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1000,
-      "state": "803207ea",
+      "state": "c148fddb",
       "events": "efd0eab2",
       "rng": {
         "draws": 0,
@@ -333,6 +339,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -491,7 +500,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 1000,
-      "state": "a2060527",
+      "state": "31452a5a",
       "events": "8a2cfccf",
       "rng": {
         "draws": 0,
@@ -502,7 +511,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1000,
-      "state": "81c516b7",
+      "state": "0da5182a",
       "events": "7180a531",
       "rng": {
         "draws": 0,
@@ -513,7 +522,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1001,
-      "state": "199e070f",
+      "state": "af346952",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -535,6 +544,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -773,7 +785,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1001,
-      "state": "79d906a2",
+      "state": "20d070d1",
       "events": "a5cd6cc5",
       "rng": {
         "draws": 0,
@@ -795,6 +807,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -970,7 +985,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1003,
-      "state": "d641b713",
+      "state": "3af5179e",
       "events": "dac77577",
       "rng": {
         "draws": 0,
@@ -992,6 +1007,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -1210,7 +1228,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1003,
-      "state": "89ed2178",
+      "state": "e027730b",
       "events": "a131e657",
       "rng": {
         "draws": 0,
@@ -1232,6 +1250,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -1450,7 +1471,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1003,
-      "state": "79d906a2",
+      "state": "20d070d1",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -1472,6 +1493,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -1647,7 +1671,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1004,
-      "state": "79d906a2",
+      "state": "20d070d1",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -1669,6 +1693,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -1844,7 +1871,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1006,
-      "state": "75d25ea3",
+      "state": "6da9dd63",
       "events": "1ba59e63",
       "rng": {
         "draws": 0,
@@ -1866,6 +1893,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -1939,6 +1969,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -2199,7 +2232,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 1006,
-      "state": "c14f8a49",
+      "state": "28653021",
       "events": "fdd84c48",
       "rng": {
         "draws": 151,
@@ -2210,7 +2243,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 1006,
-      "state": "e882b1cc",
+      "state": "31502260",
       "events": "2c347020",
       "rng": {
         "draws": 286,
@@ -2221,7 +2254,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 1006,
-      "state": "e882b1cc",
+      "state": "31502260",
       "events": "741638a5",
       "rng": {
         "draws": 286,
@@ -2243,6 +2276,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -2316,6 +2352,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -2595,7 +2634,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 1008,
-      "state": "60b7c165",
+      "state": "6a629edd",
       "events": "e81ef396",
       "rng": {
         "draws": 286,
@@ -2617,6 +2656,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -2690,6 +2732,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -2970,7 +3015,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 1010,
-      "state": "c1cddeb3",
+      "state": "b1c6ea23",
       "events": "72e1057d",
       "rng": {
         "draws": 286,
@@ -2992,6 +3037,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -3065,6 +3113,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},
@@ -3352,7 +3403,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 1010,
-      "state": "c1cddeb3",
+      "state": "b1c6ea23",
       "events": "741638a5",
       "rng": {
         "draws": 286,
@@ -3374,6 +3425,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "hunter",
           "companionUpgrades": {},
           "counters": {},
@@ -3447,6 +3501,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warlock",
           "companionUpgrades": {},
           "counters": {},

@@ -18,7 +18,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "891f7f6c",
+      "state": "74b14797",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -40,6 +40,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -154,7 +157,7 @@
       "tick": 51,
       "time": 2.55,
       "nextId": 998,
-      "state": "f4858d3c",
+      "state": "67e9afa5",
       "events": "b82c4a5c",
       "rng": {
         "draws": 2,
@@ -176,6 +179,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {
@@ -333,7 +339,7 @@
       "tick": 104,
       "time": 5.2,
       "nextId": 998,
-      "state": "fd0a663f",
+      "state": "4a6f35ec",
       "events": "d90c23ee",
       "rng": {
         "draws": 4,
@@ -355,6 +361,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {
@@ -521,7 +530,7 @@
       "tick": 157,
       "time": 7.85,
       "nextId": 998,
-      "state": "973a0940",
+      "state": "3383afc1",
       "events": "6d400d0e",
       "rng": {
         "draws": 6,
@@ -543,6 +552,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {
@@ -719,7 +731,7 @@
       "tick": 159,
       "time": 7.95,
       "nextId": 998,
-      "state": "79d20001",
+      "state": "cbb38ac6",
       "events": "741638a5",
       "rng": {
         "draws": 6,
@@ -741,6 +753,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {

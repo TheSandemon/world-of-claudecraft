@@ -15,7 +15,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "64b3a340",
+      "state": "9b5d9b65",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -37,6 +37,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -146,7 +149,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 1008,
-      "state": "06b58c3a",
+      "state": "749a1407",
       "events": "d4634cfa",
       "rng": {
         "draws": 1,
@@ -168,6 +171,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -277,7 +283,7 @@
       "tick": 2,
       "time": 0.1,
       "nextId": 1008,
-      "state": "afc29f18",
+      "state": "006a0eb1",
       "events": "66313746",
       "rng": {
         "draws": 1,
@@ -299,6 +305,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -420,7 +429,7 @@
       "tick": 2,
       "time": 0.1,
       "nextId": 1008,
-      "state": "afc29f18",
+      "state": "006a0eb1",
       "events": "741638a5",
       "rng": {
         "draws": 1,
@@ -442,6 +451,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},

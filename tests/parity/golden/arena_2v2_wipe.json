@@ -29,7 +29,7 @@
       "tick": 25,
       "time": 1.25,
       "nextId": 1001,
-      "state": "9a143bda",
+      "state": "1321c794",
       "events": "2967ecdd",
       "rng": {
         "draws": 0,
@@ -40,7 +40,7 @@
       "tick": 50,
       "time": 2.5,
       "nextId": 1001,
-      "state": "42ec988f",
+      "state": "b2f60ef1",
       "events": "27775c8e",
       "rng": {
         "draws": 94,
@@ -51,7 +51,7 @@
       "tick": 75,
       "time": 3.75,
       "nextId": 1001,
-      "state": "82cf4017",
+      "state": "51bf7639",
       "events": "a669b228",
       "rng": {
         "draws": 290,
@@ -62,7 +62,7 @@
       "tick": 100,
       "time": 5,
       "nextId": 1001,
-      "state": "3b0dc362",
+      "state": "b65a4d5c",
       "events": "9255b03e",
       "rng": {
         "draws": 514,
@@ -73,7 +73,7 @@
       "tick": 101,
       "time": 5.05,
       "nextId": 1001,
-      "state": "a045b077",
+      "state": "f1bcb999",
       "events": "99ffd6ff",
       "rng": {
         "draws": 526,
@@ -94,6 +94,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -170,6 +173,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -249,6 +255,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -324,6 +333,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {},
@@ -614,7 +626,7 @@
       "tick": 102,
       "time": 5.1,
       "nextId": 1001,
-      "state": "710ec5af",
+      "state": "2f5c7a3d",
       "events": "54fef052",
       "rng": {
         "draws": 533,
@@ -635,6 +647,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -713,6 +728,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -792,6 +810,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {
@@ -875,6 +896,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {},
@@ -1165,7 +1189,7 @@
       "tick": 103,
       "time": 5.15,
       "nextId": 1001,
-      "state": "a68b31f3",
+      "state": "1343abad",
       "events": "628ffd30",
       "rng": {
         "draws": 541,
@@ -1187,6 +1211,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -1283,6 +1310,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -1380,6 +1410,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {
@@ -1477,6 +1510,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {
@@ -1788,7 +1824,7 @@
       "tick": 125,
       "time": 6.25,
       "nextId": 1001,
-      "state": "8f56a969",
+      "state": "a96deff3",
       "events": "741638a5",
       "rng": {
         "draws": 758,
@@ -1799,7 +1835,7 @@
       "tick": 150,
       "time": 7.5,
       "nextId": 1001,
-      "state": "222ea68f",
+      "state": "1e9ad729",
       "events": "741638a5",
       "rng": {
         "draws": 1028,
@@ -1810,7 +1846,7 @@
       "tick": 175,
       "time": 8.75,
       "nextId": 1001,
-      "state": "f6ab5ac4",
+      "state": "429fe72e",
       "events": "741638a5",
       "rng": {
         "draws": 1336,
@@ -1821,7 +1857,7 @@
       "tick": 200,
       "time": 10,
       "nextId": 1001,
-      "state": "da11a05c",
+      "state": "564edf66",
       "events": "741638a5",
       "rng": {
         "draws": 1671,
@@ -1832,7 +1868,7 @@
       "tick": 225,
       "time": 11.25,
       "nextId": 1001,
-      "state": "72679f65",
+      "state": "90ebbacf",
       "events": "6f609fac",
       "rng": {
         "draws": 1867,
@@ -1843,7 +1879,7 @@
       "tick": 243,
       "time": 12.15,
       "nextId": 1001,
-      "state": "224aa590",
+      "state": "aead443a",
       "events": "741638a5",
       "rng": {
         "draws": 2014,
@@ -1865,6 +1901,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -1961,6 +2000,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -2058,6 +2100,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {
@@ -2155,6 +2200,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {
@@ -2471,7 +2519,7 @@
       "tick": 243,
       "time": 12.15,
       "nextId": 1001,
-      "state": "224aa590",
+      "state": "aead443a",
       "events": "741638a5",
       "rng": {
         "draws": 2014,
@@ -2493,6 +2541,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -2589,6 +2640,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "mage",
           "companionUpgrades": {},
           "counters": {},
@@ -2686,6 +2740,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {
@@ -2783,6 +2840,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "priest",
           "companionUpgrades": {},
           "counters": {

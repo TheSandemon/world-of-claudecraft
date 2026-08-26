@@ -31,7 +31,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "8097a399",
+      "state": "e00b9b2e",
       "events": "7375a30a",
       "rng": {
         "draws": 0,
@@ -52,6 +52,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 1000,
@@ -172,7 +175,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "00fe85d1",
+      "state": "13d2054e",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -200,6 +203,9 @@
             ]
           },
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 1000,
@@ -323,7 +329,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "2b7c47db",
+      "state": "7c7a25cc",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -351,6 +357,9 @@
             ]
           },
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 1000,
@@ -470,7 +479,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "4847e3fd",
+      "state": "d243830e",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -498,6 +507,9 @@
             ]
           },
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 1000,
@@ -621,7 +633,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "f31ea97b",
+      "state": "5629e650",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -642,6 +654,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 1000,
@@ -765,7 +780,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "1ba491e3",
+      "state": "be1d3026",
       "events": "500eea89",
       "rng": {
         "draws": 0,
@@ -788,6 +803,9 @@
             "purchasedSlots": 6
           },
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 500,
@@ -911,7 +929,7 @@
       "tick": 2,
       "time": 0.1,
       "nextId": 998,
-      "state": "3a283e85",
+      "state": "17dcb350",
       "events": "29ad97a7",
       "rng": {
         "draws": 0,
@@ -934,6 +952,9 @@
             "purchasedSlots": 6
           },
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 500,

@@ -16,7 +16,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "64b3a340",
+      "state": "9b5d9b65",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -38,6 +38,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "counters": {},
@@ -147,7 +150,7 @@
       "tick": 10,
       "time": 0.5,
       "nextId": 1008,
-      "state": "d789ce02",
+      "state": "52b44a17",
       "events": "199d917b",
       "rng": {
         "draws": 4,
@@ -158,7 +161,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 1008,
-      "state": "02797684",
+      "state": "fa8b5615",
       "events": "7fe4245a",
       "rng": {
         "draws": 4,
@@ -169,7 +172,7 @@
       "tick": 30,
       "time": 1.5,
       "nextId": 1008,
-      "state": "2ef0f467",
+      "state": "40f70b54",
       "events": "e6658214",
       "rng": {
         "draws": 5,
@@ -180,7 +183,7 @@
       "tick": 38,
       "time": 1.9,
       "nextId": 1010,
-      "state": "bf4802bd",
+      "state": "78f27de2",
       "events": "1b170cee",
       "rng": {
         "draws": 8,
@@ -202,6 +205,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "copper": 25,
@@ -497,7 +503,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1010,
-      "state": "6a1f7d2a",
+      "state": "2b92fe8f",
       "events": "741638a5",
       "rng": {
         "draws": 8,
@@ -508,7 +514,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 1010,
-      "state": "6a1f7d2a",
+      "state": "2b92fe8f",
       "events": "741638a5",
       "rng": {
         "draws": 8,
@@ -530,6 +536,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "rogue",
           "companionUpgrades": {},
           "copper": 25,

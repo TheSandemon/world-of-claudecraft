@@ -17,7 +17,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "891f7f6c",
+      "state": "74b14797",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -39,6 +39,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -153,7 +156,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 998,
-      "state": "f033a4ea",
+      "state": "af21458b",
       "events": "10a115cd",
       "rng": {
         "draws": 0,
@@ -164,7 +167,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 998,
-      "state": "9f7679b9",
+      "state": "70f526f6",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -175,7 +178,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 998,
-      "state": "ece15ea0",
+      "state": "9f62d8c7",
       "events": "741638a5",
       "rng": {
         "draws": 149,
@@ -186,7 +189,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 998,
-      "state": "ece15ea0",
+      "state": "9f62d8c7",
       "events": "741638a5",
       "rng": {
         "draws": 149,
@@ -208,6 +211,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
@@ -330,7 +336,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 998,
-      "state": "c6dd06e1",
+      "state": "49485cfe",
       "events": "da762927",
       "rng": {
         "draws": 149,
@@ -352,6 +358,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {
@@ -478,7 +487,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 998,
-      "state": "04b58c28",
+      "state": "b3ab05bd",
       "events": "5f7a17a7",
       "rng": {
         "draws": 149,
@@ -500,6 +509,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {
@@ -627,7 +639,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 998,
-      "state": "dd72f95e",
+      "state": "93ef9e69",
       "events": "219d0235",
       "rng": {
         "draws": 149,
@@ -649,6 +661,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {
@@ -776,7 +791,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 998,
-      "state": "42caf69b",
+      "state": "7b567c18",
       "events": "cb46e600",
       "rng": {
         "draws": 149,
@@ -798,6 +813,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {
@@ -925,7 +943,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 998,
-      "state": "42caf69b",
+      "state": "7b567c18",
       "events": "741638a5",
       "rng": {
         "draws": 149,
@@ -947,6 +965,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {
@@ -1074,7 +1095,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 998,
-      "state": "42caf69b",
+      "state": "7b567c18",
       "events": "741638a5",
       "rng": {
         "draws": 149,
@@ -1096,6 +1117,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {

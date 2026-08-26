@@ -35,7 +35,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "bb7a901a",
+      "state": "e2fac709",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -56,6 +56,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 1000,
@@ -171,7 +174,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "ec90b14b",
+      "state": "b5c11158",
       "events": "5f89933f",
       "rng": {
         "draws": 0,
@@ -192,6 +195,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 710,
@@ -317,7 +323,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "feec94cf",
+      "state": "697bebd6",
       "events": "2e4a7787",
       "rng": {
         "draws": 0,
@@ -338,6 +344,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 710,
@@ -477,7 +486,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "2bc560c2",
+      "state": "487b199d",
       "events": "20062b4c",
       "rng": {
         "draws": 0,
@@ -498,6 +507,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 710,
@@ -637,7 +649,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "a9427a6e",
+      "state": "d145f4c7",
       "events": "548d9ec5",
       "rng": {
         "draws": 0,
@@ -658,6 +670,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 710,
@@ -800,7 +815,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "6ff56c98",
+      "state": "797a2ab9",
       "events": "b20dbed7",
       "rng": {
         "draws": 0,
@@ -821,6 +836,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 710,
@@ -976,7 +994,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "0b72a6c5",
+      "state": "5355c22a",
       "events": "ca5a5724",
       "rng": {
         "draws": 0,
@@ -997,6 +1015,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 710,
@@ -1148,7 +1169,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "f7e24989",
+      "state": "ac282394",
       "events": "a65d27d7",
       "rng": {
         "draws": 0,
@@ -1169,6 +1190,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 710,
@@ -1331,7 +1355,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "1b1cd16c",
+      "state": "1fdbe7d5",
       "events": "6b34a655",
       "rng": {
         "draws": 0,
@@ -1352,6 +1376,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 710,
@@ -1518,7 +1545,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "06affcdf",
+      "state": "cbc07138",
       "events": "ebb4b302",
       "rng": {
         "draws": 0,
@@ -1539,6 +1566,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 710,
@@ -1710,7 +1740,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "0b574f00",
+      "state": "0f7c0c3d",
       "events": "c517cfe8",
       "rng": {
         "draws": 0,
@@ -1731,6 +1761,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 714,
@@ -1908,7 +1941,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "5862caf9",
+      "state": "7b1d2eda",
       "events": "f4d68dcb",
       "rng": {
         "draws": 0,
@@ -1929,6 +1962,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 720,
@@ -2111,7 +2147,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "bd34df80",
+      "state": "02147b15",
       "events": "4144f20d",
       "rng": {
         "draws": 0,
@@ -2132,6 +2168,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 716,
@@ -2310,7 +2349,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 998,
-      "state": "bd34df80",
+      "state": "02147b15",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -2331,6 +2370,9 @@
           ],
           "bank": {},
           "bgRating": 1500,
+          "cards": {
+            "decks": {}
+          },
           "cls": "warrior",
           "companionUpgrades": {},
           "copper": 716,
