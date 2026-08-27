@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { CARD_MASTER_NPC_ID } from '../src/sim/content/card_master';
 import { CARD_OPPONENTS } from '../src/sim/content/cards';
 import { Sim } from '../src/sim/sim';
 import { isCardBotPid } from '../src/sim/social/card_duel_bots';
 import { groundHeight } from '../src/sim/world';
 
-// The Card Master stands in Eastbrook at {13, 2}; the join gates check range.
 function makeWorld(seed = 42) {
   return new Sim({ seed, playerClass: 'warrior', noPlayer: true });
 }
@@ -13,9 +13,16 @@ function seatAtCardMaster(sim: Sim, name: string): number {
   const pid = sim.addPlayer('warrior', name);
   const e = sim.entities.get(pid);
   if (!e) throw new Error('expected an entity');
-  e.pos.x = 13;
-  e.pos.z = 2;
-  e.pos.y = groundHeight(13, 2, sim.cfg.seed);
+  // Stand at the LIVE Card Master (startCardDuelAgainstOpponent gates on
+  // cardMasterInRange); resolved from the world rather than a literal, since
+  // the Eastbrook harbor move relocated the inn he anchors to and a hardcoded
+  // seat silently stops being in range. The same resolution the other Card
+  // Duel suites use.
+  const master = [...sim.entities.values()].find((n) => n.templateId === CARD_MASTER_NPC_ID);
+  if (!master) throw new Error('card_master missing');
+  e.pos.x = master.pos.x;
+  e.pos.z = master.pos.z;
+  e.pos.y = groundHeight(master.pos.x, master.pos.z, sim.cfg.seed);
   e.prevPos = { ...e.pos };
   return pid;
 }
@@ -148,6 +155,10 @@ describe('Card Duel against a named regular', () => {
     const match = sim.cardDuelMatchFor(a);
     if (!match) throw new Error('expected a live match');
     expect(match.bot).toBeNull();
+    // Same shortening the bot arms use: a 100-health match is 20-plus rounds of
+    // the SAME code path, and what this arm checks is that a human match credits
+    // one win, not how long the health takes to spend.
+    shortenMatch(sim, a);
     let guard = 0;
     while (sim.cardDuelMatchFor(a) !== null && guard++ < 400) {
       const live = sim.cardDuelMatchFor(a);
@@ -156,6 +167,10 @@ describe('Card Duel against a named regular', () => {
       const low = [...live.state.b.cards.hand].sort((x, y) => x.value - y.value)[0];
       if (high) sim.playCardInDuel(high.iid, a);
       if (low) sim.playCardInDuel(low.iid, b);
+      // A resolved round now plays its narration out before the next one opens,
+      // and narration advances on the sim clock: without a tick the match never
+      // reaches a second round and nothing is ever credited.
+      sim.tick();
     }
     const metaA = sim.players.get(a);
     const metaB = sim.players.get(b);

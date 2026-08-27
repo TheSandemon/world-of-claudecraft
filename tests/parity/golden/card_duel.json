@@ -9,8 +9,8 @@
     "refillHand rng draws (round resolution, both sides)",
     "mid-refill reshuffle (the deck runs dry partway through one refill)"
   ],
-  "draws": 6,
-  "drawDigest": "2ea58598",
+  "draws": 78,
+  "drawDigest": "cf1b35c9",
   "frames": [
     {
       "tick": 0,
@@ -30,99 +30,99 @@
       "tick": 5,
       "time": 0.25,
       "nextId": 999,
-      "state": "9a5864ac",
-      "events": "2e9cd542",
+      "state": "bbbe0bf8",
+      "events": "dbe39e25",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 10,
       "time": 0.5,
       "nextId": 999,
-      "state": "da7081f7",
+      "state": "7915e727",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 15,
       "time": 0.75,
       "nextId": 999,
-      "state": "ba8df01d",
+      "state": "26713275",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 20,
       "time": 1,
       "nextId": 999,
-      "state": "6b0f12a0",
+      "state": "f0fd3cfa",
       "events": "7f81a8b0",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 25,
       "time": 1.25,
       "nextId": 999,
-      "state": "0fd7b813",
+      "state": "74290159",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 30,
       "time": 1.5,
       "nextId": 999,
-      "state": "74cbba72",
+      "state": "17f54b70",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 35,
       "time": 1.75,
       "nextId": 999,
-      "state": "2e329e0a",
+      "state": "c78e73b0",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 40,
       "time": 2,
       "nextId": 999,
-      "state": "08f55abf",
+      "state": "c2fc0715",
       "events": "741638a5",
       "rng": {
-        "draws": 0,
-        "digest": "811c9dc5"
+        "draws": 72,
+        "digest": "59862d00"
       }
     },
     {
       "tick": 41,
       "time": 2.05,
       "nextId": 999,
-      "state": "50e459b6",
+      "state": "c251dc2c",
       "events": "741638a5",
       "rng": {
-        "draws": 6,
-        "digest": "2ea58598"
+        "draws": 78,
+        "digest": "cf1b35c9"
       },
       "label": "final",
       "players": [
@@ -154,9 +154,6 @@
               "eastbrook_buckler",
               "recruit_tunic",
               "worn_sword"
-            ],
-            "visited": [
-              "poi:eastbrook_vale:wolf_run"
             ]
           },
           "delveClears": {},
@@ -216,9 +213,6 @@
               "baked_bread",
               "gnarled_staff",
               "spring_water"
-            ],
-            "visited": [
-              "poi:eastbrook_vale:wolf_run"
             ]
           },
           "delveClears": {},
@@ -276,7 +270,7 @@
           "critChance": 0.06,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.06,
-          "fallStartY": 5.203283,
+          "fallStartY": 0.516044,
           "fiveSecondRule": 101.05,
           "hp": 100,
           "id": 997,
@@ -291,9 +285,9 @@
           "overpowerUntil": -1,
           "petMode": "defensive",
           "pos": {
-            "x": 13,
-            "y": 5.203283,
-            "z": 2
+            "x": 20,
+            "y": 0.516044,
+            "z": -98
           },
           "potionCooldownUntil": -1,
           "resourceType": "rage",
@@ -326,7 +320,7 @@
           "critChance": 0.056,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.056,
-          "fallStartY": 5.203283,
+          "fallStartY": 0.516044,
           "fiveSecondRule": 101.05,
           "hp": 54,
           "id": 998,
@@ -340,9 +334,9 @@
           "overpowerUntil": -1,
           "petMode": "defensive",
           "pos": {
-            "x": 13,
-            "y": 5.203283,
-            "z": 2
+            "x": 20,
+            "y": 0.516044,
+            "z": -98
           },
           "potionCooldownUntil": -1,
           "resource": 195,

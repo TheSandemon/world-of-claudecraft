@@ -22,6 +22,7 @@
 // in a way the sim itself does not already expose.
 
 import { supportHeightAt } from '../../src/sim/colliders';
+import { CARD_MASTER_NPC_ID } from '../../src/sim/content/card_master';
 import {
   arenaOrigin,
   DELVES,
@@ -4656,26 +4657,40 @@ function cardDuel(): Scenario {
       const sim = rec.sim;
       const a = sim.addPlayer('warrior', 'Aleph');
       const b = sim.addPlayer('mage', 'Bet');
-      teleport(sim, requireEntity(sim, a, 'parity scenario entity'), 13, 2);
-      teleport(sim, requireEntity(sim, b, 'parity scenario entity'), 13, 2);
+      // Both seats stand at the LIVE Card Master: joinCardDuelQueue gates on
+      // cardMasterInRange, so a hardcoded seat that stops being in range makes
+      // this whole scenario a no-op that still records a golden. It did: the
+      // Eastbrook harbor move relocated him, and the recorded trace fell to six
+      // rng draws with every coverage claim above dead.
+      const master = [...sim.entities.values()].find(
+        (e: AnyEntity) => e.templateId === CARD_MASTER_NPC_ID,
+      );
+      if (!master) throw new Error('card_master missing from the parity world');
+      for (const pid of [a, b]) {
+        teleport(
+          sim,
+          requireEntity(sim, pid, 'parity scenario entity'),
+          master.pos.x,
+          master.pos.z,
+        );
+      }
       sim.joinCardDuelQueue(a);
       sim.joinCardDuelQueue(b);
       rec.tick(1); // updateCardDuelQueue() matchmakes the pair (createCardHand x2)
       const match = sim.cardDuelMatchFor(a);
-      if (match) {
-        // Force the case the refill rule is easy to get wrong: the deck runs
-        // dry PARTWAY THROUGH one refill, so the discard has to shuffle back in
-        // and the same refill continue. Each side keeps one card in the deck
-        // and sheds two from hand, so the post-round refill needs three draws
-        // from a one-card deck. Pure state movement, no rng, so the draw log
-        // below is entirely the engine's own.
-        for (const side of [match.state.a, match.state.b]) {
-          side.cards.discard.push(...side.cards.deck.splice(1));
-          side.cards.discard.push(...side.cards.hand.splice(2));
-        }
-        sim.playCardInDuel(match.state.a.cards.hand[0].iid, a);
-        sim.playCardInDuel(match.state.b.cards.hand[0].iid, b); // resolves the round
+      if (!match) throw new Error('card_duel scenario recorded no match: the queue gate refused');
+      // Force the case the refill rule is easy to get wrong: the deck runs
+      // dry PARTWAY THROUGH one refill, so the discard has to shuffle back in
+      // and the same refill continue. Each side keeps one card in the deck
+      // and sheds two from hand, so the post-round refill needs three draws
+      // from a one-card deck. Pure state movement, no rng, so the draw log
+      // below is entirely the engine's own.
+      for (const side of [match.state.a, match.state.b]) {
+        side.cards.discard.push(...side.cards.deck.splice(1));
+        side.cards.discard.push(...side.cards.hand.splice(2));
       }
+      sim.playCardInDuel(match.state.a.cards.hand[0].iid, a);
+      sim.playCardInDuel(match.state.b.cards.hand[0].iid, b); // resolves the round
       rec.tick(20 * 2);
     },
   };
