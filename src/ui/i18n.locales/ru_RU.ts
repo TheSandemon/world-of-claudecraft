@@ -14036,6 +14036,7 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'cardDuel.waitingReveal': 'Раскрытие раунда',
   'cardDuel.healthAria': '{name}: здоровье {hp} из {max}',
   'cardDuel.roundsWon': 'Выиграно раундов: {count}',
+  'cardDuel.pileDiscardTheirs': 'Сброс противника',
   'cardDuel.pileDiscard': 'Сброс: {count}',
   'cardDuel.stageIdle': 'На столе пусто',
   'cardDuel.beat.deal': 'Карты выложены',

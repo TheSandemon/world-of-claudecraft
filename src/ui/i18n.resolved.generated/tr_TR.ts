@@ -7334,6 +7334,7 @@ export const tr_TR: EnTranslations = {
       "Bandit": "Bandit"
     },
     "counter": {
+      "Pack": "Pack",
       "Web": "Web",
       "Dread": "Dread"
     },

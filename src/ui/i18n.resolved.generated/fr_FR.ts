@@ -7334,6 +7334,7 @@ export const fr_FR: EnTranslations = {
       "Bandit": "Bandit"
     },
     "counter": {
+      "Pack": "Pack",
       "Web": "Web",
       "Dread": "Dread"
     },

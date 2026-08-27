@@ -23,7 +23,7 @@ function liveInfo(over: Partial<NonNullable<CardMinigameInfo['match']>> = {}): C
       opponent: { pid: 2, name: 'Bo' },
       hand: [
         { iid: 11, cardId: 'briarpack_wolves_howl', value: 3 },
-        { iid: 12, cardId: 'pack_alpha', value: 6 },
+        { iid: 12, cardId: 'briarpack_wolves_moonrun', value: 6 },
       ],
       deckCount: 14,
       discardCount: 2,
@@ -247,13 +247,15 @@ describe('card duel window clock and round theater', () => {
     expect(root.querySelectorAll('[data-cd-oppohand] .dt-oppo-back').length).toBe(4);
     expect(root.querySelector('[data-cd-oppohand] .cf')).toBeNull();
 
-    setInfo(liveInfo({ opponentRevealed: [{ iid: 90, cardId: 'grave_rat', value: 2 }] }));
+    setInfo(
+      liveInfo({ opponentRevealed: [{ iid: 90, cardId: 'briarpack_wolves_hunt', value: 2 }] }),
+    );
     win.render();
     const row = root.querySelector('[data-cd-oppohand]') as HTMLElement;
     // One of the four places is now a real card; the other three stay down.
     expect(row.querySelectorAll('.cf').length).toBe(1);
     expect(row.querySelectorAll('.dt-oppo-back').length).toBe(3);
-    expect(row.textContent).toContain('Grave Rat');
+    expect(row.textContent).toContain('Hunt');
   });
 
   it('shrinks the opponent hand as they commit, so the row is their real hand', () => {
@@ -271,8 +273,8 @@ describe('card duel window clock and round theater', () => {
       liveInfo({
         opponentHandCount: 1,
         opponentRevealed: [
-          { iid: 90, cardId: 'grave_rat', value: 2 },
-          { iid: 91, cardId: 'forest_wolf', value: 3 },
+          { iid: 90, cardId: 'briarpack_wolves_hunt', value: 2 },
+          { iid: 91, cardId: 'briarpack_wolves_howl', value: 3 },
         ],
       }),
     );
@@ -290,14 +292,19 @@ describe('card duel window clock and round theater', () => {
       liveInfo({
         activeEffects: [
           { mine: false, cardId: 'grave_candle', amount: 2, duration: 'untilTriggered' },
-          { mine: true, cardId: 'stablemaster', amount: 2, duration: 'untilTriggered' },
+          {
+            mine: true,
+            cardId: 'eastbrook_company_rangers_stable_shift',
+            amount: 2,
+            duration: 'untilTriggered',
+          },
         ],
       }),
     );
     win.render();
     const chips = [...root.querySelectorAll('.dt-fx')] as HTMLElement[];
     expect(chips.map((c) => c.dataset.side)).toEqual(['mine', 'theirs']);
-    expect(chips[0].textContent).toContain('Stablemaster');
+    expect(chips[0].textContent).toContain('Stable Shift');
     expect(chips[0].textContent).toContain('+2');
     // The source card's own sentence is the explanation, so it is the chip's
     // accessible name rather than a second copy of the wording.
@@ -308,7 +315,7 @@ describe('card duel window clock and round theater', () => {
     // The complaint this answers: a hand card is too small to show its rules
     // sentence, so a player could see what a card was worth and not what it did.
     const { win, root, setInfo } = makeWindow();
-    setInfo(liveInfo({ hand: [{ iid: 11, cardId: 'pack_alpha', value: 6 }] }));
+    setInfo(liveInfo({ hand: [{ iid: 11, cardId: 'briarpack_wolves_moonrun', value: 6 }] }));
     win.render();
     const card = root.querySelector('[data-cd-hand] [data-inspect]') as HTMLElement;
     expect(card.dataset.inspect).toBe('11');
@@ -316,18 +323,22 @@ describe('card duel window clock and round theater', () => {
     Object.defineProperty(hover, 'pointerType', { value: 'mouse' });
     card.dispatchEvent(hover);
     const peek = () => document.querySelector('.cf-inspect') as HTMLElement | null;
-    expect(peek()?.textContent).toContain('Pack Alpha');
-    expect(peek()?.querySelector('.cf-rules')?.textContent).toContain('Beast');
+    expect(peek()?.textContent).toContain('Moonrun');
+    expect(peek()?.querySelector('.cf-rules')?.textContent).toContain('Pack');
 
     // A repricing repaints the hand under the peek: it must follow the card,
     // with the new numbers, rather than describe a node that is gone.
-    setInfo(liveInfo({ hand: [{ iid: 11, cardId: 'pack_alpha', value: 6, pendingDelta: 2 }] }));
+    setInfo(
+      liveInfo({
+        hand: [{ iid: 11, cardId: 'briarpack_wolves_moonrun', value: 6, pendingDelta: 2 }],
+      }),
+    );
     win.render();
     expect(peek()?.style.display).toBe('block');
     expect(peek()?.querySelector('.cf-value')?.textContent).toBe('8');
 
     // Played out of the hand: nothing to describe, so nothing is shown.
-    setInfo(liveInfo({ hand: [{ iid: 12, cardId: 'forest_wolf', value: 3 }] }));
+    setInfo(liveInfo({ hand: [{ iid: 12, cardId: 'briarpack_wolves_howl', value: 3 }] }));
     win.render();
     expect(peek()?.style.display).toBe('none');
   });
@@ -336,7 +347,9 @@ describe('card duel window clock and round theater', () => {
     // What a player asked for: the real number big, and a small chip saying how
     // far it moved.
     const { win, root, setInfo } = makeWindow();
-    setInfo(liveInfo({ hand: [{ iid: 11, cardId: 'forest_wolf', value: 3, pendingDelta: 2 }] }));
+    setInfo(
+      liveInfo({ hand: [{ iid: 11, cardId: 'briarpack_wolves_howl', value: 3, pendingDelta: 2 }] }),
+    );
     win.render();
     const face = root.querySelector('[data-cd-hand] .cf') as HTMLElement;
     expect(face.querySelector('.cf-value')?.textContent).toBe('5');
@@ -365,8 +378,8 @@ describe('card duel window clock and round theater', () => {
         theirs: 3,
         mineBase: 3,
         theirsBase: 3,
-        mineCardId: 'forest_wolf',
-        theirsCardId: 'grave_rat',
+        mineCardId: 'briarpack_wolves_howl',
+        theirsCardId: 'briarpack_wolves_hunt',
         outcome: 'win',
         reshuffled: false,
       }),
@@ -375,13 +388,13 @@ describe('card duel window clock and round theater', () => {
     expect(stage.textContent).toContain('5');
     expect(stage.textContent).toContain('3');
     // The two cards that actually clashed, not two bare numbers.
-    expect(stage.textContent).toContain('Forest Wolf');
-    expect(stage.textContent).toContain('Grave Rat');
+    expect(stage.textContent).toContain('Howl');
+    expect(stage.textContent).toContain('Hunt');
 
     // A later render must not wipe it: the shell signature has not moved, so
     // the narration of the round that just resolved survives.
     win.render();
-    expect(stage.textContent).toContain('Forest Wolf');
+    expect(stage.textContent).toContain('Howl');
   });
 
   it('a hand refill repaints the hand without touching the stage mid-timeline', () => {
@@ -391,7 +404,9 @@ describe('card duel window clock and round theater', () => {
     win.render();
     const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
     win.showReveal({ mine: 5, theirs: 3, outcome: 'win', reshuffled: false });
-    setInfo(liveInfo({ hand: [{ iid: 21, cardId: 'grave_rat', value: 2 }], deckCount: 13 }));
+    setInfo(
+      liveInfo({ hand: [{ iid: 21, cardId: 'briarpack_wolves_hunt', value: 2 }], deckCount: 13 }),
+    );
     win.render();
     expect(root.querySelectorAll('[data-cd-hand] .cf').length).toBe(1);
     expect(root.querySelector('[data-cd-stage]')).toBe(stage);
@@ -403,16 +418,16 @@ describe('card duel window clock and round theater', () => {
     // and playability all stay put, so it has to ride the hand signature.
     const { win, root, setInfo } = makeWindow();
     const scaling = (amount: number) => [
-      { iid: 11, cardId: 'grave_rat', value: 2, textValues: { amount } },
+      { iid: 11, cardId: 'briarpack_wolves_hunt', value: 2, textValues: { amount } },
     ];
     setInfo(liveInfo({ hand: scaling(1) }));
     win.render();
     const rules = () =>
       (root.querySelector('[data-cd-hand] .cf-rules') as HTMLElement).textContent ?? '';
-    expect(rules()).toContain('-1');
+    expect(rules()).toContain('+1');
     setInfo(liveInfo({ hand: scaling(3) }));
     win.render();
-    expect(rules()).toContain('-3');
+    expect(rules()).toContain('+3');
     expect(rules()).not.toContain('-1');
   });
 
@@ -545,14 +560,14 @@ describe('card duel window clock and round theater', () => {
         theirs: 2,
         mineBase: 4,
         theirsBase: 2,
-        mineCardId: 'forest_wolf',
-        theirsCardId: 'grave_rat',
+        mineCardId: 'briarpack_wolves_howl',
+        theirsCardId: 'briarpack_wolves_hunt',
         outcome: 'win',
         reshuffled: false,
         steps: [
           {
             side: 'mine',
-            cardId: 'stablemaster',
+            cardId: 'eastbrook_company_rangers_stable_shift',
             effect: 'modifyValue',
             target: 'mine',
             amount: 2,
@@ -572,7 +587,7 @@ describe('card duel window clock and round theater', () => {
       vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.reveal);
       // The step beat: the card that did it, the number it moved, and whose
       // card it moved it on.
-      expect(line()).toBe('Stablemaster: +2 to your card');
+      expect(line()).toBe("6 Rangers' Stable Shift: +2 to your card");
       vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.step);
       expect(line()).toBe('The cards clash');
       vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.clash);
@@ -599,7 +614,7 @@ describe('card duel window clock and round theater', () => {
     setInfo(
       liveInfo({
         waitingOnOpponent: true,
-        myPlayedCard: { iid: 11, cardId: 'forest_wolf', value: 3 },
+        myPlayedCard: { iid: 11, cardId: 'briarpack_wolves_howl', value: 3 },
       }),
     );
     win.render();
@@ -610,7 +625,7 @@ describe('card duel window clock and round theater', () => {
       liveInfo({
         waitingOnOpponent: true,
         opponentCommitted: true,
-        myPlayedCard: { iid: 11, cardId: 'forest_wolf', value: 3 },
+        myPlayedCard: { iid: 11, cardId: 'briarpack_wolves_howl', value: 3 },
       }),
     );
     win.render();
@@ -629,8 +644,8 @@ describe('card duel window clock and round theater', () => {
       win.showReveal({
         mine: 6,
         theirs: 2,
-        mineCardId: 'forest_wolf',
-        theirsCardId: 'grave_rat',
+        mineCardId: 'briarpack_wolves_howl',
+        theirsCardId: 'briarpack_wolves_hunt',
         outcome: 'win',
         reshuffled: false,
       });
@@ -638,22 +653,22 @@ describe('card duel window clock and round theater', () => {
       // plays, so the "does the result survive" question is only meaningful
       // once it has finished telling the round.
       vi.advanceTimersByTime(20000);
-      expect(stage.textContent).toContain('Forest Wolf');
+      expect(stage.textContent).toContain('Howl');
 
       setInfo(liveInfo({ round: 2 }));
       win.render();
-      expect(stage.textContent).toContain('Forest Wolf');
+      expect(stage.textContent).toContain('Howl');
 
       // Playing the next card is what clears it.
       setInfo(
         liveInfo({
           round: 2,
           waitingOnOpponent: true,
-          myPlayedCard: { iid: 12, cardId: 'pack_alpha', value: 6 },
+          myPlayedCard: { iid: 12, cardId: 'briarpack_wolves_moonrun', value: 6 },
         }),
       );
       win.render();
-      expect(stage.textContent).not.toContain('Forest Wolf');
+      expect(stage.textContent).not.toContain('Howl');
     } finally {
       vi.useRealTimers();
     }
@@ -691,7 +706,7 @@ describe('card duel window clock and round theater', () => {
       maxHp: 100,
       damageDealt: 100,
       damageTaken: 66,
-      bestHit: { round: 4, cardId: 'pack_alpha', amount: 14 },
+      bestHit: { round: 4, cardId: 'briarpack_wolves_moonrun', amount: 14 },
       opponentId: 'gravedigger_ossa',
     });
     const panel = () => root.querySelector('.dt-sum') as HTMLElement | null;
@@ -699,7 +714,7 @@ describe('card duel window clock and round theater', () => {
     expect(panel()?.textContent).toContain('You win the duel');
     expect(panel()?.textContent).toContain('Ossa');
     expect(panel()?.textContent).toContain('34/100');
-    expect(panel()?.textContent).toContain('14 with Pack Alpha, round 4');
+    expect(panel()?.textContent).toContain("14 with 6 Wolves' Moonrun, round 4");
 
     // The snapshot has already gone back to "no match", and the summary
     // survives it.
@@ -773,7 +788,7 @@ describe('card duel window clock and round theater', () => {
         steps: [
           {
             side: 'mine',
-            cardId: 'stablemaster',
+            cardId: 'eastbrook_company_rangers_stable_shift',
             effect: 'modifyValue',
             target: 'mine',
             amount: 2,

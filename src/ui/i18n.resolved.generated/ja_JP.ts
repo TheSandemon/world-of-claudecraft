@@ -7334,6 +7334,7 @@ export const ja_JP: EnTranslations = {
       "Bandit": "盗賊"
     },
     "counter": {
+      "Pack": "群れ",
       "Web": "Web",
       "Dread": "恐怖"
     },
@@ -8229,7 +8230,7 @@ export const ja_JP: EnTranslations = {
     "durationMatchEnd": "この対戦の残り",
     "pileDeck": "Deck: {count}",
     "pileDiscard": "捨て札：{count}",
-    "pileDiscardTheirs": "Opponent's discard pile",
+    "pileDiscardTheirs": "相手の捨札",
     "stageIdle": "テーブルにカードはありません",
     "damageMine": "あなたに{amount}ダメージ",
     "damageTheirs": "相手に{amount}ダメージ",

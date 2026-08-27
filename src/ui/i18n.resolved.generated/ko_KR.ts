@@ -7334,6 +7334,7 @@ export const ko_KR: EnTranslations = {
       "Bandit": "도적"
     },
     "counter": {
+      "Pack": "무리",
       "Web": "Web",
       "Dread": "공포"
     },
@@ -8229,7 +8230,7 @@ export const ko_KR: EnTranslations = {
     "durationMatchEnd": "이번 대전 내내",
     "pileDeck": "Deck: {count}",
     "pileDiscard": "버린 카드: {count}",
-    "pileDiscardTheirs": "Opponent's discard pile",
+    "pileDiscardTheirs": "상대의 버린 더미",
     "stageIdle": "테이블이 비어 있습니다",
     "damageMine": "당신이 {amount} 피해를 입음",
     "damageTheirs": "상대가 {amount} 피해를 입음",

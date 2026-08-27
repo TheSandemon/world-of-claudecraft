@@ -7334,6 +7334,7 @@ export const zh_CN: EnTranslations = {
       "Bandit": "强盗"
     },
     "counter": {
+      "Pack": "狼群",
       "Web": "Web",
       "Dread": "恐惧"
     },
@@ -8229,7 +8230,7 @@ export const zh_CN: EnTranslations = {
     "durationMatchEnd": "本局剩余时间",
     "pileDeck": "Deck: {count}",
     "pileDiscard": "弃牌堆：{count}",
-    "pileDiscardTheirs": "Opponent's discard pile",
+    "pileDiscardTheirs": "对手的弃牌堆",
     "stageIdle": "牌桌上还没有牌",
     "damageMine": "你受到 {amount} 点伤害",
     "damageTheirs": "对手受到 {amount} 点伤害",

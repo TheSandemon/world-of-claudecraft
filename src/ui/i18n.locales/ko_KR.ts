@@ -13856,6 +13856,7 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'cardDuel.waitingReveal': '라운드를 공개하는 중',
   'cardDuel.healthAria': '{name}: 체력 {hp}/{max}',
   'cardDuel.roundsWon': '이긴 라운드: {count}',
+  'cardDuel.pileDiscardTheirs': '상대의 버린 더미',
   'cardDuel.pileDiscard': '버린 카드: {count}',
   'cardDuel.stageIdle': '테이블이 비어 있습니다',
   'cardDuel.beat.deal': '카드를 내려놓음',

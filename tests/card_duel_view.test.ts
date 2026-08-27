@@ -187,7 +187,10 @@ describe('card_duel_view', () => {
       decks: noDecks,
       match: {
         opponent: { pid: 2, name: 'Bo' },
-        hand: [wireCard(41, 3, 'forest_wolf'), wireCard(42, 3, 'bramble_sprite')],
+        hand: [
+          wireCard(41, 3, 'briarpack_wolves_howl'),
+          wireCard(42, 3, 'briarpack_wolves_ambush'),
+        ],
         deckCount: 15,
         discardCount: 3,
         myRounds: 0,

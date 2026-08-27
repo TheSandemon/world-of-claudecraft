@@ -7334,6 +7334,7 @@ export const en_XA: EnTranslations = {
       "Bandit": "[Ɓáñðíţ]"
     },
     "counter": {
+      "Pack": "[Þáçķ]",
       "Web": "[Ŵéƀ]",
       "Dread": "[Ðŕéáð]"
     },

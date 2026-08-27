@@ -5,7 +5,7 @@ import { cardFaceHtml } from '../src/ui/cards/card_face_markup';
 import { buildCardFaceModel } from '../src/ui/cards/card_face_view';
 import { CardInspector } from '../src/ui/cards/card_inspect';
 
-const WOLF = 'forest_wolf';
+const WOLF = 'briarpack_wolves_howl';
 
 function model(iid = 7, over: Parameters<typeof buildCardFaceModel>[2] = {}) {
   const def = cardById(WOLF);
@@ -57,7 +57,7 @@ describe('card inspector', () => {
     const box = popup() as HTMLElement;
     expect(box.style.display).toBe('block');
     expect(box.querySelector('.cf-size-inspect')).not.toBeNull();
-    expect(box.textContent).toContain('Forest Wolf');
+    expect(box.textContent).toContain('Howl');
     // The rules sentence is the whole point: it is present, and at a size the
     // stylesheet shows rather than hides.
     expect(box.querySelector('.cf-rules')?.textContent).toBeTruthy();

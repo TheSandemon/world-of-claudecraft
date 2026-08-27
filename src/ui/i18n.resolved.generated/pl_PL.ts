@@ -7334,6 +7334,7 @@ export const pl_PL: EnTranslations = {
       "Bandit": "Bandit"
     },
     "counter": {
+      "Pack": "Pack",
       "Web": "Web",
       "Dread": "Dread"
     },

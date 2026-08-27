@@ -261,22 +261,28 @@ describe('card_duel', () => {
     // highest card and side B its lowest, which reliably breaks pushes so the
     // match converges instead of tying forever.
     let guard = 0;
+    let winnerPid = 1;
     while (cardDuelMatchFor(ctx, 1) !== null && guard < 500) {
       const match = cardDuelMatchFor(ctx, 1);
       if (!match) break;
       skipNarration(ctx, match);
       playCardInDuel(ctx, highestCard(match.state.a.cards.hand).iid, 1);
       playCardInDuel(ctx, lowestCard(match.state.b.cards.hand).iid, 2);
+      // Every card carries effects now, so "A spent its highest card" no longer
+      // means A took the round: a 2 that reads +21 beats a 9. Read the winner
+      // off the health the match is actually decided on rather than assuming
+      // the seat, which keeps the credit assertion below pointed at the WINNER
+      // (a loser-credited bug still fails) without asserting a premise the
+      // catalog no longer guarantees.
+      winnerPid = match.state.a.hp >= match.state.b.hp ? 1 : 2;
       guard++;
     }
     expect(cardDuelMatchFor(ctx, 1)).toBeNull();
     expect(cardDuelMatchFor(ctx, 2)).toBeNull();
     expect(bumpDeedStat).toHaveBeenCalledTimes(1);
-    // Side A always plays its highest card, side B its lowest, so A wins
-    // every non-push round: assert the credited meta is actually A's, not
-    // just that some meta was credited (a loser-credited bug would pass
-    // without this).
-    expect(bumpDeedStat.mock.calls[0][0]).toBe(players.get(1));
+    // The credited meta must be the WINNER's, not just some meta: a
+    // loser-credited bug would pass without this.
+    expect(bumpDeedStat.mock.calls[0][0]).toBe(players.get(winnerPid));
     expect(bumpDeedStat.mock.calls[0][1]).toBe('cardDuelsWon');
     expect(bumpDeedStat.mock.calls[0][2]).toBe(1);
   });
@@ -651,7 +657,7 @@ describe('card_duel', () => {
     // A deck legal when saved can become illegal as the catalog changes, so
     // the authoritative host validates at every match start, never on save
     // alone, and degrades instead of blocking play.
-    const illegal = [{ cardId: 'forest_wolf', value: 3 as const }];
+    const illegal = [{ cardId: 'briarpack_wolves_howl', value: 3 as const }];
     expect(deckForPlayer(illegal)).toBe(DEFAULT_DECK_LIST);
     expect(deckForPlayer(undefined)).toBe(DEFAULT_DECK_LIST);
     expect(deckForPlayer(DEFAULT_DECK_LIST)).toBe(DEFAULT_DECK_LIST);

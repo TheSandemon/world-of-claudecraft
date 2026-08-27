@@ -7334,6 +7334,7 @@ export const cs_CZ: EnTranslations = {
       "Bandit": "Bandit"
     },
     "counter": {
+      "Pack": "Pack",
       "Web": "Web",
       "Dread": "Dread"
     },

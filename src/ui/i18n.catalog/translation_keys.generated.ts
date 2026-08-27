@@ -603,6 +603,7 @@ export type TranslationKeyFlat =
   | 'cards.card.playDetail'
   | 'cards.card.valueLabel'
   | 'cards.counter.Dread'
+  | 'cards.counter.Pack'
   | 'cards.counter.Web'
   | 'cards.name.ashen_flight_dragons_ashfall'
   | 'cards.name.ashen_flight_dragons_bridge_roast'

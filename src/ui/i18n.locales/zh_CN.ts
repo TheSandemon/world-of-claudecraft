@@ -13568,6 +13568,7 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'cardDuel.waitingReveal': '正在揭示本轮',
   'cardDuel.healthAria': '{name}：生命 {hp}/{max}',
   'cardDuel.roundsWon': '已胜回合：{count}',
+  'cardDuel.pileDiscardTheirs': '对手的弃牌堆',
   'cardDuel.pileDiscard': '弃牌堆：{count}',
   'cardDuel.stageIdle': '牌桌上还没有牌',
   'cardDuel.beat.deal': '牌已扣下',

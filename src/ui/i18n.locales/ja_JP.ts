@@ -13857,6 +13857,7 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'cardDuel.waitingReveal': 'ラウンドを公開しています',
   'cardDuel.healthAria': '{name}：体力{hp}/{max}',
   'cardDuel.roundsWon': '勝ちラウンド：{count}',
+  'cardDuel.pileDiscardTheirs': '相手の捨札',
   'cardDuel.pileDiscard': '捨て札：{count}',
   'cardDuel.stageIdle': 'テーブルにカードはありません',
   'cardDuel.beat.deal': 'カードを伏せた',

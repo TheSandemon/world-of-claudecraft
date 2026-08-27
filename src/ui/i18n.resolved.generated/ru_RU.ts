@@ -7334,6 +7334,7 @@ export const ru_RU: EnTranslations = {
       "Bandit": "Бандит"
     },
     "counter": {
+      "Pack": "Стая",
       "Web": "Web",
       "Dread": "Ужас"
     },
@@ -8229,7 +8230,7 @@ export const ru_RU: EnTranslations = {
     "durationMatchEnd": "до конца матча",
     "pileDeck": "Deck: {count}",
     "pileDiscard": "Сброс: {count}",
-    "pileDiscardTheirs": "Opponent's discard pile",
+    "pileDiscardTheirs": "Сброс противника",
     "stageIdle": "На столе пусто",
     "damageMine": "Вы получаете {amount}",
     "damageTheirs": "Противник получает {amount}",
