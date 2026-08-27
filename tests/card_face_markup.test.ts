@@ -11,8 +11,12 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 // client and the standalone /cards playtest slice load (see that file's header).
 const CARDS_CSS = readFileSync(path.join(here, '..', 'src', 'styles', 'cards.css'), 'utf8');
 
-const wolf = cardById('forest_wolf');
-const alpha = cardById('pack_alpha');
+// A value-3 Beast with rules text, and a value-6 card whose bonus SCALES: the
+// two shapes the face has to render differently.
+const WOLF_ID = 'briarpack_wolves_howl';
+const SCALER_ID = 'briarpack_wolves_moonrun';
+const wolf = cardById(WOLF_ID);
+const scaler = cardById(SCALER_ID);
 
 function faceOf(id: string, over: Parameters<typeof buildCardFaceModel>[2] = {}) {
   const def = cardById(id);
@@ -25,20 +29,21 @@ function faceOf(id: string, over: Parameters<typeof buildCardFaceModel>[2] = {})
 describe('card face markup', () => {
   it('paints the name and rules text as real localized text, never a key id', () => {
     expect(wolf).toBeDefined();
-    const html = faceOf('forest_wolf');
-    expect(html).toContain('Forest Wolf');
+    const html = faceOf(WOLF_ID);
+    expect(html).toContain('Howl');
     expect(html).toContain('Beast');
     expect(html).not.toContain('cards.name.');
-    expect(html).not.toContain('forest_wolf_text');
+    expect(html).not.toContain('cards.text.');
+    expect(html).not.toContain(WOLF_ID);
   });
 
   it('shows the effective value, and the printed value only when an effect moved it', () => {
-    const plain = faceOf('forest_wolf');
+    const plain = faceOf(WOLF_ID);
     expect(plain).toContain('cf-value');
     expect(plain).not.toContain('cf-base');
     expect(plain).not.toContain('cf-delta');
 
-    const buffed = faceOf('forest_wolf', { effectiveValue: 5 });
+    const buffed = faceOf(WOLF_ID, { effectiveValue: 5 });
     expect(buffed).toContain('cf-delta-up');
     expect(buffed).toContain('+2');
     // Both numbers are present at once: the player never has to remember what
@@ -47,7 +52,7 @@ describe('card face markup', () => {
   });
 
   it('falls back to a procedural panel rather than a broken image when art is uncommissioned', () => {
-    const html = faceOf('forest_wolf');
+    const html = faceOf(WOLF_ID);
     // No paintings are committed yet, so every card is on the fallback today.
     expect(html).toContain('cf-art-procedural');
     expect(html).toContain('data-tribe="Beast"');
@@ -55,17 +60,18 @@ describe('card face markup', () => {
   });
 
   it('prefers the values the sim resolved over a static re-derivation', () => {
-    expect(alpha).toBeDefined();
+    expect(scaler).toBeDefined();
     const live = cardFaceHtml(
       buildCardFaceModel(
-        { iid: 3, cardId: 'pack_alpha', value: 6, textValues: { amount: 4 } },
-        alpha,
+        { iid: 3, cardId: SCALER_ID, value: 6, textValues: { rate: 1, amount: 4 } },
+        scaler,
       ),
       { catalog: CARD_CATALOG },
     );
-    // The sentence has no {amount} placeholder, but the resolution path must
-    // still be the wire one: no crash, and the text is the authored sentence.
-    expect(live).toContain('every two Beasts');
+    // The wire values win over a static re-derivation: the card says +4 because
+    // that is what the sim priced this round, not the 0 an empty match reads.
+    expect(live).toContain('for each Pack you have');
+    expect(live).toContain('+4');
   });
 
   it('escapes every interpolated string', () => {
@@ -78,11 +84,11 @@ describe('card face markup', () => {
   });
 
   it('renders as a button only when it is a play target', () => {
-    const cell = faceOf('forest_wolf', { size: 'cell' });
+    const cell = faceOf(WOLF_ID, { size: 'cell' });
     expect(cell.startsWith('<div')).toBe(true);
-    const def = cardById('forest_wolf');
+    const def = cardById(WOLF_ID);
     const hand = cardFaceHtml(
-      buildCardFaceModel({ iid: 7, cardId: 'forest_wolf', value: 3 }, def, { playable: true }),
+      buildCardFaceModel({ iid: 7, cardId: WOLF_ID, value: 3 }, def, { playable: true }),
       { catalog: CARD_CATALOG, playAttribute: 'data-play' },
     );
     expect(hand.startsWith('<button')).toBe(true);
@@ -91,9 +97,9 @@ describe('card face markup', () => {
   });
 
   it('disables the face while the player is waiting on the opponent', () => {
-    const def = cardById('forest_wolf');
+    const def = cardById(WOLF_ID);
     const locked = cardFaceHtml(
-      buildCardFaceModel({ iid: 7, cardId: 'forest_wolf', value: 3 }, def, { playable: false }),
+      buildCardFaceModel({ iid: 7, cardId: WOLF_ID, value: 3 }, def, { playable: false }),
       { catalog: CARD_CATALOG, playAttribute: 'data-play' },
     );
     expect(locked).toContain('disabled');
@@ -101,9 +107,9 @@ describe('card face markup', () => {
   });
 
   it('one component, three sizes: the size is a class, never different markup', () => {
-    const hand = faceOf('forest_wolf', { size: 'hand' });
-    const stage = faceOf('forest_wolf', { size: 'stage' });
-    const cell = faceOf('forest_wolf', { size: 'cell' });
+    const hand = faceOf(WOLF_ID, { size: 'hand' });
+    const stage = faceOf(WOLF_ID, { size: 'stage' });
+    const cell = faceOf(WOLF_ID, { size: 'cell' });
     expect(hand).toContain('cf-size-hand');
     expect(stage).toContain('cf-size-stage');
     expect(cell).toContain('cf-size-cell');
@@ -114,7 +120,7 @@ describe('card face markup', () => {
 
   it('every class the markup mints has a rule in the stylesheet', () => {
     const html =
-      faceOf('forest_wolf', { effectiveValue: 5, revealed: true, silenced: true }) +
+      faceOf(WOLF_ID, { effectiveValue: 5, revealed: true, silenced: true }) +
       faceOf('hollow_knight', { size: 'stage', effectiveValue: 6 }) +
       faceOf('grix_tunnelking', { size: 'cell' });
     const classes = new Set(

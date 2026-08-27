@@ -28,8 +28,32 @@ Spec: `docs/design/card-duel-rules-language.md`. Plan:
 | `effects.ts` | the effect applier, one handler per primitive |
 | `resolve.ts` | the round pipeline, priority-ordered |
 | `text.ts` | rules-text VALUE resolution (key plus values, never a string) |
+| `preview.ts` | what a card in HAND would resolve to, read-only and rng-free |
 | `bot.ts` | CPU opponent policies, pure |
 | `preview.ts` | what a player can be TOLD before the reveal: the parked modifiers still in play, and the value change already riding on a card in hand |
+
+## A card's value is not the number printed on it
+
+Once cards carry effects, the face number is a starting point, not a value: a 2
+that reads "+21 if you have at least one Pack" is a 23. **Anything choosing a
+card from a hand reads `preview.ts`, never `CardInstance.value`.** A policy
+that picks on the printed number spends its bombs on throwaway rounds and holds
+its blanks, which reads as a difficulty setting and is a bug.
+
+The projection is safe to hand a bot for two reasons, and both must stay true:
+
+- **It sees only what its own seat can see.** The opponent's card is not on the
+  board when a hand is being chosen from, so an effect targeting or conditioned
+  on `opponentCard` is skipped. The bot is never better informed than the human
+  reading the same card face.
+- **It mutates nothing and draws no rng.** It applies only the value-shaped
+  primitives (`modifyValue`, `setValue`, `minimumValue`, `maximumValue`) to a
+  SCRATCH board; a draw, discard, or counter change is skipped rather than
+  simulated. It is not a third rng site, and asking it a question cannot move
+  the match.
+
+`CardBotView.projectedValues` carries it to the policies, and `cardWorth` is the
+one accessor they read value through.
 
 ## Writing a card: ignore priority
 

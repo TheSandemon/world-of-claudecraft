@@ -19,6 +19,7 @@ import type { CardBotTier } from '../../minigames/card_duel/bot';
 import type { CardDeckEntry } from '../../minigames/card_duel/deck';
 import type { CardId, CardValue } from '../../minigames/card_duel/types';
 import { cardById, cardsOfValue } from './index';
+import { setDeckIds } from './set_lookup';
 
 export interface CardOpponentDef {
   id: string;
@@ -70,8 +71,10 @@ export const CARD_OPPONENTS: readonly CardOpponentDef[] = [
     titleId: 'dockhand_pell',
     greetingId: 'dockhand_pell',
     difficulty: 'novice',
-    // Mudfin: the swamp deck, and the gentlest sit-down at the table.
-    favours: ['mudfin_scout', 'mire_toad', 'mirefen_ambusher'],
+    // Mirefen Tide plus Roadknife Guild: reveals, discards, and hand
+    // disruption. The gentlest sit-down at the table, and the one that teaches
+    // a new player that information is worth something.
+    favours: setDeckIds('mirefen_tide', 'roadknife_guild'),
   },
   {
     id: 'gravedigger_ossa',
@@ -79,8 +82,9 @@ export const CARD_OPPONENTS: readonly CardOpponentDef[] = [
     titleId: 'gravedigger_ossa',
     greetingId: 'gravedigger_ossa',
     difficulty: 'steady',
-    // Undead recursion: cards that come back and grow with the graveyard.
-    favours: ['grave_rat', 'grave_candle', 'bone_picker', 'grave_warden', 'necromancer'],
+    // Gravebound Court plus Boneflame Host: the two Undead recursion lines,
+    // cards that come back and grow with the graveyard.
+    favours: setDeckIds('gravebound_court', 'boneflame_host'),
   },
   {
     id: 'huntsman_bregg',
@@ -88,8 +92,10 @@ export const CARD_OPPONENTS: readonly CardOpponentDef[] = [
     titleId: 'huntsman_bregg',
     greetingId: 'huntsman_bregg',
     difficulty: 'sharp',
-    // Beasts: the pack gets stronger the longer the match runs.
-    favours: ['forest_wolf', 'bramble_sprite', 'pack_alpha', 'old_greyjaw', 'stablemaster'],
+    // Briarpack plus Eastbrook Company: the pack gets stronger the longer the
+    // match runs, and the handlers keep feeding it. The same pairing the
+    // starter deck ships, played properly.
+    favours: setDeckIds('briarpack', 'eastbrook_company'),
   },
   {
     id: 'the_card_master',
@@ -97,16 +103,9 @@ export const CARD_OPPONENTS: readonly CardOpponentDef[] = [
     titleId: 'the_card_master',
     greetingId: 'the_card_master',
     difficulty: 'master',
-    // The wall at the top: control, denial, and a tie he wins.
-    favours: [
-      'nullstone',
-      'ironclad',
-      'hollow_knight',
-      'stormcaller',
-      'doppelganger',
-      'vale_champion',
-      'grix_tunnelking',
-    ],
+    // Ironward Assembly plus Relicguard Order: the wall at the top. Floors,
+    // ceilings, silence, and a tie he wins, instead of bigger numbers.
+    favours: setDeckIds('ironward_assembly', 'relicguard_order'),
   },
 ];
 

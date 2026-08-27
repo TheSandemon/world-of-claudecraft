@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CARD_CATALOG, CARDS, DEFAULT_DECK_LIST } from '../src/sim/content/cards';
 import { validateDeck } from '../src/sim/minigames/card_duel';
+import { CARD_SETS } from '../src/sim/minigames/card_duel/types';
 import {
   buildDeckBuilderView,
   deckBuilderSignature,
@@ -112,5 +113,48 @@ describe('deck builder view', () => {
     expect(deckBuilderSignature(view(defaultIds, { draftName: 'Other' }))).not.toBe(base);
     expect(deckBuilderSignature(view(defaultIds, { savedNames: ['A'] }))).not.toBe(base);
     expect(deckBuilderSignature(view(defaultIds, { activeName: 'A' }))).not.toBe(base);
+  });
+});
+
+describe('deck builder design-identity filter', () => {
+  it('offers every identity in the pool, derived rather than declared', () => {
+    const model = view([]);
+    expect(model.sets.length).toBe(CARD_SETS.length);
+    for (const set of CARD_SETS) expect(model.sets).toContain(set);
+    // No filter by default: the whole catalog is on offer.
+    expect(model.setFilter).toBeNull();
+  });
+
+  it('narrows every row to one identity, which is why it is worth having', () => {
+    const model = view([], { setFilter: 'briarpack' });
+    expect(model.setFilter).toBe('briarpack');
+    const offered = model.rows.flatMap((row) => row.options);
+    expect(offered.length).toBeGreaterThan(0);
+    for (const option of offered) expect(option.def.set).toBe('briarpack');
+    // One card per value, because an identity is a complete value 1 to 10 run.
+    for (const row of model.rows) expect(row.options.length).toBe(1);
+  });
+
+  it('keeps a chosen card visible under a filter that excludes it', () => {
+    // Hiding it would leave a filled slot the player has no way to clear.
+    const chosen = CARDS.find((def) => def.set === 'briarpack' && def.value === 3);
+    expect(chosen).toBeDefined();
+    const model = view([chosen!.id], { setFilter: 'mirefen_tide' });
+    const row = model.rows.find((r) => r.value === 3);
+    expect(row?.slots).toContain(chosen!.id);
+    expect(row?.options.some((o) => o.cardId === chosen!.id && o.chosen)).toBe(true);
+  });
+
+  it('treats an identity the pool does not hold as no filter at all', () => {
+    // Otherwise a stale filter would silently empty every row.
+    const model = view([], { setFilter: 'basics' });
+    expect(model.setFilter).toBeNull();
+    expect(model.rows[0].options.length).toBe(view([]).rows[0].options.length);
+  });
+
+  it('puts the filter in the repaint signature, or switching would show nothing', () => {
+    expect(deckBuilderSignature(view([], { setFilter: 'briarpack' }))).not.toBe(
+      deckBuilderSignature(view([], { setFilter: 'mirefen_tide' })),
+    );
   });
 });

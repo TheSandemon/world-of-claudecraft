@@ -13,6 +13,7 @@
 // policy draws when a seat chooses a card, at the orchestrator's commit step.
 
 import { COPIES_PER_VALUE } from './deck';
+import { projectedValueOf } from './preview';
 import type { CardInstance, CardValue, HandInstanceId } from './types';
 import { CARD_VALUES } from './types';
 
@@ -20,6 +21,18 @@ import { CARD_VALUES } from './types';
  *  counts, the score, and whatever the opponent has revealed or played. */
 export interface CardBotView {
   hand: readonly CardInstance[];
+  /**
+   * What each hand card would resolve to if committed this round, keyed by
+   * instance id (src/sim/minigames/card_duel/preview.ts).
+   *
+   * Printed value stopped being a card's value once the catalog grew past plain
+   * numbers, and a human reads the real one off the card face before choosing.
+   * A policy that picked on the printed number would walk into a 2 that resolves
+   * at 23 and would misplay its own hand, which is not difficulty, just a bug
+   * wearing difficulty's clothes. Optional so a hand-built test view stays two
+   * lines; `projectedValueOf` falls back to the printed value.
+   */
+  projectedValues?: Readonly<Record<HandInstanceId, number>>;
   deckCount: number;
   discardCount: number;
   myRounds: number;
@@ -35,9 +48,16 @@ export interface CardBotView {
   opponentCounters: Readonly<Record<string, number>>;
   /** Opponent cards this viewer is entitled to see (a reveal effect fired). */
   opponentRevealed: readonly CardInstance[];
-  /** Face values the opponent has already played this match, in order. Public
-   *  by the rules: both sides watch every reveal. */
+  /** PRINTED face values the opponent has already played this match, in order.
+   *  Public by the rules: both sides watch every reveal. This is the one the
+   *  card counting reads, because the deck histogram is a histogram of printed
+   *  values. */
   opponentPlayedValues: readonly number[];
+  /** The values those same cards actually RESOLVED at, in the same order. Also
+   *  public (both sides watched the round decide), and the honest answer to
+   *  "how big was the card they just spent". Optional for the same reason
+   *  `projectedValues` is. */
+  opponentPlayedEffectiveValues?: readonly number[];
 }
 
 /** Difficulty is just which policy runs; adding a tier is a new function and a
@@ -48,14 +68,25 @@ export const CARD_BOT_TIERS: readonly CardBotTier[] = ['novice', 'steady', 'shar
 
 export type CardBotPolicy = (view: CardBotView, rng: { next(): number }) => HandInstanceId | null;
 
-/** Highest-valued card in hand, ties broken on instance id so the pick never
- *  depends on where a card sits in the array. */
-function highest(hand: readonly CardInstance[]): CardInstance {
-  return [...hand].sort((a, b) => b.value - a.value || a.iid - b.iid)[0];
+/** What a card in this view is really worth: its projection when the view
+ *  carries one, its printed value otherwise. Every policy reads value through
+ *  here, so none of them can quietly go back to reading the face number. */
+export function cardWorth(view: CardBotView, card: CardInstance): number {
+  return projectedValueOf(view.projectedValues, card);
 }
 
-function lowest(hand: readonly CardInstance[]): CardInstance {
-  return [...hand].sort((a, b) => a.value - b.value || a.iid - b.iid)[0];
+/** Highest-worth card in hand, ties broken on printed value and then instance
+ *  id so the pick never depends on where a card sits in the array. */
+function highest(view: CardBotView): CardInstance {
+  return [...view.hand].sort(
+    (a, b) => cardWorth(view, b) - cardWorth(view, a) || b.value - a.value || a.iid - b.iid,
+  )[0];
+}
+
+function lowest(view: CardBotView): CardInstance {
+  return [...view.hand].sort(
+    (a, b) => cardWorth(view, a) - cardWorth(view, b) || a.value - b.value || a.iid - b.iid,
+  )[0];
 }
 
 /**
@@ -90,10 +121,10 @@ export const novicePolicy: CardBotPolicy = (view, rng) => {
  */
 export const steadyPolicy: CardBotPolicy = (view, rng) => {
   if (view.hand.length === 0) return null;
-  if (roundMatters(view)) return highest(view.hand).iid;
+  if (roundMatters(view)) return highest(view).iid;
   // An early, undecided round: shed the cheapest card rather than burning a
   // high one, but stay unpredictable enough to be worth playing against.
-  return rng.next() < 0.75 ? lowest(view.hand).iid : novicePolicy(view, rng);
+  return rng.next() < 0.75 ? lowest(view).iid : novicePolicy(view, rng);
 };
 
 /**
@@ -103,14 +134,19 @@ export const steadyPolicy: CardBotPolicy = (view, rng) => {
  */
 export const sharpPolicy: CardBotPolicy = (view, rng) => {
   if (view.hand.length === 0) return null;
-  if (roundMatters(view)) return highest(view.hand).iid;
+  if (roundMatters(view)) return highest(view).iid;
   // The opponent's last card is the only tell the projection carries about
-  // their intent, and it is public.
-  const theirLast = view.opponentPlayedValues[view.opponentPlayedValues.length - 1];
+  // their intent, and it is public. Read the value it RESOLVED at, not the one
+  // printed on it: a 2 that resolved at 23 was a big card being spent, and
+  // reading the face number there is how a bot talks itself into a bad line.
+  const theirValues = view.opponentPlayedEffectiveValues ?? view.opponentPlayedValues;
+  const theirLast = theirValues[theirValues.length - 1];
   if (theirLast !== undefined && theirLast >= 8) {
     // They just spent a big card; the next one is likely small, so a middling
     // card takes the round cheaply.
-    const sorted = [...view.hand].sort((a, b) => a.value - b.value || a.iid - b.iid);
+    const sorted = [...view.hand].sort(
+      (a, b) => cardWorth(view, a) - cardWorth(view, b) || a.value - b.value || a.iid - b.iid,
+    );
     return sorted[Math.min(1, sorted.length - 1)].iid;
   }
   return steadyPolicy(view, rng);
@@ -122,6 +158,12 @@ export const sharpPolicy: CardBotPolicy = (view, rng) => {
  * opponent has played the bot knows the EXACT multiset still available to them.
  * That is arithmetic, not a heuristic: no search, no evaluation function, no
  * tuning pass.
+ *
+ * The count stays a count of PRINTED values, deliberately. Master knows what
+ * its own cards will resolve to because it can read them; it cannot know what
+ * the opponent's will, because it cannot see them. Scoring its real worth
+ * against their printed spread is exactly the information a strong human has,
+ * and the asymmetry is the point rather than an approximation.
  */
 export function opponentRemainingValues(view: CardBotView): CardValue[] {
   const played = new Map<number, number>();
@@ -157,8 +199,13 @@ export const masterPolicy: CardBotPolicy = (view, _rng) => {
   if (view.hand.length === 0) return null;
   const remaining = opponentRemainingValues(view);
   const scored = [...view.hand]
-    .map((card) => ({ card, chance: beatChance(card.value, remaining) }))
-    .sort((a, b) => b.chance - a.chance || b.card.value - a.card.value || a.card.iid - b.card.iid);
+    .map((card) => ({ card, chance: beatChance(cardWorth(view, card), remaining) }))
+    .sort(
+      (a, b) =>
+        b.chance - a.chance ||
+        cardWorth(view, b.card) - cardWorth(view, a.card) ||
+        a.card.iid - b.card.iid,
+    );
   if (roundMatters(view)) {
     // The round decides the match: take the surest card, not the biggest.
     return scored[0].card.iid;

@@ -74,6 +74,63 @@ export type CardTag =
   | 'Profession'
   | 'Dungeon';
 
+/** Design identity: the ten-card, value 1 to 10 package a card belongs to.
+ *  Purely descriptive to the engine (nothing here branches on it), but it is
+ *  real content metadata: it is what the deck builder filters by and what makes
+ *  a 200-card catalog navigable. Content authors it; `src/sim/content/cards/`
+ *  holds the modules, one per member. */
+export type CardSetId =
+  /** The unauthored plain-number fallbacks (basic_catalog.ts). Not a design
+   *  identity and never offered in the deck builder; it exists so every card in
+   *  the engine can answer which set it came from without an optional field. */
+  | 'basics'
+  | 'ashen_flight'
+  | 'boneflame_host'
+  | 'briarpack'
+  | 'crownless_legends'
+  | 'cryptfire_covenant'
+  | 'eastbrook_company'
+  | 'emberwatch_compact'
+  | 'fenward_hunters'
+  | 'gravebound_court'
+  | 'greenwake_circle'
+  | 'ironward_assembly'
+  | 'mirefen_tide'
+  | 'mirrorveil_chorus'
+  | 'questbound_caravan'
+  | 'relicguard_order'
+  | 'roadknife_guild'
+  | 'sableweb_brood'
+  | 'stormheart_conclave'
+  | 'tableborn_circle'
+  | 'tunnel_crown';
+
+/** The twenty DESIGN identities, in id order. `basics` is deliberately absent:
+ *  this is the list the deck builder filters by and the wiki will page through,
+ *  and the fallback cards are neither authored nor collectible. */
+export const CARD_SETS: readonly CardSetId[] = [
+  'ashen_flight',
+  'boneflame_host',
+  'briarpack',
+  'crownless_legends',
+  'cryptfire_covenant',
+  'eastbrook_company',
+  'emberwatch_compact',
+  'fenward_hunters',
+  'gravebound_court',
+  'greenwake_circle',
+  'ironward_assembly',
+  'mirefen_tide',
+  'mirrorveil_chorus',
+  'questbound_caravan',
+  'relicguard_order',
+  'roadknife_guild',
+  'sableweb_brood',
+  'stormheart_conclave',
+  'tableborn_circle',
+  'tunnel_crown',
+];
+
 /** Same names as item quality (src/sim/types.ts `ItemDef['quality']`) minus
  *  'poor', so the card frame reuses the shipped quality color tokens rather
  *  than introducing new color literals (src/styles/CLAUDE.md owns that rule). */
@@ -204,6 +261,16 @@ export type CardConditionTree =
       readonly type: 'counterCompare';
       readonly owner: CardOwner;
       readonly counter: string;
+      readonly op: CardCompareOp;
+      readonly amount: CardNumericExpr;
+    }
+  | {
+      /** How many DISTINCT tribes a side has played this match. Mirrors the
+       *  `uniqueTribesPlayed` expression: the varied-tribes identities gate on
+       *  the same number their payoffs scale off, and no history filter can
+       *  express "three different tribes". */
+      readonly type: 'uniqueTribesCompare';
+      readonly owner: CardOwner;
       readonly op: CardCompareOp;
       readonly amount: CardNumericExpr;
     }
@@ -343,6 +410,8 @@ export interface CardDefinition {
    * zero browser imports and also runs headless where a path means nothing.
    */
   readonly art: string;
+  /** The design identity this card belongs to (src/sim/content/cards/sets/). */
+  readonly set: CardSetId;
   readonly value: CardValue;
   readonly tribes: readonly CardTribe[];
   readonly tags: readonly CardTag[];

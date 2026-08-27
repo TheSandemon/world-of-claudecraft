@@ -1070,6 +1070,32 @@
   .db-active {
     border-color: var(--color-stat-bonus);
   }
+  /* The design-identity filter chips. Twenty sets is a long row, so it wraps
+     and scrolls with the panel rather than growing a scroller of its own. */
+  .db-set-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ffffff18;
+  }
+  .db-set {
+    min-height: 32px;
+    padding: 4px 8px;
+    border: 1px solid #ffffff26;
+    border-radius: 4px;
+    background: #ffffff08;
+    color: inherit;
+    font: inherit;
+    font-size: 11px;
+    cursor: var(--cursor-point);
+  }
+  .db-set-active {
+    border-color: var(--gold);
+    background: #ffffff18;
+    color: var(--gold);
+  }
   .db-row {
     padding: 6px 0;
     border-top: 1px solid #ffffff18;

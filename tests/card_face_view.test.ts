@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cardById } from '../src/sim/content/cards';
+import { CARDS, cardById } from '../src/sim/content/cards';
 import {
   buildCardFaceModel,
   cardFaceSignature,
@@ -98,9 +98,12 @@ describe('card face view', () => {
   });
 
   it('builds a face for every card in the shipping catalog', () => {
-    for (const id of ['forest_wolf', 'pack_alpha', 'grix_tunnelking']) {
+    // The whole catalog, not a sample: two hundred cards is past the point
+    // where three hand-picked ids prove anything about the rest.
+    expect(CARDS.length).toBeGreaterThan(100);
+    for (const { id } of CARDS) {
       const def = cardById(id);
-      expect(def).toBeDefined();
+      expect(def, id).toBeDefined();
       const model = buildCardFaceModel({ iid: 1, cardId: id, value: def!.value }, def);
       expect(model.unknown).toBe(false);
       expect(model.baseValue).toBe(def!.value);

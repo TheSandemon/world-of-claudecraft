@@ -14,6 +14,7 @@ import {
   otherSeat,
   seatForOwner,
   sideOf,
+  uniqueTribesPlayed,
 } from './match_state';
 import type { CardCompareOp, CardConditionTree, CardRef, CardSeat, CardTribe } from './types';
 
@@ -113,6 +114,14 @@ export function evaluateCondition(tree: CardConditionTree, ctx: CardEvalContext)
     case 'counterCompare': {
       const side = sideOf(ctx.state, seatForOwner(ctx.seat, tree.owner));
       return compare(tree.op, counterValue(side, tree.counter), evaluateAmount(tree.amount, ctx));
+    }
+    case 'uniqueTribesCompare': {
+      const seat = seatForOwner(ctx.seat, tree.owner);
+      return compare(
+        tree.op,
+        uniqueTribesPlayed(ctx.state, seat),
+        evaluateAmount(tree.amount, ctx),
+      );
     }
     case 'consecutive': {
       const side = sideOf(ctx.state, seatForOwner(ctx.seat, tree.owner));

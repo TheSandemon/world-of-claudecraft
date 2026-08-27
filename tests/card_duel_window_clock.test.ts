@@ -22,7 +22,7 @@ function liveInfo(over: Partial<NonNullable<CardMinigameInfo['match']>> = {}): C
     match: {
       opponent: { pid: 2, name: 'Bo' },
       hand: [
-        { iid: 11, cardId: 'forest_wolf', value: 3 },
+        { iid: 11, cardId: 'briarpack_wolves_howl', value: 3 },
         { iid: 12, cardId: 'pack_alpha', value: 6 },
       ],
       deckCount: 14,
@@ -752,7 +752,7 @@ describe('card duel window clock and round theater', () => {
     const faces = [...root.querySelectorAll('[data-cd-hand] .cf')];
     expect(faces.length).toBe(2);
     expect(faces.map((f) => f.getAttribute('data-play'))).toEqual(['11', '12']);
-    expect(root.textContent).toContain('Forest Wolf');
+    expect(root.textContent).toContain('Howl');
   });
 
   it('lights the one thing each beat is about, on the board that spans both seats', () => {

@@ -10,7 +10,12 @@
 // DOM-free and i18n-free: tests/deck_builder_view.test.ts drives it directly.
 
 import { COPIES_PER_VALUE } from '../sim/minigames/card_duel/deck';
-import type { CardDefinition, CardId, CardValue } from '../sim/minigames/card_duel/types';
+import type {
+  CardDefinition,
+  CardId,
+  CardSetId,
+  CardValue,
+} from '../sim/minigames/card_duel/types';
 import { CARD_VALUES } from '../sim/minigames/card_duel/types';
 
 /** One card offered at a value, and whether the draft already holds it. */
@@ -33,6 +38,12 @@ export interface DeckBuilderRow {
 
 export interface DeckBuilderViewModel {
   rows: DeckBuilderRow[];
+  /** Every design identity the pool holds, in catalog order: the filter chips.
+   *  Derived from the cards rather than declared, so an identity added to the
+   *  catalog appears here with no second list to update. */
+  sets: CardSetId[];
+  /** The identity currently filtering the pools, or null for all of them. */
+  setFilter: CardSetId | null;
   /** Slots filled out of the twenty a legal deck needs. */
   filled: number;
   required: number;
@@ -51,6 +62,11 @@ export interface DeckBuilderInput {
   catalog: { get(id: CardId): CardDefinition | undefined };
   /** Every authored card, so a row can offer its pool. */
   cards: readonly CardDefinition[];
+  /** Narrows each row's pool to one design identity. Twenty cards per value is
+   *  past the point where a row can be read at a glance, and an identity is the
+   *  unit a player actually thinks in ("I am building Briarpack"), so this is
+   *  the filter the catalog's size calls for rather than a generic search box. */
+  setFilter?: CardSetId | null;
   savedNames: readonly string[];
   activeName: string;
   draftName: string;
@@ -63,6 +79,15 @@ export interface DeckBuilderInput {
  * builder.
  */
 export function buildDeckBuilderView(input: DeckBuilderInput): DeckBuilderViewModel {
+  const sets: CardSetId[] = [];
+  for (const def of input.cards) if (!sets.includes(def.set)) sets.push(def.set);
+  // A filter naming an identity the pool does not hold would silently empty
+  // every row, so an unknown one reads as no filter at all.
+  const setFilter =
+    input.setFilter !== undefined && input.setFilter !== null && sets.includes(input.setFilter)
+      ? input.setFilter
+      : null;
+
   const chosenByValue = new Map<CardValue, CardId[]>();
   for (const cardId of input.draft) {
     const def = input.catalog.get(cardId);
@@ -79,6 +104,9 @@ export function buildDeckBuilderView(input: DeckBuilderInput): DeckBuilderViewMo
     for (let i = 0; i < COPIES_PER_VALUE; i++) slots.push(chosen[i] ?? null);
     const options = input.cards
       .filter((def) => def.value === value)
+      // A card already in the draft stays visible under any filter: hiding it
+      // would leave the player looking at a filled slot with no way to clear it.
+      .filter((def) => setFilter === null || def.set === setFilter || chosen.includes(def.id))
       .map((def) => ({ cardId: def.id, def, chosen: chosen.includes(def.id) }));
     return { value, slots, options, complete: chosen.length === COPIES_PER_VALUE };
   });
@@ -87,6 +115,8 @@ export function buildDeckBuilderView(input: DeckBuilderInput): DeckBuilderViewMo
   const required = CARD_VALUES.length * COPIES_PER_VALUE;
   return {
     rows,
+    sets,
+    setFilter,
     filled,
     required,
     legal: filled === required,
@@ -128,6 +158,9 @@ export function deckBuilderSignature(view: DeckBuilderViewModel): string {
     view.activeName,
     view.savedNames.join(','),
     view.filled,
+    // The filter changes which cards a row OFFERS, so it has to reach the
+    // signature or switching identities would repaint nothing.
+    view.setFilter ?? '*',
     view.rows.map((row) => row.slots.map((slot) => slot ?? '-').join('+')).join('|'),
   ].join('#');
 }

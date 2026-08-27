@@ -21,6 +21,8 @@ export const BASIC_CARD_DEFINITIONS: readonly CardDefinition[] = BASIC_DECK_LIST
   // No rules text: a basic card does nothing but hold its number.
   textId: '',
   art: `basic_${entry.value}`,
+  // Not a design identity: the fallbacks are the engine's floor, not content.
+  set: 'basics' as const,
   value: entry.value,
   tribes: [],
   tags: [],

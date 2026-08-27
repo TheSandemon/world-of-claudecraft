@@ -7,7 +7,7 @@
 // match itself runs the SHIPPING code, calling the same startCardDuelMatch and
 // resolving through the same resolve.ts; only the pairing step is bypassed.
 
-import { cardOpponentById } from '../content/cards';
+import { CARD_CATALOG, cardOpponentById } from '../content/cards';
 import { cardMasterInRange } from '../instances/card_master';
 import {
   CARD_DUEL_START_HP,
@@ -15,6 +15,7 @@ import {
   chooseCard,
   playCardByInstance,
 } from '../minigames/card_duel';
+import { projectHand } from '../minigames/card_duel/preview';
 import type { SimContext } from '../sim_context';
 import { type CardDuelMatch, inCardDuel, resolveRound, startCardDuelMatch } from './card_duel';
 import { leaveCardDuelQueue } from './card_duel_queue';
@@ -104,6 +105,10 @@ function botViewOf(match: CardDuelMatch): CardBotView {
     opponentPlayedValues: match.state.history
       .filter((entry) => entry.owner === 'a')
       .map((entry) => entry.value),
+    opponentPlayedEffectiveValues: match.state.history
+      .filter((entry) => entry.owner === 'a')
+      .map((entry) => entry.effectiveValue),
+    projectedValues: projectHand(match.state, 'b', CARD_CATALOG),
   };
 }
 

@@ -51,6 +51,10 @@ export function defineCard(
     nameId: `${id}_name`,
     textId: `${id}_text`,
     art: id,
+    // A fixture belongs to no design identity; the engine never branches on
+    // this, so the basics' set id is the honest label for a card that is not
+    // authored content.
+    set: 'basics',
     value: 3,
     tribes: [],
     tags: [],

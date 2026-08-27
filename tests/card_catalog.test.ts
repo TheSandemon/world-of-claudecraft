@@ -111,19 +111,38 @@ describe('card catalog', () => {
   });
 
   it('resolves a scaling card text to its live number, not its formula', () => {
-    const packAlpha = cardById('pack_alpha');
-    expect(packAlpha).toBeDefined();
+    // "Gets +{rate} for each Pack you have, currently +{amount}": the RATE is
+    // printed on the card and the AMOUNT is live, so a player never has to do
+    // the multiplication themselves.
+    const howl = cardById('briarpack_wolves_howl');
+    expect(howl).toBeDefined();
     const ctx = staticCardContext(CARD_CATALOG);
-    // Before any Beast has been played the bonus really is zero, and the
-    // tooltip contract says show the value that would apply.
-    expect(resolveCardText(packAlpha!, ctx).values.amount).toBe(0);
+    expect(texts.briarpack_wolves_howl).toContain('{rate}');
+    expect(texts.briarpack_wolves_howl).toContain('{amount}');
+    expect(resolveCardText(howl!, ctx).values.rate).toBe(3);
+    // Before any Pack is banked the bonus really is zero, and the tooltip
+    // contract says show the value that would apply.
+    expect(resolveCardText(howl!, ctx).values.amount).toBe(0);
   });
 
   it('states a reduction as a positive number, so the sentence owns the sign', () => {
-    const hexer = cardById('sableweb_hexer');
-    expect(hexer).toBeDefined();
-    expect(texts.sableweb_hexer).toContain('-{amount}');
-    expect(resolveCardText(hexer!, staticCardContext(CARD_CATALOG)).values.amount).toBe(3);
+    const windRace = cardById('stormheart_conclave_stormlings_wind_race');
+    expect(windRace).toBeDefined();
+    expect(texts.stormheart_conclave_stormlings_wind_race).toContain('-{amount}');
+    expect(resolveCardText(windRace!, staticCardContext(CARD_CATALOG)).values.amount).toBe(10);
+  });
+
+  it('prints no bare number in a rules sentence: every number is a live value', () => {
+    // A hardcoded number in the English is a number that cannot follow the
+    // effect when it is tuned, and a number a translator has to retype. The
+    // only digits a sentence may carry are inside a {placeholder}.
+    for (const def of CARDS) {
+      const withoutPlaceholders = texts[def.textId].replace(/\{[^}]*\}/g, '');
+      expect(
+        /[0-9]/.test(withoutPlaceholders),
+        `${def.id}: "${texts[def.textId]}" hardcodes a number`,
+      ).toBe(false);
+    }
   });
 
   it('every authored effect uses a primitive the resolver has a priority for', () => {

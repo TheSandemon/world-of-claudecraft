@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CARD_BOT_LETHAL_RANGE,
   CARD_BOT_TIERS,
   type CardBotView,
+  cardWorth,
   chooseCard,
+  masterPolicy,
   novicePolicy,
   policyFor,
+  sharpPolicy,
+  steadyPolicy,
 } from '../src/sim/minigames/card_duel/bot';
 import { Rng } from '../src/sim/rng';
 import { cardOfValue, countingRng } from './helpers/card_duel_fixtures';
@@ -75,5 +80,61 @@ describe('card_duel bot', () => {
     const keys = Object.keys(view());
     expect(keys).not.toContain('opponentHand');
     expect(keys).toContain('opponentRevealed');
+  });
+});
+
+describe('a policy chooses on what a card is WORTH, not what is printed on it', () => {
+  // The catalog grew past plain numbers, so the face number is no longer the
+  // card's value. A policy that still read it would spend a 2 that resolves at
+  // 23 on a throwaway round and hold a 9 that resolves at 9, which is not a
+  // difficulty setting, it is the bot misreading its own hand.
+  const low = cardOfValue(2);
+  const mid = cardOfValue(5);
+  const high = cardOfValue(9);
+  const worthy = { [low.iid]: 23, [mid.iid]: 5, [high.iid]: 9 };
+
+  it('Steady commits the highest-WORTH card on a round that decides the match', () => {
+    const deciding = view({
+      hand: [low, mid, high],
+      projectedValues: worthy,
+      opponentHp: CARD_BOT_LETHAL_RANGE,
+    });
+    expect(steadyPolicy(deciding, countingRng())).toBe(low.iid);
+  });
+
+  it('Steady sheds the lowest-WORTH card on a round that does not', () => {
+    const idle = view({ hand: [low, mid, high], projectedValues: worthy });
+    // Deterministic arm of the shed: the rng draw lands under the 0.75 gate.
+    expect(steadyPolicy(idle, { next: () => 0 })).toBe(mid.iid);
+  });
+
+  it('falls back to printed values when the view carries no projection', () => {
+    const deciding = view({ hand: [low, mid, high], opponentHp: CARD_BOT_LETHAL_RANGE });
+    expect(steadyPolicy(deciding, countingRng())).toBe(high.iid);
+  });
+
+  it('Master scores its odds on worth, so a live payoff is its surest card', () => {
+    const deciding = view({
+      hand: [low, mid, high],
+      projectedValues: worthy,
+      opponentHp: CARD_BOT_LETHAL_RANGE,
+    });
+    expect(masterPolicy(deciding, countingRng())).toBe(low.iid);
+  });
+
+  it('Sharp reads the value the opponent card RESOLVED at, not its face', () => {
+    // They spent a printed 2 that resolved at 23: a big card, however it reads.
+    const tell = view({
+      hand: [low, mid, high],
+      opponentPlayedValues: [2],
+      opponentPlayedEffectiveValues: [23],
+    });
+    // The middling-card answer, which only fires when the tell is read as big.
+    expect(sharpPolicy(tell, countingRng())).toBe(mid.iid);
+  });
+
+  it('cardWorth is the one accessor, so no policy can read the face number', () => {
+    expect(cardWorth(view({ projectedValues: worthy }), low)).toBe(23);
+    expect(cardWorth(view(), low)).toBe(2);
   });
 });

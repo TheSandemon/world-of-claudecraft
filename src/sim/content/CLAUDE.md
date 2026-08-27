@@ -103,6 +103,17 @@ you cannot infer from the file alone.
 - **Interactables:** `noticeboards.ts` (town noticeboards; the active
   WorldContent supplies the list so spawn, collision, and interaction share one
   authority), `card_master.ts` (the Card Duel NPC gate constants).
+- **Card Duel cards:** `cards/` is a DIRECTORY, not a file. One module per design
+  identity under `cards/sets/` (a complete value 1 to 10 run each, twenty of
+  them), the barrel `cards/index.ts` (sorted catalog, lookups, `CARD_CATALOG`,
+  `DEFAULT_DECK_LIST`), `cards/starter_deck.ts` (the authored first deck),
+  `cards/opponents.ts` (the Card Master's regulars, each built from two whole
+  identities), and `cards/card_authoring.ts` (the `card` / `constant`
+  shorthands). A NEW card is a record in its identity's module; a NEW identity is
+  a new module plus a `CardSetId` member, never a branch in the barrel. The bulk
+  import that seeded them is reproducible from `scripts/card_catalog/` via
+  `node scripts/import_card_catalog.mjs`, but the TypeScript is the source of
+  truth once landed, and it is hand-tuned there like any other content.
 
 ## Classic-era fidelity (YOU MUST)
 Abilities gain ranks at **classic-era learn levels** with era-accurate values. The

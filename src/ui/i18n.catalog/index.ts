@@ -1251,6 +1251,34 @@ export const en = {
     delete: 'Discard deck',
     open: 'Decks',
     openAria: 'Open the deck builder',
+    // The design-identity filter. Twenty cards at every value is past the point
+    // where a row reads at a glance, and an identity is the unit a player thinks
+    // in, so the pools narrow by set rather than by a generic search.
+    setFilterLabel: 'Filter by set',
+    allSets: 'All sets',
+    set: {
+      ashen_flight: 'Ashen Flight',
+      boneflame_host: 'Boneflame Host',
+      briarpack: 'Briarpack',
+      crownless_legends: 'Crownless Legends',
+      cryptfire_covenant: 'Cryptfire Covenant',
+      eastbrook_company: 'Eastbrook Company',
+      emberwatch_compact: 'Emberwatch Compact',
+      fenward_hunters: 'Fenward Hunters',
+      gravebound_court: 'Gravebound Court',
+      greenwake_circle: 'Greenwake Circle',
+      ironward_assembly: 'Ironward Assembly',
+      mirefen_tide: 'Mirefen Tide',
+      mirrorveil_chorus: 'Mirrorveil Chorus',
+      questbound_caravan: 'Questbound Caravan',
+      relicguard_order: 'Relicguard Order',
+      roadknife_guild: 'Roadknife Guild',
+      sableweb_brood: 'Sableweb Brood',
+      stormheart_conclave: 'Stormheart Conclave',
+      tableborn_circle: 'Tableborn Circle',
+      tunnel_crown: 'Tunnel Crown',
+      basics: 'Basics',
+    },
   },
   // The Card Master's regulars: the sit-down list on the Card Duel window.
   cardOpponents: {

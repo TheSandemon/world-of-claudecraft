@@ -90,8 +90,9 @@ describe('card deck storage', () => {
   });
 
   it('skips a card id the catalog no longer knows rather than inventing a value', () => {
-    const entries = deckEntriesFrom(['forest_wolf', 'a_card_that_was_retired'], CARD_CATALOG);
-    expect(entries.map((e) => e.cardId)).toEqual(['forest_wolf']);
+    const real = CARDS[0].id;
+    const entries = deckEntriesFrom([real, 'a_card_that_was_retired'], CARD_CATALOG);
+    expect(entries.map((e) => e.cardId)).toEqual([real]);
   });
 
   it('hands the active deck to a match, and undefined when there is none', () => {

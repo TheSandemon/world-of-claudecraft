@@ -66,22 +66,25 @@ describe('card i18n', () => {
   });
 
   it('a scaling card states the LIVE number during a match, not the static one', () => {
-    const packAlpha = cardById('pack_alpha');
-    expect(packAlpha).toBeDefined();
-    const beast = defineCard('beast', { value: 2, tribes: ['Beast'] });
-    const catalog = makeCatalog([...CARDS, beast]);
-    const state = makeMatch([instanceOf(packAlpha!)], []);
-    // Four Beasts played this match, so the card's own text must read +2.
+    // "Gets +{rate} for each Elemental card you have played this match,
+    // currently +{amount}."
+    const bloom = cardById('greenwake_circle_treants_bloom');
+    expect(bloom).toBeDefined();
+    const elemental = defineCard('elemental', { value: 2, tribes: ['Elemental'] });
+    const catalog = makeCatalog([...CARDS, elemental]);
+    const state = makeMatch([instanceOf(bloom!)], []);
+    // Four Elementals played this match, so the card's own text must read +4.
     for (let i = 0; i < 4; i++) {
-      recordHistory(state, 'a', instanceOf(beast), 2, ['Beast'], 'win');
+      recordHistory(state, 'a', instanceOf(elemental), 2, ['Elemental'], 'win');
     }
     state.round = 5;
     lockIn(state, state.a.cards.hand[0], null);
     const live = evalContext(state, catalog, 'a');
-    expect(cardRulesText(packAlpha!, { catalog })).toContain('every two Beasts');
     // The static reading is 0; the live one is what the engine would apply.
-    expect(cardRulesText(packAlpha!, live)).toContain('every two Beasts');
-    expect(resolveCardText(packAlpha!, live).values.amount).toBe(2);
+    expect(resolveCardText(bloom!, staticCardContext(catalog)).values.amount).toBe(0);
+    expect(cardRulesText(bloom!, live)).toContain('for each Elemental card');
+    expect(cardRulesText(bloom!, live)).toContain('+4');
+    expect(resolveCardText(bloom!, live).values.amount).toBe(4);
   });
 
   it('reads a card whose sentence takes several values', () => {

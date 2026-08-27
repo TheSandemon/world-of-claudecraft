@@ -8,6 +8,7 @@
 // can never seat an illegal deck.
 
 import { CARD_CATALOG, CARDS } from '../sim/content/cards';
+import type { CardSetId } from '../sim/minigames/card_duel/types';
 import type { IWorld } from '../world_api';
 import { cardFaceHtml } from './cards/card_face_markup';
 import { buildCardFaceModel } from './cards/card_face_view';
@@ -41,6 +42,10 @@ export class DeckBuilderWindow {
    *  cards once the snapshot confirms the switch, so the builder never shows a
    *  name from one deck beside the cards of another. */
   private pendingLoad: string | null = null;
+  /** Which design identity the card pools are narrowed to, or null for all of
+   *  them. Purely a browsing aid, so it lives here rather than on the server:
+   *  it never touches the deck. */
+  private setFilter: CardSetId | null = null;
 
   constructor(private readonly deps: DeckBuilderWindowDeps) {}
 
@@ -109,6 +114,7 @@ export class DeckBuilderWindow {
       savedNames: decks.names,
       activeName: decks.active,
       draftName: this.draftName,
+      setFilter: this.setFilter,
     });
   }
 
@@ -157,6 +163,17 @@ export class DeckBuilderWindow {
         );
       })
       .join('');
+    const setChip = (id: CardSetId | null, label: string) => {
+      const active = view.setFilter === id;
+      return (
+        `<button type="button" class="db-set${active ? ' db-set-active' : ''}"` +
+        ` data-set="${esc(id ?? '')}" aria-pressed="${active}">${esc(label)}</button>`
+      );
+    };
+    const setChips = [
+      setChip(null, t('cardDeck.allSets')),
+      ...view.sets.map((id) => setChip(id, t(`cardDeck.set.${id}` as Parameters<typeof t>[0]))),
+    ].join('');
     const saved = view.savedNames
       .map(
         (name) =>
@@ -178,6 +195,7 @@ export class DeckBuilderWindow {
         : '') +
       `</div>` +
       (saved ? `<div class="db-saved-row">${saved}</div>` : '') +
+      `<div class="db-set-row" role="group" aria-label="${esc(t('cardDeck.setFilterLabel'))}">${setChips}</div>` +
       `<div class="db-rows">${rows}</div>` +
       `</div>`
     );
@@ -194,6 +212,13 @@ export class DeckBuilderWindow {
       btn.addEventListener('click', () => {
         const cardId = (btn as HTMLElement).dataset.card ?? '';
         this.draft = toggleDraftCard(this.draft, cardId, CARD_CATALOG);
+        this.render();
+      });
+    });
+    el.querySelectorAll('[data-set]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = (btn as HTMLElement).dataset.set ?? '';
+        this.setFilter = id === '' ? null : (id as CardSetId);
         this.render();
       });
     });

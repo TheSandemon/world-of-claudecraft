@@ -15,16 +15,36 @@
 // on the opponent's card, which is hidden until both seats commit. It answers
 // "what do I already have riding on this card", which is the part that is
 // knowable and the part a player is choosing on.
+//
+// TWO numbers live here on purpose, and they answer different questions.
+// `pendingValueDelta` is "what do I already have riding on this card", the
+// signed badge the card face paints. `projectCardValue` is "what would this
+// card RESOLVE at", which additionally runs the card's own pre-comparison
+// effects, its conditions, its clamps, and its spent trigger limits. The badge
+// explains a modifier to a player; the projection is what a bot chooses on.
+// Both read the same modifier list, so neither can drift from the other.
 
-import type { CardCatalog, CardMatchState } from './match_state';
+import { conditionsHold } from './conditions';
+import { applyToBoard, resolveAmounts } from './effects';
+import type { CardEvalContext } from './expressions';
+import {
+  buildBoardSide,
+  type CardBoard,
+  type CardCatalog,
+  type CardMatchState,
+  limitKey,
+  sideOf,
+} from './match_state';
 import { isParkedDuration, pendingModifiersFor } from './modifiers';
+import { clampedValue, EFFECT_PRIORITY } from './resolve';
 import type {
-  CardDuration,
+  CardEffect,
   CardEffectType,
   CardId,
   CardInstance,
   CardModifier,
   CardSeat,
+  HandInstanceId,
 } from './types';
 
 /**
@@ -113,4 +133,127 @@ export function pendingValueDelta(
     if (amount !== null) delta += amount;
   }
   return delta;
+}
+
+/** The primitives that move a card's own number. Everything else changes the
+ *  match rather than the card, and simulating it here would be a mutation. */
+const VALUE_PRIMITIVES: ReadonlySet<CardEffectType> = new Set([
+  'modifyValue',
+  'setValue',
+  'minimumValue',
+  'maximumValue',
+]);
+
+/** The triggers that have already fired by the time the round is compared. A
+ *  win/lose/tie effect pays out AFTER the comparison, so it is not part of what
+ *  the card is worth going into one. */
+const PRE_COMPARE_TRIGGERS: readonly CardEffect['trigger'][] = ['onReveal', 'beforeCompare'];
+
+/** Has this effect already spent its authored allowance? Read-only: it reports
+ *  the bookkeeping the resolver keeps, and never writes to it. */
+function limitsAllow(
+  state: CardMatchState,
+  seat: CardSeat,
+  cardId: string,
+  effect: CardEffect,
+  index: number,
+): boolean {
+  const limits = effect.limits;
+  if (!limits) return true;
+  const key = limitKey(seat, cardId, index);
+  const fired = state.triggerCounts[key] ?? 0;
+  const lastRound = state.lastTriggerRound[key];
+  if (limits.oncePerMatch && fired >= 1) return false;
+  if (limits.maxTriggers !== undefined && fired >= limits.maxTriggers) return false;
+  if (limits.oncePerRound && lastRound === state.round) return false;
+  if (
+    limits.cooldownRounds !== undefined &&
+    lastRound !== undefined &&
+    state.round - lastRound < limits.cooldownRounds
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * The value `card` would carry into this round's comparison if this seat
+ * revealed it, with its own pre-comparison effects and any parked modifier
+ * waiting for it already applied.
+ *
+ * Falls back to the printed value for a card the catalog does not know, which
+ * is what the resolver would do with it too.
+ */
+export function projectCardValue(
+  state: CardMatchState,
+  seat: CardSeat,
+  card: CardInstance,
+  catalog: CardCatalog,
+): number {
+  const def = catalog.get(card.cardId);
+  if (!def) return card.value;
+
+  // A scratch board: this seat holds the candidate, the other seat is empty
+  // because its card is genuinely unknown at selection time.
+  const other: CardSeat = seat === 'a' ? 'b' : 'a';
+  const board = {
+    [seat]: buildBoardSide(seat, card, catalog),
+    [other]: buildBoardSide(other, null, catalog),
+  } as unknown as CardBoard;
+  const ctx: CardEvalContext = { state, board, catalog, seat, thisCard: card };
+
+  // Modifiers parked in an earlier round were priced then and ride this card
+  // in regardless of what the opponent shows, so they come first, exactly as
+  // resolveCardRound applies them.
+  for (const mod of pendingModifiersFor(state, seat, card, catalog)) {
+    if (VALUE_PRIMITIVES.has(mod.effect.type)) applyToBoard(mod.effect, ctx, seat);
+  }
+
+  // The card's own pre-comparison effects, in the resolver's priority order so
+  // a floor or a cap lands after the addition it clamps.
+  const queued = def.effects
+    .map((effect, index) => ({ effect, index }))
+    .filter(
+      ({ effect }) =>
+        PRE_COMPARE_TRIGGERS.includes(effect.trigger) && VALUE_PRIMITIVES.has(effect.effect.type),
+    )
+    .filter(({ effect }) => (effect.target?.type ?? 'thisCard') !== 'opponentCard')
+    .sort(
+      (x, y) =>
+        EFFECT_PRIORITY[x.effect.effect.type] - EFFECT_PRIORITY[y.effect.effect.type] ||
+        x.index - y.index,
+    );
+  for (const { effect, index } of queued) {
+    if (!limitsAllow(state, seat, def.id, effect, index)) continue;
+    if (!conditionsHold(effect.conditions, ctx)) continue;
+    // Priced against the state that asked, exactly as applyEffect prices a live
+    // one: an unpriced scaling expression would silently project as zero.
+    applyToBoard(resolveAmounts(effect.effect, ctx), ctx, seat);
+  }
+
+  return clampedValue(board, seat);
+}
+
+/** Every card in a seat's hand, keyed by instance id. The shape a viewer
+ *  projection carries, so a policy never has to hold the match state. */
+export function projectHand(
+  state: CardMatchState,
+  seat: CardSeat,
+  catalog: CardCatalog,
+): Record<HandInstanceId, number> {
+  const out: Record<HandInstanceId, number> = {};
+  for (const card of sideOf(state, seat).cards.hand) {
+    out[card.iid] = projectCardValue(state, seat, card, catalog);
+  }
+  return out;
+}
+
+/** Reads a projection, falling back to the printed value when the viewer was
+ *  built without one (an older wire frame, or a test stub). */
+export function projectedValueOf(
+  projected: Readonly<Record<HandInstanceId, number>> | undefined,
+  card: CardInstance,
+): number {
+  const value = projected?.[card.iid];
+  return typeof value === 'number' ? value : card.value;
 }
