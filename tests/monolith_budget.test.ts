@@ -146,10 +146,13 @@ const MONOLITHS: MonolithRow[] = [
     // pure core interface_unlock_menu_core.ts. What remains on coordinator
     // state (dimension-mode mover wiring, the edit-preview painter closure,
     // the player-frame bar lock) is the live-hooks half. Exact merged count.
-    // Merging release/v0.41.0 into the Card Duel branch: both sides added
-    // their own thin wiring, so the merged file sits above both pins and the
-    // ceiling is the exact merged count. Any further growth reds again.
-    ceiling: 19017,
+    // Merging release/v0.41.0 into the Card Duel branch. Both sides re-pinned this
+    // ceiling: the branch added its own thin desktop wiring (19017) while upstream
+    // extracted the charge state and the XHB slot lookup into
+    // src/ui/empower_hold_core.ts (19000). The merged file is 19015 lines, so the
+    // ceiling is the exact merged count per the ratchet rule. It stays below the
+    // branch's own pin, never above it. Any further growth reds again.
+    ceiling: 19015,
     seam: 'pure view core + thin painter on PainterHost (src/ui/CLAUDE.md)',
   },
   {
@@ -286,7 +289,9 @@ const MONOLITHS: MonolithRow[] = [
     // the player-frame bar lock) predate this ratchet; folding them behind a
     // src/game/ settings-application seam is flagged follow-up work. Exact
     // merged count.
-    ceiling: 11629,
+    // Lowered by 1 at the empower-hold sync merge: the pad cast routing lives
+    // in src/game/pad_cast_routing.ts. Exact merged count.
+    ceiling: 11628,
     seam: 'a src/game/ or src/ui/ sibling module; main.ts is a firewall, not a home',
   },
   {
