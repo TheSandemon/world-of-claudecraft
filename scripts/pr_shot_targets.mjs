@@ -28,6 +28,30 @@ async function pollForSize(page, selector, attempts = 20, intervalMs = 500) {
   return false;
 }
 
+// Wait until the loading screen has been continuously GONE for `stableMs`. A recipe
+// that teleports across a zone boundary raises it back over a HUD that is already laid
+// out, asynchronously, so a one-shot check races it and photographs the logo instead of
+// the screen under test. Continuous rather than instantaneous for exactly that race.
+async function waitForWorldVisible(page, stableMs = 2500, attempts = 240, intervalMs = 250) {
+  let since = 0;
+  for (let i = 0; i < attempts; i++) {
+    const gone = await page.evaluate(() => {
+      const el = document.querySelector('#loading-screen');
+      if (!el) return true;
+      const cs = getComputedStyle(el);
+      return cs.display === 'none' || cs.opacity === '0' || cs.visibility === 'hidden';
+    });
+    if (gone) {
+      if (since === 0) since = Date.now();
+      if (Date.now() - since >= stableMs) return true;
+    } else {
+      since = 0;
+    }
+    await wait(intervalMs);
+  }
+  return false;
+}
+
 // Seed the theme preset BEFORE the document loads (variant.beforeLoad), in string
 // form because this script runs under tsx (keepNames breaks nested functions inside
 // evaluate callbacks). Every themed variant seeds explicitly, never relies on a
@@ -4002,22 +4026,34 @@ export const TARGETS = [
       'sim/content/card_master',
       'sim/minigames/card_duel',
     ],
-    // Teleport next to the Card Master (Eastbrook zone1, {13, 2}) so the range gate
-    // passes, open the window, then SIT DOWN against one of his named regulars: a bot
-    // match starts immediately, which is the only way to reach a live table in a
-    // single-player world. The idle window shows an affordance; the played round shows
-    // the thing a reviewer needs to judge (the seats, the clock, the stage, the hand).
+    // Teleport onto the LIVE Card Master so the range gate passes, open the window,
+    // then SIT DOWN against one of his named regulars: a bot match starts immediately,
+    // which is the only way to reach a live table in a single-player world. The idle
+    // window shows an affordance; the played round shows the thing a reviewer needs to
+    // judge (the seats, the clock, the stage, the hand).
+    //
+    // The destination is READ from the NPC rather than written as a literal. It was
+    // {13, 2}, which the NPC has since left: the range gate then refused every sit-down
+    // and, because each step degrades rather than failing, this target quietly shot the
+    // idle affordance forever instead of a table.
     //
     // Every step past the window itself degrades to the idle shot rather than failing
     // the run, and each wait is a pollForSize (a laid-out, displayed element) rather
     // than a bare selector match: the HUD's markup exists while the loading screen is
-    // still up, so a presence-only wait silently photographs a mid-boot frame.
+    // still up, so a presence-only wait silently photographs a mid-boot frame. The
+    // teleport itself streams a new zone, which raises that loading screen back OVER a
+    // HUD that is already laid out, so the shot also waits for it to go.
     async capture(page) {
       await page.evaluate(() => {
-        const p = window.__game?.sim?.player;
-        if (p?.pos) {
-          p.pos.x = 13;
-          p.pos.z = 2;
+        const sim = window.__game?.sim;
+        const p = sim?.player;
+        const npc = [...(sim?.entities?.values?.() ?? [])].find(
+          (e) => e.kind === 'npc' && e.templateId === 'card_master',
+        );
+        if (p?.pos && npc?.pos) {
+          p.pos.x = npc.pos.x + 1;
+          p.pos.y = npc.pos.y;
+          p.pos.z = npc.pos.z + 1;
         }
         const el = document.querySelector('#card-duel-window');
         if (el) el.style.display = 'none';
@@ -4037,6 +4073,7 @@ export const TARGETS = [
           await wait(9000);
         }
       }
+      await waitForWorldVisible(page);
       return { clip: '#card-duel-window' };
     },
   },

@@ -1706,6 +1706,397 @@
     }
   }
 
+  /* ---------- card duel desktop table ---------- */
+  /* Every layout above this point fits a phone. A desktop viewport got that
+     same 380px column with a field of empty screen around it, so the surface a
+     player stares at for a whole match was the smallest thing on the monitor.
+
+     TWO queries, and the split is the load-bearing part. The MEDIA query
+     decides the window is ALLOWED to be big (a desktop viewport, a mouse). The
+     CONTAINER query decides what the table does with the width it actually
+     got. This window carries a resize grip (it is not in window_resize.ts's
+     NON_RESIZABLE_WINDOW_IDS), so a player can drag it back down to a column,
+     and a viewport-keyed reflow would go on painting a two-column board inside
+     a 400px box. Keying the reflow on the body's own measurement is correct
+     under that drag and under the #ui zoom, neither of which the viewport can
+     see.
+
+     Nothing here is new information, and no beat, duration or cue is touched:
+     the round theater is the fairness contract in src/ui/cards/CLAUDE.md, and
+     this block only gives it a bigger room to play in. The one thing a desktop
+     player GAINS is the rules sentence on the hand card, which is additive.
+     The button's own accessible name and the inspector still carry that
+     sentence at every size, on every device, exactly as before. */
+  @media (min-width: 60rem) and (min-height: 45rem) and (hover: hover) and (pointer: fine) {
+    #card-duel-window {
+      /* The board and its rail side by side, bounded by the same app-viewport
+         clamp every window uses rather than a raw vw. */
+      width: min(1040px, calc(var(--app-vw, 100vw) / var(--window-scale, 1) - 64px));
+      top: 5vh;
+      max-height: calc(var(--app-vh, 100vh) * 0.9 / var(--window-scale, 1) - 24px);
+    }
+    .cd-body {
+      padding: 10px 14px 14px;
+      /* The measurement the reflow below is keyed on. */
+      container-name: cd-table;
+      container-type: inline-size;
+    }
+  }
+
+  /* The reflow. 52rem is where the board and a 15rem rail stop crowding each
+     other; under it the stacked phone table is still the better answer, so a
+     narrowed window simply falls back to it. */
+  @container cd-table (min-width: 52rem) {
+    /* The pre-match screens (sit down, queue) and the match summary are
+       READING width, not board width. Without this they stretch to a metre of
+       button, which is a regression the widened window would have caused. */
+    .cd-regulars,
+    .cd-body > .cd-status,
+    .cd-body > .cd-action-btn,
+    .dt-sum {
+      max-width: 34rem;
+      margin-inline: auto;
+    }
+
+    .dt {
+      display: grid;
+      align-items: start;
+      gap: 10px 18px;
+      grid-template-columns: minmax(0, 1fr) minmax(14rem, 16rem);
+      /* The same two-column grammar the short-viewport block already uses, so
+         there is ONE wide layout to reason about rather than two: the board
+         and its readouts side by side, the hand across the bottom under the
+         board it is played onto. */
+      grid-template-areas:
+        "board side"
+        "hand  forfeit";
+    }
+    .dt-board {
+      grid-area: board;
+      gap: 10px;
+    }
+    /* The same squeeze the short-viewport layout takes, and the same answer,
+       because a 1366x768 laptop is short for this table too: the HAND and the
+       Forfeit beside it are pinned to the bottom of the window, and the BOARD
+       is bounded to whatever is left and scrolls inside itself rather than
+       growing under the hand where half of it cannot be seen.
+
+       The bound is written against the WINDOW's own clamp, not the raw
+       viewport, and 20rem is the pinned furniture inside it, MEASURED on a
+       1366x768 laptop rather than estimated: the window title, the body
+       padding, the hand's desktop card box, the Forfeit row beside it, and the
+       grid gaps. It has to be exact in one direction: if the WINDOW is the
+       thing that scrolls, the board scrolls out of view and takes its sticky
+       health bars with it, which is the bug this replaced. */
+    .dt-board,
+    .dt-side {
+      max-height: calc(var(--app-vh, 100vh) * 0.9 / var(--window-scale, 1) - 20rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    /* Both HEALTH bars stay in view while the middle of the board scrolls.
+       Health is what the match is decided on, and the player's own band is the
+       one that leaves first. Sticky rather than moved, because position is
+       ownership here (opponent above, you below). The WRAPPERS are what stick,
+       not the bands: a sticky element only travels inside its own parent's
+       box, and each band's wrapper hugs it exactly. */
+    .dt-board > [data-cd-seats-them],
+    .dt-board > [data-cd-seats-mine] {
+      position: sticky;
+      z-index: 1;
+      background: var(--panel-base, #15151f);
+    }
+    .dt-board > [data-cd-seats-them] {
+      top: 0;
+    }
+    .dt-board > [data-cd-seats-mine] {
+      bottom: 0;
+    }
+    .dt-hand-wrap,
+    .dt-forfeit {
+      position: sticky;
+      bottom: 0;
+      z-index: 1;
+      background: var(--panel-base, #15151f);
+    }
+    .dt-hand-wrap {
+      grid-area: hand;
+      min-width: 0;
+      padding-bottom: 4px;
+      border-top: 1px solid #ffffff14;
+    }
+    .dt-forfeit {
+      grid-area: forfeit;
+      align-self: end;
+    }
+
+    /* The readouts become a rail: one panel holding the clock, whose commit
+       the round waits on, and what is still parked on the table. It takes the
+       standing panel edge rather than a new one, so it reads as part of the
+       same window. */
+    .dt-side {
+      grid-area: side;
+      /* Stretched to the board's height rather than hugging its contents: a
+         short panel floating beside a tall board reads as an unfinished
+         corner, and the rail is a SIDE of the table. */
+      align-self: stretch;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius-md);
+      background: #ffffff08;
+    }
+    .dt-clock {
+      gap: 10px;
+    }
+    .dt-clock-ring {
+      width: 40px;
+      height: 40px;
+      mask: radial-gradient(circle, transparent 58%, #000 60%);
+    }
+    /* Sized for the words, not for the digits: this readout says "Time is up"
+       and "Resolving the round" as well as a number, and at 20px display type
+       those wrapped into a headline in a 15rem rail. */
+    .dt-clock-num {
+      font-size: 17px;
+      line-height: 1.2;
+    }
+    .dt-waiting {
+      min-height: 18px;
+      font-size: 13px;
+    }
+    .dt-effects-title {
+      font-size: 11px;
+    }
+    /* A column of chips rather than a wrapping row: the rail is narrow and
+       tall, which is the shape a list of parked effects wanted all along. */
+    .dt-effects-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 5px;
+      margin-top: 6px;
+    }
+    .dt-fx {
+      justify-content: space-between;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+    }
+    .dt-fx-name,
+    .dt-fx-amount {
+      font-size: 12px;
+    }
+
+    /* The seat bands stop wrapping to three lines: name, commit lamp, health,
+       round score, counters and piles are one glance again. */
+    .dt-seat {
+      gap: 6px 10px;
+      padding: 7px 10px;
+      border-radius: var(--radius-md);
+    }
+    .dt-seat-mine,
+    .dt-seat-theirs {
+      border-left-width: 4px;
+    }
+    .dt-seat-name {
+      font-size: 15px;
+    }
+    .dt-hp {
+      flex: 1 1 220px;
+      height: 20px;
+    }
+    .dt-hp-num {
+      font-size: 13px;
+      line-height: 20px;
+    }
+    .dt-rounds,
+    .dt-commit {
+      font-size: 12px;
+    }
+    .dt-token,
+    .dt-token-count {
+      font-size: 12px;
+    }
+    .dt-pile-stack {
+      width: 16px;
+      height: 22px;
+    }
+    .dt-pile-count {
+      font-size: 13px;
+    }
+    .dt-oppo-back {
+      width: 38px;
+      height: 53px;
+    }
+    .dt-oppo-row .cf-size-hand {
+      width: 53px;
+      height: 75px;
+    }
+    .dt-oppo-row .cf-name,
+    .dt-oppo-row .cf-tribes {
+      font-size: 9px;
+    }
+
+    /* The stage becomes the table it has been describing all along: an inset
+       felt field with a gold hairline down the middle where the two cards
+       meet. Every ingredient is already in this sheet (the panel gradient the
+       card backs use, --gold-dim, the same fade gradient as the clash spark),
+       so this is the existing object at a bigger size and not a second visual
+       language. The vignette rides --fx-shadow, so the low preset sheds it and
+       loses nothing that is a number. */
+    .dt-stage {
+      max-width: none;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      justify-items: center;
+      gap: 4px 0;
+      padding: 8px 18px;
+      border: 1px solid var(--gold-dim);
+      background:
+        radial-gradient(ellipse at 50% 45%, #ffffff12, transparent 62%),
+        linear-gradient(160deg, var(--panel-base, #17242c), #0a1116);
+      box-shadow: inset 0 0 calc(38px * var(--fx-shadow, 1)) #00000080;
+    }
+    /* Their card, the gutter, your card. Ownership still reads top to bottom
+       across the BANDS, exactly as it does on the short-viewport layout, and
+       each slot keeps its own label. */
+    .dt-slot-theirs {
+      order: 1;
+    }
+    .dt-clash {
+      order: 2;
+      align-self: stretch;
+      width: 88px;
+      height: auto;
+    }
+    .dt-slot-mine {
+      order: 3;
+    }
+    .dt-clash::before {
+      content: "";
+      position: absolute;
+      inset: 10% auto 10% 50%;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, var(--gold-dim), transparent);
+    }
+    .dt-spark {
+      width: 88px;
+      margin-left: -44px;
+    }
+    .dt-verdict {
+      order: 4;
+      grid-column: 1 / -1;
+      font-size: 17px;
+    }
+    .dt-note {
+      order: 5;
+      grid-column: 1 / -1;
+    }
+    .dt-damage {
+      order: 6;
+      min-height: 22px;
+    }
+    .dt-damage-num {
+      font-size: 22px;
+    }
+    .dt-beats {
+      order: 7;
+      min-height: 17px;
+      font-size: 13px;
+    }
+    .dt-slot {
+      gap: 6px;
+    }
+    .dt-slot-label {
+      font-size: 12px;
+    }
+    .dt-slot-card,
+    .dt-slot-card .cf-size-stage {
+      width: 128px;
+      height: 180px;
+    }
+    .dt-slot-card .cf-size-stage .cf-value {
+      font-size: 23px;
+    }
+    .dt-slot-card .cf-size-stage .cf-rules {
+      padding: 4px 6px;
+      font-size: 11px;
+    }
+    .dt-plate-value {
+      font-size: 24px;
+    }
+    .dt-plate-base {
+      font-size: 13px;
+    }
+    .dt-chip {
+      font-size: 14px;
+    }
+
+    /* The hand, at a size that carries its own rules sentence. This is the
+       same face at the same proportions the collection cell paints, so a card
+       does not read differently depending on where it is; the sentence simply
+       fits now. */
+    .dt-hand {
+      flex-wrap: nowrap;
+      justify-content: center;
+      gap: 16px;
+      margin: 0;
+      padding: 8px 0 4px;
+    }
+    .dt-hand .cf {
+      flex: 0 0 auto;
+    }
+    .dt-hand .cf-size-hand {
+      width: 120px;
+      height: 172px;
+    }
+    .dt-hand .cf-size-hand .cf-rules {
+      display: block;
+    }
+    .dt-hand .cf-size-hand .cf-value {
+      font-size: 22px;
+    }
+    .dt-hand .cf-size-hand .cf-base {
+      font-size: 12px;
+    }
+    .dt-hand .cf-size-hand .cf-delta {
+      font-size: 15px;
+    }
+    .dt-hand .cf-size-hand .cf-name {
+      font-size: 12px;
+    }
+    .dt-hand .cf-size-hand .cf-tribes {
+      font-size: 10px;
+    }
+    /* A hand a player HOLDS. Four cards is the whole hand (HAND_SIZE in
+       src/sim/minigames/card_duel/deck.ts), so the fan is four exact rules and
+       not a pattern that has to guess. It is a STATIC transform on the button,
+       not an animation and not on the frame: the frame's own hover lift and
+       both tier blocks keep working untouched, and the card under the pointer
+       squares up so its sentence is read flat. Small angles on purpose, since
+       the card flights and the inspector both measure this element's box. */
+    .dt-hand .cf {
+      transform-origin: 50% 115%;
+      transition: transform 140ms ease-out;
+    }
+    .dt-hand .cf:nth-child(1) {
+      transform: rotate(-4deg);
+    }
+    .dt-hand .cf:nth-child(2) {
+      transform: rotate(-1.4deg);
+    }
+    .dt-hand .cf:nth-child(3) {
+      transform: rotate(1.4deg);
+    }
+    .dt-hand .cf:nth-child(4) {
+      transform: rotate(4deg);
+    }
+    .dt-hand .cf-playable:hover,
+    .dt-hand .cf:focus-visible {
+      transform: rotate(0deg);
+    }
+  }
+
   /* ---------- card duel motion tiers ---------- */
   /* Reduced motion and the lowest graphics preset each drop the motion, and
      ONLY the motion. Nothing below hides, delays, or dims a number.
@@ -1721,7 +2112,11 @@
      to (the face-down back, the revealed face, the delta chip, the spark, the
      winner's gold edge) plus its caption line. */
   @media (prefers-reduced-motion: reduce) {
+    /* .dt-hand .cf is the desktop fan's element: the FAN itself is a static
+       transform and stays (it is the shape of a held hand, not motion), but the
+       squaring-up it does under the pointer must arrive as a cut, not a glide. */
     .cf-frame,
+    .dt-hand .cf,
     .dt-hp-fill {
       transition: none;
     }
@@ -1741,6 +2136,7 @@
   }
 
   :root[data-fx-level="low"] .cf-frame,
+  :root[data-fx-level="low"] .dt-hand .cf,
   :root[data-fx-level="low"] .dt-hp-fill {
     transition: none;
   }
