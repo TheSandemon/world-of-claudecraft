@@ -330,7 +330,7 @@ describe('card duel window clock and round theater', () => {
     // with the new numbers, rather than describe a node that is gone.
     setInfo(
       liveInfo({
-        hand: [{ iid: 11, cardId: 'briarpack_wolves_moonrun', value: 6, pendingDelta: 2 }],
+        hand: [{ iid: 11, cardId: 'briarpack_wolves_moonrun', value: 6, projectedDelta: 2 }],
       }),
     );
     win.render();
@@ -348,7 +348,9 @@ describe('card duel window clock and round theater', () => {
     // far it moved.
     const { win, root, setInfo } = makeWindow();
     setInfo(
-      liveInfo({ hand: [{ iid: 11, cardId: 'briarpack_wolves_howl', value: 3, pendingDelta: 2 }] }),
+      liveInfo({
+        hand: [{ iid: 11, cardId: 'briarpack_wolves_howl', value: 3, projectedDelta: 2 }],
+      }),
     );
     win.render();
     const face = root.querySelector('[data-cd-hand] .cf') as HTMLElement;
@@ -726,6 +728,114 @@ describe('card duel window clock and round theater', () => {
     (root.querySelector('[data-sumclose]') as HTMLElement).click();
     expect(panel()).toBeNull();
     expect(root.querySelector('[data-join]')).not.toBeNull();
+  });
+
+  it('lets the deciding round finish before the summary takes the window', () => {
+    // THE regression, at the window level: the sim emits cardDuelMatchEnd in
+    // the same tick as the final cardRoundResolved, and showMatchEnd used to
+    // stop the theater and render the summary on the spot. The round that
+    // decided the match was the one round nobody ever saw.
+    vi.useFakeTimers();
+    try {
+      const { win, root } = makeWindow();
+      win.render();
+      win.showReveal({
+        mine: 7,
+        theirs: 4,
+        mineBase: 5,
+        theirsBase: 4,
+        outcome: 'win',
+        reshuffled: false,
+        damage: 3,
+        damageTo: 'theirs',
+      });
+      const stage = () => root.querySelector('[data-cd-stage]') as HTMLElement | null;
+      const panel = () => root.querySelector('.dt-sum') as HTMLElement | null;
+      // The match ends WHILE the first beat is still on the stage.
+      expect(stage()?.dataset.beat).toBe('deal');
+      win.showMatchEnd({
+        won: true,
+        rounds: 9,
+        myHp: 34,
+        theirHp: 0,
+        maxHp: 100,
+        damageDealt: 100,
+        damageTaken: 66,
+        opponentId: 'gravedigger_ossa',
+      });
+      // Still the table, still the round: the summary has not stolen it.
+      expect(panel()).toBeNull();
+      expect(stage()).not.toBeNull();
+
+      // The round plays out in full, and the ending's own beats follow it.
+      vi.advanceTimersByTime(60_000);
+      expect(panel()).not.toBeNull();
+      expect(panel()?.textContent).toContain('You win the duel');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('plays the ending beats, in order, before handing over to the summary', () => {
+    vi.useFakeTimers();
+    try {
+      const { win, root } = makeWindow();
+      win.render();
+      const board = root.querySelector('[data-cd-board]') as HTMLElement;
+      const stage = () => root.querySelector('[data-cd-stage]') as HTMLElement | null;
+      win.showReveal({ mine: 5, theirs: 3, outcome: 'win', reshuffled: false });
+      win.showMatchEnd({
+        won: true,
+        rounds: 3,
+        myHp: 20,
+        theirHp: 0,
+        maxHp: 100,
+        damageDealt: 100,
+        damageTaken: 80,
+        opponentId: 'gravedigger_ossa',
+      });
+
+      // Walk the round out, then watch the three ending beats land on the same
+      // attribute the round beats use.
+      const phases: string[] = [];
+      // Sampled WHILE the ending plays: the hook is cleared on hand-off, so
+      // reading it afterwards would say nothing either way.
+      let endingSeen: string | undefined;
+      for (let i = 0; i < 200; i++) {
+        vi.advanceTimersByTime(50);
+        const beat = stage()?.dataset.beat;
+        if (beat && phases[phases.length - 1] !== beat) phases.push(beat);
+        endingSeen ??= board.dataset.ending;
+        if (root.querySelector('.dt-sum')) break;
+      }
+      expect(phases).toContain('settle');
+      expect(phases.slice(phases.indexOf('settle') + 1)).toEqual(['finish', 'glory', 'curtain']);
+      // The board published which way it went, which is the hook the ending
+      // colours key on, and it is cleared once the summary has the window.
+      expect(endingSeen).toBe('win');
+      expect(board.dataset.ending).toBeUndefined();
+      expect(root.querySelector('.dt-sum')).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('shows the summary at once when no round is being told', () => {
+    // A match that ends on a forfeit or a disconnect has no final round on the
+    // stage, so there is nothing to wait for and nothing to narrate.
+    const { win, root } = makeWindow();
+    win.render();
+    win.showMatchEnd({
+      won: false,
+      rounds: 2,
+      myHp: 0,
+      theirHp: 51,
+      maxHp: 100,
+      damageDealt: 49,
+      damageTaken: 100,
+      opponentId: 'gravedigger_ossa',
+    });
+    expect(root.querySelector('.dt-sum')).not.toBeNull();
   });
 
   it('a closed window hands the cues back rather than eating them', () => {

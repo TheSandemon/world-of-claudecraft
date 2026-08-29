@@ -36,7 +36,20 @@ import {
  * actually did something, which is why a timeline is as long as the round
  * earned rather than a fixed length.
  */
-export type DuelBeatPhase = 'deal' | 'reveal' | 'step' | 'clash' | 'damage' | 'verdict' | 'settle';
+export type DuelBeatPhase =
+  | 'deal'
+  | 'reveal'
+  | 'step'
+  | 'clash'
+  | 'damage'
+  | 'verdict'
+  | 'settle'
+  // The MATCH ending, after the last round has finished being told. Built by
+  // duel_outro_core.ts, played by the same driver onto the same attribute, so
+  // there is one beat vocabulary rather than two.
+  | 'finish'
+  | 'glory'
+  | 'curtain';
 
 /** The audio cues the Card Duel sounds map onto. */
 export type DuelBeatCue = 'reveal' | 'effect' | 'hit' | 'push' | 'shuffle';
@@ -185,6 +198,11 @@ export const DUEL_BEAT_GAP_MS: Readonly<Record<DuelBeatPhase, number>> = {
   verdict: CARD_NARRATION_BEATS.verdict * 1000,
   // The stage holds the finished picture until the next round replaces it.
   settle: 0,
+  // The outro beats own their own gaps (DUEL_OUTRO_GAP_MS): they are not part
+  // of the sim's held-clock budget, and a round timeline never contains one.
+  finish: 0,
+  glory: 0,
+  curtain: 0,
 };
 
 /**

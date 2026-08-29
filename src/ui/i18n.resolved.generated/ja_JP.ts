@@ -8317,6 +8317,10 @@ export const ja_JP: EnTranslations = {
       "yourCard": "あなたのカード",
       "theirCard": "相手のカード",
       "damage": "{target}に{amount}ダメージ",
+      "finish": "The last blow lands",
+      "gloryWin": "The duel is yours",
+      "gloryLose": "The duel is lost",
+      "gloryDraw": "The duel ends level",
       "you": "あなた",
       "them": "相手"
     },

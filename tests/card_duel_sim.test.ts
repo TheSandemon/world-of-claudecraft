@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CARD_MASTER_NPC_ID } from '../src/sim/content/card_master';
+import { CARD_CATALOG } from '../src/sim/content/cards';
+import { projectCardValue } from '../src/sim/minigames/card_duel';
 import { Sim } from '../src/sim/sim';
 import { groundHeight } from '../src/sim/world';
 import { handValues } from './helpers/card_duel_fixtures';
@@ -245,6 +247,60 @@ describe('Sim.removePlayer tears down Card Duel state', () => {
     sim.tick();
     expect(sim.cardDuelMatchFor(a)).toBeNull();
     expect(sim.cardDuelMatchFor(b)).toBeNull();
+  });
+
+  it('sends the viewer their own hand at its PROJECTED value, the number the bots pick on', () => {
+    // The regression this pins: the hand was wired at value + the parked-modifier
+    // badge, which does not run the card's OWN pre-comparison effects. A
+    // "2 Wolves' Hunt" (+21 while you hold at least 1 Pack) therefore read as a
+    // 2 to the player while every bot policy was already choosing against the 23
+    // (projectHand, src/sim/minigames/card_duel/preview.ts). The opponent could
+    // see the card's real worth and the player could not.
+    const sim = makeWorld();
+    const { a } = queueDuo(sim);
+    const match = sim.cardDuelMatchFor(a)!;
+
+    // Put the payoff card in seat a's hand and bank the Pack its condition
+    // wants, so the printed value and the projected value genuinely disagree.
+    // A CardInstance is readonly to the rules engine; the fixture rewrites one
+    // in place because the deal is seeded and this test is about the wire, not
+    // about which cards happened to come up.
+    const held = match.state.a.cards.hand[0] as { cardId: string; value: number; iid: number };
+    held.cardId = 'briarpack_wolves_hunt';
+    held.value = CARD_CATALOG.get('briarpack_wolves_hunt')!.value;
+    match.state.a.counters.Pack = 1;
+    expect(held.value).toBe(2);
+
+    const wired = sim.cardMinigameInfoFor(a).match!.hand.find((c) => c.iid === held.iid)!;
+    expect(wired.value).toBe(2);
+    // 2 printed, 21 from its own live condition.
+    expect(wired.value + (wired.projectedDelta ?? 0)).toBe(23);
+
+    // And it is the SAME number, card for card, that the projection reports:
+    // one source of truth rather than a second preview that can drift.
+    for (const card of match.state.a.cards.hand) {
+      const sent = sim.cardMinigameInfoFor(a).match!.hand.find((c) => c.iid === card.iid)!;
+      expect(sent.value + (sent.projectedDelta ?? 0)).toBe(
+        projectCardValue(match.state, 'a', card, CARD_CATALOG),
+      );
+    }
+  });
+
+  it('never sends a projected value for the OPPONENT hand', () => {
+    // The projection is computed against an empty other seat and skips effects
+    // aimed at opponentCard, so it leaks nothing hidden; but it is still the
+    // viewer's own read, and the opponent's cards are not sent at all beyond a
+    // count and any revealed id.
+    const sim = makeWorld();
+    const { a, b } = queueDuo(sim);
+    const match = sim.cardDuelMatchFor(a)!;
+    match.state.b.counters.Pack = 3;
+    const infoA = sim.cardMinigameInfoFor(a).match!;
+    for (const card of infoA.opponentRevealed ?? []) {
+      expect(card.projectedDelta).toBeUndefined();
+    }
+    expect(infoA.hand.every((c) => c.iid !== match.state.b.cards.hand[0].iid)).toBe(true);
+    expect(b).toBeGreaterThan(0);
   });
 
   it('drops a queued (not yet matched) departed player from the queue', () => {

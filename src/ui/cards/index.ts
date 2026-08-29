@@ -15,6 +15,7 @@ export * from './card_inspect_view';
 export * from './card_round_feedback';
 export * from './duel_beats_core';
 export * from './duel_card_motion';
+export * from './duel_outro_core';
 export * from './duel_summary_view';
 export * from './duel_table_markup';
 export * from './duel_table_view';

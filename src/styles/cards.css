@@ -2127,6 +2127,124 @@
     }
   }
 
+  /* ---------- card duel ending (src/ui/cards/duel_outro_core.ts) ---------- */
+  /* The match ENDING, played over the finished stage after the last round has
+     been told in full.
+
+     It used to not exist: the match-end event arrives in the same tick as the
+     final round's resolution, so the window stopped the theater and swapped in
+     the summary, and the one round that decided the match was the one round
+     nobody ever saw. These three beats are the pause that was missing.
+
+     Every rule here is opacity, transform or color on an element the stage
+     already owns, keyed on the same `data-beat` the round beats use, plus one
+     `data-ending` on the board saying which way it went. No new element, no
+     layout read, and nothing that gates a number: by the time any of this
+     plays, the match is over and every value in the summary is already true on
+     the table underneath. */
+
+  /* Beat 1, finish: the blow that ended it. The spotlight attribute is doing
+     the pointing (data-spot is mine-hp or theirs-hp on this beat, the same
+     mechanism a damage beat uses), so all this owes is a held, quiet stage. */
+  .dt-stage[data-beat="finish"] .dt-slot,
+  .dt-stage[data-beat="glory"] .dt-slot,
+  .dt-stage[data-beat="curtain"] .dt-slot {
+    opacity: 0.72;
+    transition: opacity 400ms ease-out;
+  }
+
+  /* Beat 2, glory: the winning side lifts. The seat band is the element that
+     carries ownership, so it is the element that celebrates; the loser's band
+     recedes rather than being hidden, because its numbers are still readable
+     and a player is entitled to read them. */
+  /* Keyed on the BOARD's own `data-ending` rather than on the stage's beat:
+     the seat bands are SIBLINGS of the stage under the board, so no selector
+     rooted at [data-beat] can reach backwards to the band above it. The
+     attribute is written once when the outro starts and the transition is what
+     makes it arrive, which is the same answer for one beat or three. */
+  .dt-board[data-ending] .dt-seat {
+    transition:
+      border-color 500ms ease-out,
+      opacity 500ms ease-out;
+  }
+  .dt-board[data-ending="win"] .dt-seat-mine,
+  .dt-board[data-ending="lose"] .dt-seat-theirs {
+    border-color: var(--gold);
+  }
+  /* The losing band RECEDES, it does not hide: its health, score and counters
+     are still readable, and a player is entitled to read the board that just
+     beat them. */
+  .dt-board[data-ending="win"] .dt-seat-theirs,
+  .dt-board[data-ending="lose"] .dt-seat-mine {
+    opacity: 0.8;
+  }
+  .dt-stage[data-beat="glory"] .dt-verdict {
+    animation: dt-glory 1200ms ease-out;
+  }
+  .dt-board[data-ending="win"] .dt-stage[data-beat="glory"] .dt-verdict {
+    color: var(--color-stat-bonus);
+  }
+  .dt-board[data-ending="lose"] .dt-stage[data-beat="glory"] .dt-verdict {
+    color: var(--mkt-name-legendary);
+  }
+  /* The caption strip carries the ending's own line ("The duel is yours"), so
+     it is the one piece of type that grows for the occasion. */
+  .dt-stage[data-beat="glory"] .dt-beats,
+  .dt-stage[data-beat="curtain"] .dt-beats {
+    color: var(--gold);
+    transform: scale(1.06);
+    transition:
+      color 300ms ease-out,
+      transform 300ms ease-out;
+  }
+
+  /* Beat 3, curtain: the table steps back and hands the window over. The
+     summary arrives on top of this, so the two read as one movement rather
+     than as a cut. */
+  .dt-stage[data-beat="curtain"] {
+    opacity: 0.55;
+    transform: scale(0.985);
+    transition:
+      opacity 600ms ease-out,
+      transform 600ms ease-out;
+  }
+  @keyframes dt-glory {
+    0% {
+      transform: scale(1);
+    }
+    35% {
+      transform: scale(1.14);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  /* The summary's own entrance, so the hand-off the curtain beat set up is
+     completed rather than interrupted. The rows keep their existing staggered
+     delays on top of this. */
+  .dt-sum {
+    animation: dt-sum-in 320ms ease-out;
+  }
+  @keyframes dt-sum-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  /* Calm motion and the lowest preset: every beat still happens, at the same
+     times, with the MOVEMENT dropped. The opacity channel and the colour are
+     kept, which is what makes each ending beat tellable apart from the one
+     before it without anything translating or scaling. */
+  .dt-board[data-motion="calm"] .dt-stage[data-beat="curtain"],
+  .dt-board[data-motion="calm"] .dt-stage[data-beat="glory"] .dt-beats,
+  .dt-board[data-motion="calm"] .dt-stage[data-beat="curtain"] .dt-beats {
+    transform: none;
+  }
+  .dt-board[data-motion="calm"] .dt-stage[data-beat="glory"] .dt-verdict {
+    animation: none;
+  }
+
   /* ---------- card duel motion tiers ---------- */
   /* Reduced motion and the lowest graphics preset each drop the motion, and
      ONLY the motion. Nothing below hides, delays, or dims a number.

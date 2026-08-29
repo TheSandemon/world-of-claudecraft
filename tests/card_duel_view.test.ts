@@ -81,10 +81,10 @@ describe('card_duel_view', () => {
     expect(view.deckCount).toBe(12);
     expect(view.discardCount).toBe(2);
     expect(view.hand).toEqual([
-      { iid: 11, cardId: 'card_3', value: 3, playable: true, pendingDelta: 0 },
-      { iid: 12, cardId: 'card_8', value: 8, playable: true, pendingDelta: 0 },
-      { iid: 13, cardId: 'card_1', value: 1, playable: true, pendingDelta: 0 },
-      { iid: 14, cardId: 'card_5', value: 5, playable: true, pendingDelta: 0 },
+      { iid: 11, cardId: 'card_3', value: 3, playable: true, projectedDelta: 0 },
+      { iid: 12, cardId: 'card_8', value: 8, playable: true, projectedDelta: 0 },
+      { iid: 13, cardId: 'card_1', value: 1, playable: true, projectedDelta: 0 },
+      { iid: 14, cardId: 'card_5', value: 5, playable: true, projectedDelta: 0 },
     ]);
   });
 

@@ -1213,6 +1213,13 @@ export const en = {
       yourCard: 'your card',
       theirCard: 'their card',
       damage: '{target} takes {amount}',
+      // The match ENDING (src/ui/cards/duel_outro_core.ts), one line per outro
+      // beat. Written about the match rather than the round: by the time these
+      // play, the last round has already been told in full.
+      finish: 'The last blow lands',
+      gloryWin: 'The duel is yours',
+      gloryLose: 'The duel is lost',
+      gloryDraw: 'The duel ends level',
       you: 'You',
       them: 'Your opponent',
     },

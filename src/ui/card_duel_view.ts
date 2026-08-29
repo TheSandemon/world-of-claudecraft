@@ -18,7 +18,7 @@ export interface CardDuelHandCardView {
   playable: boolean;
   /** The value change parked modifiers would apply if this card were played
    *  now, signed. Zero when nothing is riding on it. */
-  pendingDelta: number;
+  projectedDelta: number;
   /** Rules-text numbers the sim resolved against the live match, so a scaling
    *  card states what it would actually apply. Absent for a card with no
    *  placeholders to fill. */
@@ -112,7 +112,7 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
       // and taking it interrupted the round the player was still watching. The
       // hand comes back the instant the clock starts counting again.
       playable: !m.waitingOnOpponent && !m.resolving,
-      pendingDelta: card.pendingDelta ?? 0,
+      projectedDelta: card.projectedDelta ?? 0,
       ...(card.textValues ? { textValues: { ...card.textValues } } : {}),
     })),
     deckCount: m.deckCount,
@@ -132,7 +132,7 @@ export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
           // A committed card is not playable and has nothing pending: it is
           // already on the table.
           playable: false,
-          pendingDelta: m.myPlayedCard.pendingDelta ?? 0,
+          projectedDelta: m.myPlayedCard.projectedDelta ?? 0,
           ...(m.myPlayedCard.textValues ? { textValues: { ...m.myPlayedCard.textValues } } : {}),
         }
       : null,

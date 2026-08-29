@@ -38,8 +38,8 @@ import {
   cardNarrationSeconds,
   createCardHand,
   createMatchState,
-  pendingValueDelta,
   playCardByInstance,
+  projectCardValue,
   resolveCardRound,
   resolveCardTextValues,
   validateDeck,
@@ -112,13 +112,24 @@ export interface CardMinigameCard {
   cardId: string;
   value: number;
   /**
-   * The value change parked modifiers would apply if this card were played
-   * this round, signed, and absent when it is zero. A PREVIEW of what the
-   * viewer already has riding on the card, never a promise: the true effective
-   * value also depends on the opponent's hidden card. Sent for the viewer's
-   * OWN hand only.
+   * The value change this card would carry into the comparison if it were
+   * played this round, signed, and absent when it is zero. This is the
+   * PROJECTION (`projectCardValue`), not the parked-modifier badge: it also
+   * runs the card's own pre-comparison effects, their conditions, clamps and
+   * spent trigger limits, which is what makes a "gets +21 if you have at least
+   * 1 Pack" card read as what it is worth rather than as its printed 2.
+   *
+   * It is the same number the bots choose on (`projectHand`), which is the
+   * reason it moved: the opponent was picking against the projected value
+   * while the player was shown the printed one.
+   *
+   * Still a PREVIEW, never a promise. The projection is computed against a
+   * board whose other seat is EMPTY, because the opponent's card is genuinely
+   * unknown at selection time, and effects aimed at `opponentCard` are left
+   * out of it, so this leaks nothing hidden. Sent for the viewer's OWN hand
+   * only.
    */
-  pendingDelta?: number;
+  projectedDelta?: number;
   /**
    * The numbers this card's rules sentence needs, resolved against the LIVE
    * match. Sent for the viewer's own hand so a scaling card ("+1 for every two
@@ -829,8 +840,8 @@ function wireCard(card: CardInstance): CardMinigameCard {
  *  the live match so the face states what it would really apply, and the buff
  *  or debuff already parked on it so the face states what it is worth. */
 function wireOwnCard(card: CardInstance, state: CardMatchState, seat: CardSeat): CardMinigameCard {
-  const delta = pendingValueDelta(state, seat, card, CARD_CATALOG);
-  const base = delta === 0 ? wireCard(card) : { ...wireCard(card), pendingDelta: delta };
+  const delta = projectCardValue(state, seat, card, CARD_CATALOG) - card.value;
+  const base = delta === 0 ? wireCard(card) : { ...wireCard(card), projectedDelta: delta };
   const def = CARD_CATALOG.get(card.cardId);
   if (!def || def.effects.length === 0) return base;
   const values = resolveCardTextValues(def, {

@@ -39,6 +39,7 @@ import {
   buildCardFaceModel,
   buildDuelClock,
   buildDuelEffects,
+  buildDuelOutro,
   buildDuelStage,
   buildDuelSummary,
   buildDuelTable,
@@ -48,6 +49,7 @@ import {
   type CardRoundAudio,
   type CardRoundRevealInput,
   cardFaceHtml,
+  type DuelMatchOutcome,
   type DuelMotion,
   type DuelStageModel,
   type DuelSummaryInput,
@@ -57,6 +59,8 @@ import {
   duelClockHtml,
   duelEffectsHtml,
   duelOpponentHandHtml,
+  duelOutroCaption,
+  duelOutroSpanMs,
   duelSeatBandHtml,
   duelStageHtml,
   duelStageIdleHtml,
@@ -64,6 +68,7 @@ import {
   duelSummaryHtml,
   duelTokensHtml,
   duelWaitingText,
+  isDuelOutroBeat,
   resolveDuelMotion,
 } from './cards';
 import type { FlightRect } from './cards/card_flight_core';
@@ -162,6 +167,19 @@ export class CardDuelWindow {
    *  rather than in the projection because the projection's match is already
    *  gone by then: a finished match is not a state the server keeps. */
   private summary: DuelSummaryModel | null = null;
+  /**
+   * A match ending waiting for the final round to finish being told.
+   *
+   * The sim emits the match-end event in the SAME tick as the last
+   * `cardRoundResolved`, so acting on it directly tore down the round that
+   * decided the match: the cards were still face-down when the scoreboard
+   * replaced them. Held here instead, and released by the theater's completion
+   * hook once the round has spoken and the outro has played.
+   */
+  private pendingEnd: DuelSummaryModel | null = null;
+  /** Which ending the outro is currently narrating, for its caption line. Null
+   *  whenever a round rather than a match end owns the stage. */
+  private endingOutcome: DuelMatchOutcome | null = null;
   /** Whether the projection has reported "no match" since the last one ended.
    *  What tells a NEW match apart from the tail of the one being summarized. */
   private sawNoMatch = false;
@@ -277,7 +295,7 @@ export class CardDuelWindow {
       return buildCardFaceModel(
         { iid: mine.iid, cardId: mine.cardId, value: mine.value, textValues: mine.textValues },
         CARD_CATALOG.get(mine.cardId),
-        { playable: mine.playable, effectiveValue: mine.value + mine.pendingDelta },
+        { playable: mine.playable, effectiveValue: mine.value + mine.projectedDelta },
       );
     }
     const theirs = view.opponentRevealed.find((card) => card.iid === iid);
@@ -356,7 +374,7 @@ export class CardDuelWindow {
           .sort()
           .map((key) => `${key}=${values[key]}`)
           .join('+');
-        return `${card.iid}:${card.cardId}:${card.value}:${card.pendingDelta}:${card.playable ? 'p' : '-'}:${priced}`;
+        return `${card.iid}:${card.cardId}:${card.value}:${card.projectedDelta}:${card.playable ? 'p' : '-'}:${priced}`;
       })
       .join(',');
     if (handSig !== this.lastHand && this.els.hand) {
@@ -375,11 +393,13 @@ export class CardDuelWindow {
               {
                 size: 'hand',
                 playable: card.playable,
-                // What the card is worth with everything already parked on it,
-                // so the face reads the real number with the printed one and a
-                // signed chip beside it, rather than a value the round will
-                // contradict the moment it resolves.
-                effectiveValue: card.value + card.pendingDelta,
+                // What the card would RESOLVE at: everything already parked on
+                // it plus its own pre-comparison effects, conditions and
+                // clamps. The same projection the bots pick against, so the
+                // face reads the real number with the printed one and a signed
+                // chip beside it, rather than a value the round will contradict
+                // the moment it resolves.
+                effectiveValue: card.value + card.projectedDelta,
               },
             ),
             // Inspectable: a 68x96 face has no room for the rules sentence,
@@ -530,10 +550,60 @@ export class CardDuelWindow {
    * choose to leave it or sit down again.
    */
   showMatchEnd(input: DuelSummaryInput): void {
-    this.summary = buildDuelSummary(input);
-    // A running timeline is over: the match it was narrating has finished.
-    this.theater?.stop();
+    const summary = buildDuelSummary(input);
     this.lastPending = '';
+    // Nobody is watching, or nothing is being told: the finished picture is the
+    // only correct one, and a closed window has no beats to play anyway.
+    if (!this.isOpen || !this.theater?.isPlaying) {
+      this.revealSummary(summary);
+      return;
+    }
+    // The round that decided the match is still speaking. Queue behind it: the
+    // theater calls back when its last beat opens, and the outro plays over the
+    // finished stage before the summary takes the window.
+    this.pendingEnd = summary;
+  }
+
+  /**
+   * The ending, once the last round has been told: the outro beats, then the
+   * summary.
+   *
+   * The outro runs on the SAME theater, host and attribute the round used
+   * (duel_outro_core.ts), so the ending is more of the grammar a player has
+   * been reading all match rather than a second animation system. Motion is
+   * resolved the same way too, which means the lowest preset and reduced motion
+   * get every beat with the movement dropped, exactly as a round does.
+   */
+  private playOutro(summary: DuelSummaryModel): void {
+    const el = this.els.stage;
+    const theater = this.theater;
+    if (!el || !theater || !this.isOpen) {
+      this.revealSummary(summary);
+      return;
+    }
+    const outcome: DuelMatchOutcome =
+      summary.outcome === 'win' ? 'win' : summary.outcome === 'loss' ? 'lose' : 'draw';
+    this.endingOutcome = outcome;
+    const beats = buildDuelOutro(outcome, resolveDuelMotion(el.ownerDocument));
+    // Published for the stylesheet: the table dims and the winner's side lifts
+    // on this one hook, the same way `data-motion` publishes the motion answer.
+    if (this.els.board) this.els.board.dataset.ending = outcome;
+    // Handed over at the END of the span, so the curtain beat gets the hold it
+    // was written for rather than being replaced on the frame it opens.
+    theater.playBeats(beats, () => this.revealSummary(summary), duelOutroSpanMs(beats));
+  }
+
+  /** The summary takes the window. The one place `summary` is set, so the
+   *  queued and the immediate paths cannot diverge. */
+  private revealSummary(summary: DuelSummaryModel): void {
+    this.pendingEnd = null;
+    this.endingOutcome = null;
+    // The board is about to be replaced by the summary, but clear the hook
+    // anyway: a rematch that reuses this element must not open under the last
+    // match's ending colours.
+    if (this.els.board) this.els.board.removeAttribute('data-ending');
+    this.summary = summary;
+    this.theater?.stop();
     if (this.isOpen) this.render();
   }
 
@@ -570,7 +640,12 @@ export class CardDuelWindow {
     }
     const motion = resolveDuelMotion(el.ownerDocument);
     const theater = this.ensureTheater(el, audio ?? null, stage, motion);
-    theater.play(stage, motion);
+    // The completion hook is where a queued match ending gets its turn. A round
+    // that ends an ordinary match-in-progress simply has nothing waiting.
+    theater.play(stage, motion, () => {
+      const ending = this.pendingEnd;
+      if (ending) this.playOutro(ending);
+    });
     return true;
   }
 
@@ -585,7 +660,13 @@ export class CardDuelWindow {
     this.theater?.stop();
     this.theater = new DuelTheater(
       browserTheaterHost(el, audio, window, {
-        caption: (beat) => duelBeatCaption(beat, stage, CARD_CATALOG),
+        // One strip, two kinds of beat. An outro beat has no stage, no step
+        // and no card to name, so it gets its own line rather than falling
+        // through the round captions to an empty string.
+        caption: (beat) =>
+          isDuelOutroBeat(beat)
+            ? duelOutroCaption(beat, this.endingOutcome ?? 'draw')
+            : duelBeatCaption(beat, stage, CARD_CATALOG),
         // Published for the stylesheet: the calm rules key on this one answer
         // rather than re-deriving it from a media query and a root attribute.
         motion,

@@ -8317,6 +8317,10 @@ export const ko_KR: EnTranslations = {
       "yourCard": "당신의 카드",
       "theirCard": "상대의 카드",
       "damage": "{target} {amount} 피해",
+      "finish": "The last blow lands",
+      "gloryWin": "The duel is yours",
+      "gloryLose": "The duel is lost",
+      "gloryDraw": "The duel ends level",
       "you": "당신",
       "them": "상대"
     },

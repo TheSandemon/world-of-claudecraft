@@ -8317,6 +8317,10 @@ export const ru_RU: EnTranslations = {
       "yourCard": "вашу карту",
       "theirCard": "карту противника",
       "damage": "{target} получает {amount}",
+      "finish": "The last blow lands",
+      "gloryWin": "The duel is yours",
+      "gloryLose": "The duel is lost",
+      "gloryDraw": "The duel ends level",
       "you": "Вы",
       "them": "Противник"
     },

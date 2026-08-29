@@ -19,6 +19,7 @@ import { formatNumber, t } from '../i18n';
 import { cardFaceHtml } from './card_face_markup';
 import { buildCardFaceModel } from './card_face_view';
 import type { DuelBeat, DuelStageModel, DuelStageSide, DuelStageStep } from './duel_beats_core';
+import type { DuelMatchOutcome } from './duel_outro_core';
 import { type DuelSummaryModel, type DuelSummaryRow, summaryRowDelayMs } from './duel_summary_view';
 import type {
   DuelCounterToken,
@@ -388,6 +389,31 @@ export function duelBeatCaption(
   }
   // The verdict banner is already the caption for the last two beats, and two
   // lines saying the same thing is one line of noise.
+  return '';
+}
+
+/**
+ * What one OUTRO beat says (duel_outro_core.ts).
+ *
+ * Separate from `duelBeatCaption` because an outro beat is not about a round:
+ * it has no stage, no step and no card to name, and the thing it reports is the
+ * MATCH. Same strip, same attribute, same one-line-per-beat contract.
+ *
+ * `curtain` is deliberately silent. It is the beat where the summary is coming
+ * up, and the summary's own title says the result better than a caption
+ * repeating it underneath.
+ */
+export function duelOutroCaption(beat: DuelBeat, outcome: DuelMatchOutcome): string {
+  if (beat.phase === 'finish') return t('cardDuel.beat.finish');
+  if (beat.phase === 'glory') {
+    return t(
+      outcome === 'win'
+        ? 'cardDuel.beat.gloryWin'
+        : outcome === 'lose'
+          ? 'cardDuel.beat.gloryLose'
+          : 'cardDuel.beat.gloryDraw',
+    );
+  }
   return '';
 }
 

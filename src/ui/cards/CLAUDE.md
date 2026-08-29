@@ -18,6 +18,7 @@ on where it appears.
 | `card_face_markup.ts` | thin consumer: face model in, markup out. Touches no DOM. |
 | `duel_table_view.ts` | pure core: the clock band, the score pips, the counter tokens, each seat's commit, whose commit the round waits on. In `UI_PURE_CORES`. |
 | `duel_beats_core.ts` | pure core: one resolved round as an ordered beat timeline, with the cue and the SPOTLIGHT that ride each beat. In `UI_PURE_CORES`. |
+| `duel_outro_core.ts` | pure core: the MATCH ending as three more beats in the same grammar (`finish`, `glory`, `curtain`), played after the last round has been told. In `UI_PURE_CORES`. |
 | `duel_table_markup.ts` | thin consumer: table and stage models in, markup out. Touches no DOM. |
 | `duel_theater.ts` | the driver that walks a timeline against an injected host. No element, no timer API, no audio object. |
 | `duel_theater_host.ts` | the browser half: the real timer, the real element, and the one motion decision. In `UI_DOM_MODULES`. |
@@ -165,6 +166,35 @@ the pips and the hand underneath have already moved, the screen-reader line is
 written at once rather than on a beat, and it holds an already-decided round
 whatever the motion level. Nothing a player is still deciding on is ever
 staged.
+
+## How a match ENDS
+
+The sim emits `cardDuelMatchEnd` in the SAME tick as the final
+`cardRoundResolved`. The window used to answer it directly: stop the theater,
+render the summary. So the round that DECIDED the match was the one round a
+player never saw, and the match ended by having its loudest moment deleted.
+
+The ending is QUEUED behind the round instead. `showMatchEnd` holds the summary
+in `pendingEnd`, `DuelTheater.play` takes a completion callback that fires when
+the round's last beat opens, and the ending gets its turn then. Three things
+follow from that and none of them are optional:
+
+- **The settled round is owed a frame.** `DUEL_OUTRO_LEAD_MS` sits between the
+  round's last beat and the ending's first, because an outro that opened at
+  zero would overwrite the settle beat before it painted, which is the same
+  complaint one layer down.
+- **The last beat is owed its hold.** The hand-off is scheduled at
+  `duelOutroSpanMs(beats)`, not on the last beat opening: a beat that is
+  replaced on the frame it opens did not happen.
+- **A closed window, a forfeit, or a stalled client goes straight to the
+  summary.** Motion `none` builds an EMPTY outro, `finishNow()` still runs the
+  queued ending (a stall must not swallow the summary), and `stop()` drops it
+  (the window is going away).
+
+The outro is not a second animation system: same `DuelBeat` shape, same driver,
+same host, same `data-beat` attribute, one extra `data-ending` on the board for
+which way it went. It obeys the motion ladder exactly as a round does, so
+`calm` gets all three beats at the same times with the movement dropped.
 
 ## The clock and the reveal
 
