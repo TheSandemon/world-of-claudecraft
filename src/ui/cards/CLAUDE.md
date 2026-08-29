@@ -196,6 +196,21 @@ same host, same `data-beat` attribute, one extra `data-ending` on the board for
 which way it went. It obeys the motion ladder exactly as a round does, so
 `calm` gets all three beats at the same times with the movement dropped.
 
+**And nothing may open over the summary.** The Card Master stands exactly where
+a duel is played, and his gossip dialog paints OVER this window, so the
+interact press (or the left-click that talks too) landing on him as a match
+ended replaced the result with a menu before the player had read it. The match's
+own outcome was the one thing its ending could not show, which is the same
+complaint the queued outro answers one layer up. `holdsUnreadSummary` is the
+gate and `Hud.openQuestDialog` is where it is read: that is the single funnel
+every gossip route goes through (both `src/game/interactions.ts` arms and
+`src/game/nearby_interaction.ts`), so one guard covers the click and the
+keypress at once. It is a REFUSAL, not a deferral: the gossip opens on the next
+interact once the player has dismissed the summary themselves (its close
+button, a rematch, or closing the window). A dialog that queued itself up would
+just arrive over whatever the player did next.
+`tests/card_duel_summary_gate.test.ts` pins the gate and the wiring.
+
 ## The clock and the reveal
 
 The **clock** is driven from the snapshot deadline, never a client-side timer

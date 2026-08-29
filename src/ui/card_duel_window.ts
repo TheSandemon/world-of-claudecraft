@@ -194,6 +194,26 @@ export class CardDuelWindow {
     return this.deps.root().style.display === 'block';
   }
 
+  /**
+   * True while a finished match's summary still owns the open window.
+   *
+   * The Card Master stands exactly where a duel is played, and his gossip
+   * dialog opens OVER this window. So the click that ends a match at his table
+   * (or any press of the interact key while standing in him) replaced the
+   * summary with a menu before the player had read a word of it: the match's
+   * own result was the one thing the ending could not show. The gossip is held
+   * off while this is true and opens normally once the summary is dismissed,
+   * which is the player's own act (the summary's close button, a rematch, or
+   * closing the window).
+   *
+   * Gated on `isOpen` deliberately: `close()` leaves `summary` set so a
+   * reopened window still shows the result, but a window the player has closed
+   * is not covering anything.
+   */
+  get holdsUnreadSummary(): boolean {
+    return this.isOpen && this.summary !== null;
+  }
+
   toggle(): void {
     if (this.isOpen) {
       this.close();

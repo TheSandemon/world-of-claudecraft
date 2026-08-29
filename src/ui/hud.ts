@@ -15178,7 +15178,7 @@ export class Hud {
   // -------------------------------------------------------------------------
 
   openQuestDialog(npcId: number): void {
-    this.questDialog.open(npcId);
+    if (!this.cardWindows.cardDuel.holdsUnreadSummary) this.questDialog.open(npcId);
   }
 
   // Open the read-only quest detail for a chat-link click. Shows Accept only when the
