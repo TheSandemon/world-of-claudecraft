@@ -57,7 +57,7 @@ function playOut(sim: Sim, pid: number, maxTicks = 20 * 240): void {
   }
 }
 
-describe('Card Duel against a named regular', () => {
+describe('ClaudeStone against a named regular', () => {
   it('starts directly, without touching the matchmaking queue', () => {
     const sim = makeWorld();
     const pid = seatAtCardMaster(sim, 'Aleph');

@@ -1,4 +1,4 @@
-// Saved Card Duel decks: the shape that goes in the character blob, and the
+// Saved ClaudeStone decks: the shape that goes in the character blob, and the
 // one load path that sanitizes it.
 //
 // Persistence is additive by design (docs/prd/card-duel-v2.md section 8): the

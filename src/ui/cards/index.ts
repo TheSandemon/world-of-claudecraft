@@ -1,7 +1,7 @@
-// The Card Duel presentation layer: the card face, the duel table, and the
+// The ClaudeStone presentation layer: the card face, the duel table, and the
 // round theater that plays a resolved round out at a human pace.
 //
-// Everything that renders a Card Duel card or table (the duel window's hand,
+// Everything that renders a ClaudeStone match card or table (the duel window's hand,
 // the stage, the deck builder's collection cells, and the standalone /cards
 // playtest slice) goes through these modules, so a card and a table look and
 // read the same wherever they appear. See ./CLAUDE.md.

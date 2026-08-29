@@ -1,4 +1,4 @@
-// Pure view-core for the Card Duel card face: one component, three sizes (the
+// Pure view-core for the ClaudeStone card face: one component, three sizes (the
 // hand, the reveal stage, a collection cell), same model and same markup.
 //
 // DOM-free and i18n-free: it resolves ids and numbers, and card_face_markup.ts

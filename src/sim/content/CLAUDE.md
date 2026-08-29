@@ -102,8 +102,8 @@ you cannot infer from the file alone.
   the `/dev kit` picker; a testing convenience, NOT a balance statement).
 - **Interactables:** `noticeboards.ts` (town noticeboards; the active
   WorldContent supplies the list so spawn, collision, and interaction share one
-  authority), `card_master.ts` (the Card Duel NPC gate constants).
-- **Card Duel cards:** `cards/` is a DIRECTORY, not a file. One module per design
+  authority), `card_master.ts` (the ClaudeStone NPC gate constants).
+- **ClaudeStone cards:** `cards/` is a DIRECTORY, not a file. One module per design
   identity under `cards/sets/` (a complete value 1 to 10 run each, twenty of
   them), the barrel `cards/index.ts` (sorted catalog, lookups, `CARD_CATALOG`,
   `DEFAULT_DECK_LIST`), `cards/starter_deck.ts` (the authored first deck),

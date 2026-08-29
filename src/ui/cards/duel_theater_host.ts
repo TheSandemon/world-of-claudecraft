@@ -11,7 +11,7 @@
 import type { DuelBeat, DuelBeatCue, DuelMotion } from './duel_beats_core';
 import type { DuelTheaterHost } from './duel_theater';
 
-/** The Card Duel cues, narrowed to what a host needs to fire. */
+/** The ClaudeStone cues, narrowed to what a host needs to fire. */
 export interface DuelCueAudio {
   cardReveal(): void;
   cardRoundPush(): void;

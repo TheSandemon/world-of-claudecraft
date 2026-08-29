@@ -4193,7 +4193,7 @@ export class GameServer {
     // remaining player's win/honor durable if both combatants disconnect close
     // together; removePlayer repeats the idempotent cleanup after the save.
     this.sim.arenaResolveDesertion(session.pid);
-    // Card Duel: drop the queue slot and forfeit any live match on disconnect,
+    // ClaudeStone: drop the queue slot and forfeit any live match on disconnect,
     // same idempotent-before-persistence shape as the two lines above.
     this.sim.leaveCardMinigameEntirely(session.pid);
     // Thornhollow Fields desertion also resolves before the leave save so the leaver's
@@ -7734,7 +7734,7 @@ export class GameServer {
         break;
       }
 
-      // The whole Card Duel command family (server/card_duel_commands.ts): the
+      // The whole ClaudeStone command family (server/card_duel_commands.ts): the
       // queue, the play, the forfeit, the named regulars, and the deck builder.
       // Shape checks there, every authority check in the sim.
       case 'card_queue_join':

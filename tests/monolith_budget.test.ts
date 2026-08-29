@@ -133,7 +133,7 @@ const MONOLITHS: MonolithRow[] = [
     // relocalize wiring (the window itself lives in
     // src/ui/hud/guild_board/). Then down one at the controller-tutorial
     // merge. Exact count, zero slack.
-    // Re-pinned +15 on the Card Duel rebase onto release/v0.41.0: the duel
+    // Re-pinned +15 on the ClaudeStone rebase onto release/v0.41.0: the duel
     // window and the deck builder live in src/ui/cards/, so hud.ts carries
     // only the createCardWindows bag plus its open, close, render and
     // relocalize wiring. Exact count, zero slack.
@@ -146,7 +146,7 @@ const MONOLITHS: MonolithRow[] = [
     // pure core interface_unlock_menu_core.ts. What remains on coordinator
     // state (dimension-mode mover wiring, the edit-preview painter closure,
     // the player-frame bar lock) is the live-hooks half. Exact merged count.
-    // Merging release/v0.41.0 into the Card Duel branch. Both sides re-pinned this
+    // Merging release/v0.41.0 into the ClaudeStone branch. Both sides re-pinned this
     // ceiling: the branch added its own thin desktop wiring (19017) while upstream
     // extracted the charge state and the XHB slot lookup into
     // src/ui/empower_hold_core.ts (19000). The merged file is 19015 lines, so the
@@ -257,7 +257,7 @@ const MONOLITHS: MonolithRow[] = [
     // Plus 7 at the v0.39.3 main back-merge: the Double Honor port grew the
     // sim arm on main while the release pin sat at zero slack (the known
     // both-arms compound). Exact merged count, zero slack.
-    // Re-pinned +48 for the Card Duel work: the engine and the round
+    // Re-pinned +48 for the ClaudeStone work: the engine and the round
     // resolution live under src/sim/minigames/card_duel/ and src/sim/social/,
     // so sim.ts carries the IWorldCardMinigame delegates. Exact count.
     ceiling: 12586,
@@ -334,7 +334,7 @@ const MONOLITHS: MonolithRow[] = [
     // routeEvents into the guild board window's live REST read (the
     // noticeboard_guilds event transform is deleted). Exact count, zero
     // slack.
-    // Then the Card Duel command family (the queue, the play, the forfeit,
+    // Then the ClaudeStone command family (the queue, the play, the forfeit,
     // the regulars, the deck builder) lands in
     // server/card_duel_commands.ts, leaving game.ts the dispatch arm.
     ceiling: 10645,
@@ -356,13 +356,13 @@ const MONOLITHS: MonolithRow[] = [
     // then re-pinned when the mirror gained the trust-boundary row
     // validation and the 404-vs-transport-failure split, plus the roster
     // class field. Exact count, zero slack.
-    // Re-pinned +24 for the Card Duel mirror: the deck fields on
+    // Re-pinned +24 for the ClaudeStone mirror: the deck fields on
     // cardMinigameInfo plus the four IWorldCardMinigame command senders.
     // Exact count, zero slack.
     // Down 5855 -> 5817 at the desktop-signing round: the handoff result
     // validation moved to src/net/desktop_wallet_handoff.ts
     // (parseDesktopWalletHandoffStatus), paying for the stepup action kind.
-    // Merging release/v0.41.0 into the Card Duel branch: that extraction and
+    // Merging release/v0.41.0 into the ClaudeStone branch: that extraction and
     // the card mirror land the merged file BETWEEN the two pins, so the
     // ceiling is the exact merged count per the ratchet's rule.
     ceiling: 5841,

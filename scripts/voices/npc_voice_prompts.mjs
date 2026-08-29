@@ -289,7 +289,7 @@ export const VOICE_PROMPTS = [
       'mid-tenor that lifts on every offer, shuffling its own consonants. Playful, insinuating, ' +
       'delighted either way by how the hand falls. Age 30s to 40s. Male.',
     sampleText:
-      'Care for a Card Duel? Best of three, winner takes the bragging rights. No coin needed, ' +
+      'Care for a ClaudeStone match? Best of three, winner takes the bragging rights. No coin needed, ' +
       'friend, only nerve, and you look to me like someone with a little to spare.',
   },
   {

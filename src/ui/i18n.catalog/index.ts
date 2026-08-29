@@ -1122,19 +1122,19 @@ export const en = {
     buyConfirmAccept: 'Buy',
     buyConfirmCancel: 'Cancel',
   },
-  // The Card Master window (Card Duel minigame): queue join/leave affordance
+  // The Card Master window (ClaudeStone minigame): queue join/leave affordance
   // plus the in-match hand strip + round-score panel.
   cardDuel: {
-    title: 'Card Duel',
+    title: 'ClaudeStone',
     close: 'Close',
     join: 'Join Queue',
-    joinAria: 'Join the Card Duel queue',
+    joinAria: 'Join the ClaudeStone queue',
     leave: 'Leave Queue',
-    leaveAria: 'Leave the Card Duel queue',
+    leaveAria: 'Leave the ClaudeStone queue',
     forfeit: 'Forfeit',
-    forfeitAria: 'Forfeit the Card Duel',
+    forfeitAria: 'Forfeit the ClaudeStone match',
     queued: 'Waiting for an opponent...',
-    unavailable: 'Card Duel requires another player online.',
+    unavailable: 'ClaudeStone requires another player online.',
     vsOpponent: 'vs {name}',
     round: 'Round score: {mine} - {theirs}',
     counts: 'Deck: {deck} · Discard: {discard}',
@@ -1289,7 +1289,7 @@ export const en = {
       basics: 'Basics',
     },
   },
-  // The Card Master's regulars: the sit-down list on the Card Duel window.
+  // The Card Master's regulars: the sit-down list on the ClaudeStone window.
   cardOpponents: {
     heading: 'Play a regular',
     sitDown: 'Sit down against {name}',

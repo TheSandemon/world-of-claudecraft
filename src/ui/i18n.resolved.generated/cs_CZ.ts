@@ -5666,7 +5666,7 @@ export const cs_CZ: EnTranslations = {
       "typeEscortTitle": "Doprovod",
       "typeEscortBody": "Někoho je třeba doprovodit na nebezpečné místo. Přijmi úkol, najdi osobu čekající na začátku cesty a promluv s ní, aby se vydala na cestu. Jde svou vlastní trasou, zatímco ty jí držíš krok, a potíže, které na cestě číhají, jdou po ní, ne vždy po tobě. Drž se blízko: nepřátelé přepadají výpravu ve vlnách a cesta pokračuje, teprve až je vlna zvládnutá. Doprovázenou osobu nemůžeš napadnout, ale můžeš ji léčit, a pokud padne, běh se prostě resetuje, abys to mohl zkusit znovu. Dojdi s ní živou až na konec cesty a úkol se započítá.",
       "cardMasterTitle": "Ne každý NPC má úkol: Karetní mistr",
-      "cardMasterBody": "Jeden NPC v Eastbrooku místo pochůzek rozdává karty. Promluv s Kartářským mistrem, vyber v jeho nabídce Karetní souboj a zařadíš se do fronty, která tě spáruje s dalším čekajícím hráčem. Sednout si může kterákoli třída a nezáleží ani na úrovni, ani na výbavě. Každý hraje z vlastního balíčku dvaceti karet: dvě od každé hodnoty od jedné do desíti a žádná karta dvakrát, takže všechny balíčky nesou stejnou hrubou sílu a rozdíl je v tom, které karty sis vybral. V ruce držíš čtyři a po každém kole doplňuješ zpět na čtyři. Karty umí víc než své číslo: vlk, který sílí se smečkou za zády, kámen, jenž soupeřovu kartu na kolo umlčí, svíce, která požehná tvé další nemrtvé kartě. Kolo bere karta, která je po všem tomhle vyšší, a dvě stejné znamenají remízu, jež nebodujeme nikomu. Zápas bere ten, kdo první vyhraje dvě kola, souboj je tedy na dvě vítězná kola. Kola běží na čas: nech kartu čtyřicet pět sekund nezahranou a zápas jde soupeři, ledaže dosud nebylo rozhodnuto žádné kolo, pak se prostě zruší bez vítěze. Když po zahraných kartách necháte čas vypršet oba, souboj se zapíše jako remíza. Stejná pravidla platí, když odejdeš sám. Do fronty se musíš zařadit u Kartářského mistra, ale jakmile jste spárováni, stůl se otevře sám a hrát můžeš odkudkoli. Jsou potřeba dva, takže offline svět tuhle hru nikdy nenabídne."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Tváře, které poznáš",
@@ -8255,16 +8255,16 @@ export const cs_CZ: EnTranslations = {
     "buyConfirmCancel": "Zrušit"
   },
   "cardDuel": {
-    "title": "Karetní souboj",
+    "title": "ClaudeStone",
     "close": "Zavřít",
     "join": "Vstoupit do fronty",
-    "joinAria": "Vstoupit do fronty Karetního souboje",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Odejít z fronty",
-    "leaveAria": "Odejít z fronty Karetního souboje",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Vzdát se",
-    "forfeitAria": "Vzdát se Karetního souboje",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Čekám na soupeře...",
-    "unavailable": "Karetní souboj vyžaduje dalšího hráče online.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "vs {name}",
     "round": "Skóre kola: {mine} - {theirs}",
     "counts": "Balíček: {deck} · Odložiště: {discard}",
@@ -15127,7 +15127,7 @@ export const cs_CZ: EnTranslations = {
       "card_master": {
         "name": "Karetní mistr",
         "title": "Rozdavač osudu",
-        "greeting": "Jak by byl Karetní souboj? Na tři kola, vítěz získá právo chlubit se."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Pokladní Petra Vell",

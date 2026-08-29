@@ -921,7 +921,7 @@ export const SFX = [
   { key: 'wand_holy', custom: true },
   { key: 'wand_shadow', custom: true },
 
-  // --- Card Duel minigame (custom recordings, not ElevenLabs) --------------
+  // --- ClaudeStone minigame (custom recordings, not ElevenLabs) --------------
   // Match win/lose deliberately reuse ui_duel_end/ui_arena_loss, no dedicated
   // recordings for those (see src/game/audio.ts).
   { key: 'ui_card_play', custom: true },

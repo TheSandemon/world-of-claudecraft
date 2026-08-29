@@ -5666,7 +5666,7 @@ export const nl_NL: EnTranslations = {
       "typeEscortTitle": "Begeleiden",
       "typeEscortBody": "Iemand moet ergens gevaarlijks naartoe. Neem de quest aan, zoek diegene op die aan het begin van de weg wacht, en spreek die persoon aan om te vertrekken. Diegene volgt een eigen pad terwijl jij het tempo bijhoudt, en het gevaar dat er huist, komt op hen af, niet altijd op jou. Blijf dichtbij: vijanden overvallen de tocht in golven, en de tocht gaat pas verder zodra een golf is neergeslagen. Je kunt de persoon die je begeleidt niet aanvallen, maar wel genezen, en valt diegene, dan wordt de run simpelweg opnieuw gestart zodat je het nog eens kunt proberen. Bereik het einde met diegene nog in leven en jou ernaast, en de quest is voltooid.",
       "cardMasterTitle": "Niet elke NPC heeft een quest: de Kaartmeester",
-      "cardMasterBody": "Een NPC in Eastbrook deelt kaarten uit in plaats van klusjes. Praat met de Kaartmeester, kies het Kaartduel uit zijn menu en je komt in een wachtrij die je koppelt aan de volgende wachtende speler. Elke klasse mag aanschuiven, en je niveau of uitrusting doet er niets toe. Jullie spelen allebei uit een eigen deck van twintig kaarten: twee van elke waarde van een tot tien en geen kaart dubbel, dus elk deck draagt dezelfde ruwe kracht en het verschil zit in welke kaarten je koos. Je houdt er vier in de hand en vult na elke ronde weer aan tot vier. Kaarten doen meer dan hun getal: een wolf die groeit met de roedel achter zich, een steen die de tegenstander die ronde het zwijgen oplegt, een kaars die je volgende ondode zegent. De na dat alles hoogste kaart wint de ronde, en twee gelijke kaarten zijn gelijkspel dat voor niemand telt. Wie het eerst twee rondes wint, wint de partij, dus een duel gaat om twee gewonnen rondes. Rondes lopen op de klok: laat je kaart vijfenveertig seconden ongespeeld en de partij gaat naar de andere kant, tenzij er nog geen ronde beslist is, dan wordt hij simpelweg zonder winnaar geschrapt. Laten jullie allebei de klok aflopen nadat er kaarten zijn gespeeld, dan wordt het duel als gelijkspel genoteerd. Dezelfde regels gelden als je zelf wegloopt. Om in de rij te komen moet je bij de Kaartmeester staan, maar zodra je gekoppeld bent opent het bord vanzelf en kun je overal vandaan spelen. Er zijn er twee voor nodig, dus de offline wereld biedt het nooit aan."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Gezichten die je zult leren kennen",
@@ -8255,16 +8255,16 @@ export const nl_NL: EnTranslations = {
     "buyConfirmCancel": "Annuleren"
   },
   "cardDuel": {
-    "title": "Kaartduel",
+    "title": "ClaudeStone",
     "close": "Sluiten",
     "join": "Wachtrij Betreden",
-    "joinAria": "De Kaartduelwachtrij betreden",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Wachtrij Verlaten",
-    "leaveAria": "De Kaartduelwachtrij verlaten",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Opgeven",
-    "forfeitAria": "Het Kaartduel opgeven",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Wachten op een tegenstander...",
-    "unavailable": "Kaartduel vereist een andere speler die online is.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "tegen {name}",
     "round": "Rondescore: {mine} - {theirs}",
     "counts": "Deck: {deck} - Aflegstapel: {discard}",
@@ -15127,7 +15127,7 @@ export const nl_NL: EnTranslations = {
       "card_master": {
         "name": "Kaartmeester",
         "title": "Verdeler van het Lot",
-        "greeting": "Zin in een Kaartduel? Beste van drie, de winnaar pakt de praatrechten."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Thesaurier Petra Vell",

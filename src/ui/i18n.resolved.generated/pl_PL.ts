@@ -5666,7 +5666,7 @@ export const pl_PL: EnTranslations = {
       "typeEscortTitle": "Eskorta",
       "typeEscortBody": "Ktoś potrzebuje przeprowadzenia w niebezpieczne miejsce. Podejmij zadanie, znajdź osobę czekającą na początku drogi i zagadaj do niej, by ruszyć w drogę. Idzie ona własną ścieżką, podczas gdy ty dotrzymujesz jej kroku, a kłopoty czyhające po drodze przychodzą po nią, nie zawsze po ciebie. Trzymaj się blisko: wrogowie zasadzają się na marsz falami, a wędrówka wznawia się dopiero, gdy fala zostanie pokonana. Nie możesz zaatakować osoby, którą eskortujesz, ale możesz ją leczyć, a jeśli padnie, przebieg po prostu się resetuje, byś mógł spróbować ponownie. Dotrzyj z nią żywą na drugi koniec, ty u jej boku, a zadanie zostanie zaliczone.",
       "cardMasterTitle": "Nie każdy NPC ma zadanie: Mistrz Kart",
-      "cardMasterBody": "Pewien NPC w Eastbrook rozdaje karty zamiast zleceń. Porozmawiaj z Mistrzem Kart, wybierz z jego menu Pojedynek Kart, a trafisz do kolejki, która połączy cię z następnym czekającym graczem. Usiąść może każda klasa, a poziom ani ekwipunek nie mają tu nic do rzeczy. Każdy gra własną talią dwudziestu kart: po dwie z każdej wartości od jednego do dziesięciu i żadna karta się nie powtarza, więc wszystkie talie niosą tę samą surową siłę, a różnica tkwi w tym, które karty wybrałeś. Trzymasz cztery na ręce i po każdej rundzie uzupełniasz z powrotem do czterech. Karty robią więcej niż ich liczba: wilk, który rośnie z watahą za plecami, kamień uciszający kartę przeciwnika na rundę, świeca błogosławiąca twojego następnego nieumarłego. Rundę bierze karta wyższa po tym wszystkim, a dwie równe to remis, który nie punktuje nikomu. Mecz bierze ten, kto pierwszy wygra dwie rundy, więc pojedynek toczy się do dwóch wygranych rund. Rundy idą na zegar: zostaw kartę niezagraną przez czterdzieści pięć sekund, a mecz przechodzi na drugą stronę, chyba że żadna runda nie została jeszcze rozstrzygnięta, wtedy po prostu przepada bez zwycięzcy. Jeśli po zagranych kartach oboje pozwolicie zegarowi dobiec końca, pojedynek zostanie zapisany jako remis. Te same zasady obowiązują, gdy sam odejdziesz. Aby wejść do kolejki, musisz stać przy Mistrzu Kart, ale po dobraniu przeciwnika stół otwiera się sam i możesz grać skądkolwiek. Potrzeba dwojga, więc świat offline nigdy tego nie zaoferuje."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Twarze, które poznasz",
@@ -8255,16 +8255,16 @@ export const pl_PL: EnTranslations = {
     "buyConfirmCancel": "Anulować"
   },
   "cardDuel": {
-    "title": "Pojedynek Karciany",
+    "title": "ClaudeStone",
     "close": "Zamknij",
     "join": "Dołącz do kolejki",
-    "joinAria": "Dołącz do kolejki Pojedynku Karcianego",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Opuść kolejkę",
-    "leaveAria": "Opuść kolejkę Pojedynku Karcianego",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Poddaj się",
-    "forfeitAria": "Poddaj się w Pojedynku Karcianym",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Oczekiwanie na przeciwnika...",
-    "unavailable": "Pojedynek Karciany wymaga obecności innego gracza.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "kontra {name}",
     "round": "Wynik rundy: {mine} - {theirs}",
     "counts": "Talia: {deck} · Odrzucone: {discard}",
@@ -15127,7 +15127,7 @@ export const pl_PL: EnTranslations = {
       "card_master": {
         "name": "Mistrz Kart",
         "title": "Rozdający Los",
-        "greeting": "Masz ochotę na Pojedynek Karciany? Do trzech razy sztuka, zwycięzca bierze chwałę."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Skarbniczka Petra Vell",

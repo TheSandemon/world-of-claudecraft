@@ -117,7 +117,6 @@ export const table: DeedLocaleTable = {
   },
   pvp_card_duel_first_win: {
     name: 'La baza es mía',
-    desc: 'Gana un Duelo de Cartas en el Maestro de Cartas.',
   },
   prog_first_steps: {
     name: 'Primeros pasos',

@@ -1,4 +1,4 @@
-// IWorldCardMinigame: the Card Duel minigame facet (src/sim/social/card_duel.ts,
+// IWorldCardMinigame: the ClaudeStone minigame facet (src/sim/social/card_duel.ts,
 // src/sim/social/card_duel_queue.ts). Poll-style read state (like duel_arena.ts)
 // plus a small action surface (like interaction.ts).
 

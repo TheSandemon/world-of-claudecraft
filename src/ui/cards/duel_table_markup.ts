@@ -1,4 +1,4 @@
-// The thin consumer half of the Card Duel table: model in, markup out.
+// The thin consumer half of the ClaudeStone table: model in, markup out.
 //
 // Same split, and the same reasoning, as card_face_markup.ts: every number
 // here was decided by duel_table_view.ts or duel_beats_core.ts, every string

@@ -4,7 +4,7 @@
   "sampleEvery": 5,
   "ticks": 41,
   "coverage": [
-    "Card Duel minigame: queue + matchmake at the Card Master",
+    "ClaudeStone minigame: queue + matchmake at the Card Master",
     "createCardHand rng draw (match start, both sides)",
     "refillHand rng draws (round resolution, both sides)",
     "mid-refill reshuffle (the deck runs dry partway through one refill)"
@@ -31,7 +31,7 @@
       "time": 0.25,
       "nextId": 999,
       "state": "bbbe0bf8",
-      "events": "dbe39e25",
+      "events": "2539a449",
       "rng": {
         "draws": 72,
         "digest": "59862d00"

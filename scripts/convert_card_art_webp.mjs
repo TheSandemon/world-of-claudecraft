@@ -1,4 +1,4 @@
-// Ingest delivered Card Duel card paintings to shipping WebP, and regenerate
+// Ingest delivered ClaudeStone card paintings to shipping WebP, and regenerate
 // the id list the client imports.
 //
 // Cards are PORTRAIT, not the square 128px icon, so they get their own

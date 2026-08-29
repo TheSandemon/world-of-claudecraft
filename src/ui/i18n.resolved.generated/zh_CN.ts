@@ -5666,7 +5666,7 @@ export const zh_CN: EnTranslations = {
       "typeEscortTitle": "护送",
       "typeEscortBody": "有人需要被护送着走过一段危险的路。接下任务，到路口找到等在那里的人，与他交谈便可动身。他会按自己的步调走，你在旁边跟上；沿途潜伏的麻烦冲着的是他，并不总是冲着你。跟紧一点：敌人会一波波地伏击这段路，只有把一波清掉，队伍才会继续前进。你无法攻击被护送的人，但可以为他治疗；万一他倒下了，这一趟只是重置一次，你可以再来。带着他活着走到另一头，而你也在他身旁，任务便会记功。",
       "cardMasterTitle": "并非每个 NPC 都有任务：牌局大师",
-      "cardMasterBody": "东溪镇有一位 NPC 发的不是差事，而是纸牌。找到纸牌大师，从他的菜单里选择纸牌对决，你就会进入队列，与下一位等待的玩家配对。任何职业都能坐下来玩，等级和装备都不作数。双方各用自己的二十张牌组：一到十每个数值各两张，且没有重复的牌，因此每副牌组的原始强度都相同，差别只在于你选了哪些牌。你手上始终有四张，每回合结束后补满到四张。牌的作用不止于数字：狼会随着身后的兽群变强，石头能让对手这一回合失去效果，烛火会为你下一张亡灵牌赐福。结算完这一切后数值更高的一方赢下该回合，两张数值相同则为平局，双方都不计分。先赢两回合者拿下整局，因此一场对决是三局两胜。回合有计时：四十五秒内不出牌，整局便判给对方，除非尚未分出任何回合，那样就直接作废、没有胜者。如果双方在已经出过牌之后都让计时耗尽，这场对决会记为平局。你自己中途离开也适用同样的规则。加入队列必须站在纸牌大师身旁，但一旦配对成功，牌桌会自行打开，你在任何地方都能出牌。这需要两个人，所以离线世界永远不会提供它。"
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "你将渐渐熟识的面孔",
@@ -8255,16 +8255,16 @@ export const zh_CN: EnTranslations = {
     "buyConfirmCancel": "取消"
   },
   "cardDuel": {
-    "title": "纸牌对决",
+    "title": "ClaudeStone",
     "close": "关闭",
     "join": "加入队列",
-    "joinAria": "加入纸牌对决队列",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "离开队列",
-    "leaveAria": "离开纸牌对决队列",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "认输",
-    "forfeitAria": "认输退出纸牌对决",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "正在等待对手……",
-    "unavailable": "纸牌对决需要另一名玩家在线。",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "对战 {name}",
     "round": "局分：{mine} - {theirs}",
     "counts": "牌堆：{deck} · 弃牌堆：{discard}",
@@ -15127,7 +15127,7 @@ export const zh_CN: EnTranslations = {
       "card_master": {
         "name": "牌局大师",
         "title": "运气经销人",
-        "greeting": "来一局纸牌对决？三局两胜，赢家赢得吹嘘的资本。"
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "司库佩特拉·维尔",

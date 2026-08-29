@@ -178,7 +178,7 @@ const _VIEW_SIG_RETURN = 'if (view.sig === this.lastSig) return;';
 // field, so the Thornhollow Fields arm names its signature apart to stay pinnable.
 const RAVENRIFT_SIG_RETURN = 'if (ravenriftSig === this.lastSig) return;';
 const VIEW_SIG_BLOCK = 'if (view.sig !== this.lastSig) {';
-// The Card Duel window's shell guard. It guards the REBUILD rather than the
+// The ClaudeStone window's shell guard. It guards the REBUILD rather than the
 // whole method, because the round clock must still paint on every poll: the
 // clock is actionable information, so it may never wait for the rest of the
 // window to change. It is its own constant, and not one of the shared
@@ -1660,7 +1660,7 @@ describe('Hud.update() drives exactly the registered set, on the registered band
       // v0.40.0 sync merge back in.
       // chrome 82 -> 83: the controller-tutorial merge's gamepad control
       // hint apply.
-      // window 44 -> 45: the Card Duel deck builder's render row (the duel
+      // window 44 -> 45: the ClaudeStone deck builder's render row (the duel
       // window's own row was already counted).
     ).toEqual({ window: 45, chrome: 83, none: 17 });
     const windows = HUD_UPDATE_DRIVES.filter((r) => r.surface === 'window');
@@ -1683,7 +1683,7 @@ describe('Hud.update() drives exactly the registered set, on the registered band
       // Up to 23 with the v0.40.0 sync merge: the release arm's
       // woc_market_window row plus the trade-window row (its guard moved from
       // a hud latch to the woc_trade controller in the extraction).
-      // Up one for the Card Duel deck builder's own module guard
+      // Up one for the ClaudeStone deck builder's own module guard
       // (deck_builder_window.ts holds its signature).
       module: 24,
       // 6 = Phase 20's refreshCharSheetIfChanged and its siblings. Their

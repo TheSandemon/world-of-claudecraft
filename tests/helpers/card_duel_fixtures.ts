@@ -1,4 +1,4 @@
-// Shared Card Duel test fixtures. A live match holds CardInstances, not plain
+// Shared ClaudeStone test fixtures. A live match holds CardInstances, not plain
 // numbers, so a suite that wants to force "side A holds a 9" mints an instance
 // rather than poking a number into the hand. Kept here (not copied per suite)
 // because the engine, orchestrator, audio, and snapshot suites all drive

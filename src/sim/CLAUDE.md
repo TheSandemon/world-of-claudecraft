@@ -119,7 +119,7 @@ plausibly covers means the table needs a new row in the same change.
 | `social/battleground.ts` | Thornhollow Fields 5v5 capture-the-flag (layout leaf `battleground_layout.ts`; resolved-match records in the `battleground_outcomes.ts` leaf) and its siblings: `battleground_proposal.ts` (the timed queue-pop Accept/Decline between the matchmaker's pick and the seating, so a walked-away player never gets seated), `battleground_party.ts` (each team of five fights as ONE party, formed through the same dungeon-finder formation seam manual groups use and unwound at match end or desertion), `battleground_backfill.ts` (the pure half of "a fighter left, can a queued player take the seat") |
 | `social/ready_check.ts` | `/ready`: the `readyChecks` primitive + the `updateReadyChecks` phase |
 | `unstuck.ts` | `/unstuck` recovery countdown, the graveyard move (alive) or graveyard revive (dead), cancellation, and cooldown. Charges Unstuck Sickness, never a death |
-| `social/card_duel.ts` | the Card Duel minigame (Card Master NPC): queue/match state, the `updateCardDuelQueue` (pairing) and `updateCardDuelDeadlines` (AFK forfeit/void) phases; pure cores behind it are `social/card_duel_queue.ts` (the FIFO pairing core, no SimContext, no rng) and `minigames/card_duel/` (the data-driven rules engine behind its own barrel and `CLAUDE.md`; `deck.ts` and `selectors.ts` are its only resolution rng sites, `bot.ts` the opponent-choice one) |
+| `social/card_duel.ts` | the ClaudeStone minigame (Card Master NPC): queue/match state, the `updateCardDuelQueue` (pairing) and `updateCardDuelDeadlines` (AFK forfeit/void) phases; pure cores behind it are `social/card_duel_queue.ts` (the FIFO pairing core, no SimContext, no rng) and `minigames/card_duel/` (the data-driven rules engine behind its own barrel and `CLAUDE.md`; `deck.ts` and `selectors.ts` are its only resolution rng sites, `bot.ts` the opponent-choice one) |
 | `instances/card_master.ts` | the Card Master NPC proximity gate (`cardMasterInRange`) `social/card_duel.ts` queues against |
 | `social/trade.ts` + `social/chat.ts` | player trade; the `chat()` router, emotes, whispers, channel membership (readout formatters in `social/chat_readouts.ts`). `Sim` keeps only a thin `chat()` delegate for the `IWorld` facade; new slash commands land in `social/chat.ts`, never on `Sim`. `social/away.ts` owns the /afk and /dnd transitions (ONE source of truth for the `PlayerMeta.away` state and its `Entity.afk` wire mirror, so neither can drift) |
 | `escort.ts` | escort runs: a quest NPC walks an authored waypoint path through scripted ambush waves (`EscortDef` data merged into `ESCORTS`); owns the whole idle/walking/ambush/credit/respawn lifecycle |
@@ -232,7 +232,7 @@ regen for live players, the ghost-run arm for released spirits, timers + auras f
 players too, intentionally); the per-entity loop (mob update + auras, friendly-NPC aura
 cleanse, object respawn); the `engagedPids` combat-flag pass (reads pet AND mob state
 after both update: this STAYS in the coordinator, never moves into a slice); the
-end-of-tick system block in fixed order (duels, Card Duel pairing + AFK deadlines,
+end-of-tick system block in fixed order (duels, ClaudeStone pairing + AFK deadlines,
 arena, trades/ready-checks, ..., through the delayed-event drain, then the
 deeds evaluator `updateDeeds`: zero rng, after the drain so it sees same-tick results); grid
 re-bucketing LAST, then drain + return the `SimEvent[]`. The authoritative phase list is

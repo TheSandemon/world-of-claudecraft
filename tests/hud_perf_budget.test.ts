@@ -758,7 +758,7 @@ const COLD_PAINTER_ALLOWANCES: ReadonlyArray<ColdPainter> = [
     reflowAllow: { '.getBoundingClientRect': 1 },
     driverAllow: {},
   },
-  // The Card Duel window's card flight: ONE rect, read on the CLICK that plays a
+  // The ClaudeStone window's card flight: ONE rect, read on the CLICK that plays a
   // card, because the commit repaints the hand without it and by the time the
   // stage shows the card there is nothing left to measure. Once per commit (a
   // few times a match), never on a repaint and never in a loop; the flight

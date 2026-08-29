@@ -1,8 +1,8 @@
-# World of ClaudeCraft: Card Duel Rules Language
+# World of ClaudeCraft: ClaudeStone Rules Language
 
 ## Purpose
 
-This document defines a flexible **card rules language** for an expanded World of ClaudeCraft Card Duel system.
+This document defines a flexible **card rules language** for an expanded World of ClaudeCraft ClaudeStone system.
 
 The goal is to make cards primarily **data-driven** rather than implemented with bespoke game logic.
 
@@ -24,9 +24,9 @@ If yes, it should be card content rather than custom engine code.
 
 ---
 
-# 1. Core Card Duel Rules
+# 1. Core ClaudeStone Rules
 
-The existing Card Duel identity should remain recognizable.
+The existing ClaudeStone identity should remain recognizable.
 
 ## Deck Construction
 
@@ -775,7 +775,7 @@ Examples:
 
 > Lower value wins this comparison.
 
-These should remain rare because they modify the most fundamental rule of Card Duel.
+These should remain rare because they modify the most fundamental rule of ClaudeStone.
 
 ---
 
@@ -1002,7 +1002,7 @@ Limits prevent accidental infinite loops and runaway interactions.
 
 # 16. Costs and Drawbacks
 
-Card Duel does not necessarily need mana or another resource system.
+ClaudeStone does not necessarily need mana or another resource system.
 
 The 1 to 10 deck structure already creates a natural cost system.
 
@@ -1364,7 +1364,7 @@ The engine can expand only when real card designs prove a missing primitive is n
 
 ## Prefer Data Over Bespoke Code
 
-Individual cards should not normally add special-case branches to the Card Duel engine.
+Individual cards should not normally add special-case branches to the ClaudeStone engine.
 
 Bad:
 
@@ -1432,7 +1432,7 @@ This constraint should remain a core balancing tool.
 
 # 23. Core Design Principle
 
-A legal Card Duel deck always contains exactly two cards of every value from 1 through 10.
+A legal ClaudeStone deck always contains exactly two cards of every value from 1 through 10.
 
 Players do not build stronger decks by removing weak values.
 
@@ -1452,4 +1452,4 @@ The expandable rules language then gives those cards their identity through:
 - Stacking
 - Limits
 
-Together, these primitives should make it possible to create a very large number of custom cards without continually expanding the authoritative Card Duel engine.
+Together, these primitives should make it possible to create a very large number of custom cards without continually expanding the authoritative ClaudeStone engine.

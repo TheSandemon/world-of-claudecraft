@@ -1,6 +1,6 @@
-# Card Duel V2: the data-driven rules language
+# ClaudeStone V2: the data-driven rules language
 
-Implementation plan for expanding the Card Duel minigame from a bare
+Implementation plan for expanding the ClaudeStone minigame from a bare
 value-comparison game into the data-driven card system specified by
 `docs/design/card-duel-rules-language.md` (the rules-language brief), without
 growing a monolith and without breaking the shipped feature.
@@ -829,7 +829,7 @@ and can land one per PR if that reads better in review.
 
 ## 12. Open questions
 
-**Does the RL env expose Card Duel?** It does not today. Not a blocker,
+**Does the RL env expose ClaudeStone?** It does not today. Not a blocker,
 but the engine being pure makes it a cheap candidate, and deciding now
 avoids a retrofit.
 

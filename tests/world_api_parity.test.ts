@@ -550,7 +550,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
   it('pins total / data / method counts', () => {
     // The merged Talent V2 + mage-line surface (selectTalentRow supersedes
     // pickRowTalent; rowPicks stays off the seam, rows live on the allocation)
-    // plus the release's Card Duel facet, the Professions 2.0 identity
+    // plus the release's ClaudeStone facet, the Professions 2.0 identity
     // surface, the mobile-station pair (placeMobileStation +
     // activeMobileStationCraft), the commissions unbindItem command, and the
     // Rift + mounts surface. The v0.31.0 base merge added the release's three new
@@ -607,7 +607,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
     // removing cupInfo (data) plus the cup methods, and the tutorial greeting
     // adds startTutorial (IWorldQuests, a method). The merged tree carries
     // both arms.
-    // The Card Duel deck builder and the named regulars then add four
+    // The ClaudeStone deck builder and the named regulars then add four
     // IWorldCardMinigame METHODS (startCardDuelAgainstOpponent, saveCardDeck,
     // selectCardDeck, deleteCardDeck), taking 238 -> 242 and the total to
     // 327. The saved decks ride the existing cardMinigameInfo data member,

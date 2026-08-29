@@ -210,7 +210,7 @@ describe('Sim.cardMinigameInfoFor', () => {
   });
 });
 
-describe('Sim.removePlayer tears down Card Duel state', () => {
+describe('Sim.removePlayer tears down ClaudeStone state', () => {
   it('forfeits a live match and frees the survivor to re-queue', () => {
     const sim = makeWorld();
     const { a, b } = queueDuo(sim);

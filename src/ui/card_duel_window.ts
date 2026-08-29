@@ -1,4 +1,4 @@
-// Thin DOM consumer for the Card Duel minigame window (the Card Master NPC).
+// Thin DOM consumer for the ClaudeStone minigame window (the Card Master NPC).
 //
 // The consumer half of the pure-core + thin-consumer split. It paints
 // #card-duel-window from the structured CardDuelViewModel (card_duel_view.ts)

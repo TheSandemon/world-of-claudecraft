@@ -532,7 +532,7 @@ describe('frozen trigger + renown catalog (design rule 9: never retro-edit a tri
   // eleven-point threshold is deliberately migrated once to the canonical six rows.
   // This new digest freezes that release contract; it is not permission for later edits.
   // Re-baselined once more at the release/v0.27.0 base merge: the catalog now also
-  // carries the appended pvp_card_duel_first_win deed (Card Duel).
+  // carries the appended pvp_card_duel_first_win deed (ClaudeStone).
   // Re-baselined for Professions 2.0: 26 appended professions deeds
   // (Craftsworn, Masterwright, the fishing pair, the per-craft 50/125
   // milestones, the rare-find quartet, and the salvage pair). No shipped

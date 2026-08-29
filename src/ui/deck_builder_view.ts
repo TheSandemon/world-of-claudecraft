@@ -1,4 +1,4 @@
-// Pure view-core for the Card Duel deck builder.
+// Pure view-core for the ClaudeStone deck builder.
 //
 // The builder's core job is making the deck rule LEGIBLE: ten value rows, two
 // slots each, and a pool per row holding only the cards of that value, with the

@@ -6,7 +6,7 @@ import { EFFECT_PRIORITY, NON_COMMUTATIVE_EFFECTS } from '../src/sim/minigames/c
 import { expectScansOnlyThroughSharedWalkers } from './helpers/scan_guard_self_audit';
 import { tsFilesUnder } from './helpers/ts_files_under';
 
-// Structural guards over the Card Duel engine. These are the two properties no
+// Structural guards over the ClaudeStone engine. These are the two properties no
 // behavior test can prove on its own:
 //
 //  1. Round RESOLUTION draws rng in deck.ts and selectors.ts ONLY. A hidden

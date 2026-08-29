@@ -1,4 +1,4 @@
-// The Card Duel rules engine: the public surface the SimContext-bound
+// The ClaudeStone rules engine: the public surface the SimContext-bound
 // orchestrator (src/sim/social/card_duel.ts) and the tests import. Pure and SimContext-free by design, so
 // the browser, the server, and the headless env run identical rules.
 //

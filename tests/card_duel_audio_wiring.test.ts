@@ -1,4 +1,4 @@
-// Source-guard for the Card Duel hud.ts audio wiring (the
+// Source-guard for the ClaudeStone hud.ts audio wiring (the
 // player_death_audio.test.ts pattern): the sim-behavior side (which event
 // fires with which fields) is covered by tests/card_duel_audio_events.test.ts;
 // this pins that hud.ts's case blocks actually call the right audio.* method
@@ -16,7 +16,7 @@ function caseBody(caseLabel: string): string {
   return hud.slice(start, end);
 }
 
-describe('Card Duel audio wiring in hud.ts', () => {
+describe('ClaudeStone audio wiring in hud.ts', () => {
   it('plays the shuffle cue when a match starts', () => {
     expect(caseBody('cardDuelMatchStart')).toContain('audio.cardShuffle();');
   });

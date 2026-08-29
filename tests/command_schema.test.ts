@@ -26,7 +26,7 @@ const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 // Merged union: the Talent V2 row-selection surface (selectTalentRow supersedes the
 // mage line's pickRowTalent) plus the mage line's empowered-cast release and pet
 // Water Jet commands, on top of Season 1 Armory skin, ignore_add/ignore_remove,
-// stow_weapon, Dungeon Finder, inv_move, the release's Card Duel minigame
+// stow_weapon, Dungeon Finder, inv_move, the release's ClaudeStone minigame
 // (card_queue_join/leave, play_card, card_forfeit), Professions 2.0's
 // place_mobile_station, train_recipe, the three enchanting actions
 // (disenchant_item, apply_enchant, salvage_item), unbind_item (the
@@ -65,7 +65,7 @@ const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 // six vcup_* send + dispatch pairs (docs/design/eastbrook-revamp/master-plan.md);
 // the Proving Shore tutorial adds its one start_tutorial pair back on top, and
 // the v0.40.0 sync merge brings the release side's one new pair with it.
-// The Card Duel deck builder and the named regulars then add four send +
+// The ClaudeStone deck builder and the named regulars then add four send +
 // dispatch pairs (card_play_opponent, card_deck_save, card_deck_select,
 // card_deck_delete). Both numbers were read off a suite run.
 const EXPECTED_SEND_COUNT = 203;

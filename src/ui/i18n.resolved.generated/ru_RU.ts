@@ -5666,7 +5666,7 @@ export const ru_RU: EnTranslations = {
       "typeEscortTitle": "Сопровождение",
       "typeEscortBody": "Кому-то нужно пройти опасной дорогой. Возьмите задание, найдите человека, ждущего в начале пути, и заговорите с ним, чтобы отправиться. Он идёт своей дорогой, а вы держитесь рядом, и беда, что живёт вдоль этой дороги, приходит за ним, а не всегда за вами. Не отставайте: враги нападают из засады волнами, и путь продолжается лишь тогда, когда волна повержена. Атаковать того, кого вы сопровождаете, нельзя, зато лечить его можно, а если он падёт, поход просто начнётся заново, и вы попробуете ещё раз. Дойдите с ним до конца пути живым и рядом, и задание засчитается.",
       "cardMasterTitle": "Не у каждого NPC есть задание: Карточный мастер",
-      "cardMasterBody": "Один житель Истбрука вместо поручений раздает карты. Поговорите с Мастером карт, выберите в его меню строку Карточной дуэли, и вы встанете в очередь, которая сведет вас со следующим ожидающим игроком. Сесть за стол может любой класс, и ни уровень, ни снаряжение здесь ни при чем. Каждый играет своей колодой из двадцати карт: по две на каждое значение от одного до десяти, без повторов, так что все колоды несут одинаковую грубую силу, а разница только в том, какие карты вы выбрали. На руках четыре карты, и после каждого раунда рука снова пополняется до четырех. Карты умеют больше, чем показывать число: волк, что крепнет со стаей за спиной, камень, заставляющий карту соперника молчать весь раунд, свеча, благословляющая следующую вашу нежить. Раунд берет карта, которая после всего этого оказалась выше, а две равные карты дают ничью, не идущую в счет никому. Матч берет тот, кто первым выиграет два раунда, так что дуэль идет до двух побед. Раунды идут по часам: не сыграете карту сорок пять секунд, и матч уходит сопернику, если только ни один раунд еще не был решен, иначе он просто аннулируется без победителя. Если оба дадут часам истечь после сыгранных карт, дуэль записывается как ничья. Те же правила действуют, если вы уходите сами. Чтобы встать в очередь, нужно стоять у Мастера карт, но после подбора стол открывается сам, и играть можно откуда угодно. Нужны двое, поэтому офлайн-мир такой игры не предлагает."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Лица, что станут вам знакомы",
@@ -8255,16 +8255,16 @@ export const ru_RU: EnTranslations = {
     "buyConfirmCancel": "Отмена"
   },
   "cardDuel": {
-    "title": "Карточная дуэль",
+    "title": "ClaudeStone",
     "close": "Закрыть",
     "join": "Встать в очередь",
-    "joinAria": "Встать в очередь на карточную дуэль",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Покинуть очередь",
-    "leaveAria": "Покинуть очередь на карточную дуэль",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Сдаться",
-    "forfeitAria": "Сдаться в карточной дуэли",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Ожидание соперника...",
-    "unavailable": "Для карточной дуэли нужен ещё один игрок онлайн.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "против {name}",
     "round": "Счёт раундов: {mine} - {theirs}",
     "counts": "Колода: {deck} · Сброс: {discard}",
@@ -15127,7 +15127,7 @@ export const ru_RU: EnTranslations = {
       "card_master": {
         "name": "Карточный мастер",
         "title": "Дилер удачи",
-        "greeting": "Не сыграть ли партию в карточную дуэль? До двух побед, победителю достанется слава."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Казначей Петра Велль",

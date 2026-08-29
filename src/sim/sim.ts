@@ -1682,7 +1682,7 @@ export interface PlayerMeta {
   // marks, capped recent. Item ownership stays on deedStats.itemsDiscovered;
   // this field is omit-empty on serialize and never a second full discovery set.
   reliquary: ReliquaryState;
-  // Saved Card Duel decks (src/sim/minigames/card_duel/deck_storage.ts).
+  // Saved ClaudeStone decks (src/sim/minigames/card_duel/deck_storage.ts).
   // Omit-empty on serialize, so a character who never opened the deck builder
   // stays byte-equal to before the system existed.
   cards: CardDeckState;
@@ -1950,7 +1950,7 @@ export interface CharacterState {
   // The Reliquary (JSONB; optional, written only when non-empty so pre-system
   // saves load cleanly and stay byte-equal until the system engages).
   reliquary?: SavedReliquaryState;
-  // Saved Card Duel decks (same omit-empty rule). Absent means a fresh
+  // Saved ClaudeStone decks (same omit-empty rule). Absent means a fresh
   // character, who plays the default deck.
   cards?: SavedCardDecks;
 }
@@ -2105,7 +2105,7 @@ export class Sim {
   tradeInvites = new Map<number, { fromPid: number; expires: number }>();
   duels = new Map<number, DuelState>(); // pid -> shared duel (both pids)
   duelInvites = new Map<number, { fromPid: number; expires: number }>();
-  // Card Duel minigame (src/sim/social/card_duel.ts): its own FIFO queue and
+  // ClaudeStone minigame (src/sim/social/card_duel.ts): its own FIFO queue and
   // live-match map, independent of the HP-based duels above.
   cardDuelQueue: number[] = [];
   cardDuels = new Map<number, CardDuelMatch>(); // pid -> shared match (both pids)
@@ -3542,7 +3542,7 @@ export class Sim {
       }
       meta.deedStats = restoreDeedStats(s.deedStats);
       meta.reliquary = restoreReliquaryState(s.reliquary);
-      // The ONE Card Duel deck load path: a deck that stopped being legal as
+      // The ONE ClaudeStone deck load path: a deck that stopped being legal as
       // the catalog changed is dropped here rather than reaching a match.
       meta.cards = sanitizeCardDeckState(s.cards, CARD_CATALOG);
       deedsMod.unionLegacyMilestones(meta);
@@ -3963,7 +3963,7 @@ export class Sim {
     bgProposalMod.bgProposalDisconnect(this.ctx, pid);
     bgMod.bgDequeue(this.ctx, pid);
     bgMod.bgResolveDesertion(this.ctx, pid);
-    // Card Duel: leaving the queue is free; a live match is forfeited to the
+    // ClaudeStone: leaving the queue is free; a live match is forfeited to the
     // opponent (mirrors the disconnect/jail paths in server/game.ts, and keeps
     // the offline Sim / headless env from leaking cardDuels/cardDuelQueue
     // entries for a departed pid).
@@ -10647,7 +10647,7 @@ export class Sim {
   }
 
   // -------------------------------------------------------------------------
-  // Card Duel minigame (src/sim/social/card_duel.ts): thin delegates for the
+  // ClaudeStone minigame (src/sim/social/card_duel.ts): thin delegates for the
   // IWorld card_minigame facet.
   private updateCardDuelQueue(): void {
     cardDuelMod.updateCardDuelQueue(this.ctx);

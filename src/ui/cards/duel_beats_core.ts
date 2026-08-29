@@ -1,4 +1,4 @@
-// The round theater, as data: one resolved Card Duel round turned into an
+// The round theater, as data: one resolved ClaudeStone round turned into an
 // ordered timeline of beats.
 //
 // Why this exists. A round used to arrive as a finished fact: both numbers,
@@ -51,7 +51,7 @@ export type DuelBeatPhase =
   | 'glory'
   | 'curtain';
 
-/** The audio cues the Card Duel sounds map onto. */
+/** The audio cues the ClaudeStone sounds map onto. */
 export type DuelBeatCue = 'reveal' | 'effect' | 'hit' | 'push' | 'shuffle';
 
 export type DuelOutcome = 'win' | 'lose' | 'push';

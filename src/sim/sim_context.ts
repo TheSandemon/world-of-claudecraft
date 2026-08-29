@@ -171,7 +171,7 @@ export interface SimContextPrimitives {
   // Backing fields stay on Sim. `duels` is also read per-attack by isHostileTo/
   // dealDamage (PvP hostility), so it stays Sim-owned (A2).
   readonly duels: Map<number, DuelState>;
-  // Card Duel minigame (src/sim/social/card_duel.ts): its own FIFO queue
+  // ClaudeStone minigame (src/sim/social/card_duel.ts): its own FIFO queue
   // (mutated in place via shift/splice/push, like cardDuels below, so this is
   // a readonly getter, not reassigned) and live-match map, independent of the
   // HP-based duels above.

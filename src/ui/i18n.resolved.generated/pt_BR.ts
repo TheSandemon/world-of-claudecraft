@@ -5666,7 +5666,7 @@ export const pt_BR: EnTranslations = {
       "typeEscortTitle": "Escoltar",
       "typeEscortBody": "Alguém precisa ser levado a um lugar perigoso a pé. Pegue a missão, encontre a pessoa esperando no começo da estrada e fale com ela para partir. Ela segue seu próprio caminho enquanto você acompanha o ritmo, e o perigo que vive ao longo dele vem atrás dela, nem sempre atrás de você. Fique por perto: inimigos emboscam a caminhada em levas, e ela só continua depois que uma leva é derrotada. Você não pode atacar a pessoa que está escoltando, mas pode curá-la, e se ela cair a corrida simplesmente reinicia para você tentar de novo. Chegue ao final com ela viva e você ao lado dela, e a missão é cumprida.",
       "cardMasterTitle": "Nem todos os NPCs têm uma missão: o Mestre das Cartas",
-      "cardMasterBody": "Um NPC de Eastbrook distribui cartas em vez de recados. Fale com o Mestre das Cartas, escolha a linha do Duelo de Cartas no menu dele e você entra numa fila que o pareia com o próximo jogador à espera. Qualquer classe pode sentar, e nem o seu nível nem o seu equipamento entram na conta. Cada um joga com o próprio baralho de vinte cartas: duas de cada valor de um a dez e nenhuma carta repetida, então todo baralho carrega a mesma força bruta e a diferença está nas cartas que você escolheu. Você segura quatro na mão e reabastece de volta para quatro depois de cada rodada. As cartas fazem mais do que o número: um lobo que cresce com a matilha atrás, uma pedra que cala o adversário pela rodada, uma vela que abençoa o próximo morto-vivo que você jogar. A carta mais alta depois de tudo isso leva a rodada, e duas cartas iguais são um empate que não pontua para ninguém. O primeiro a duas rodadas leva a partida, então um duelo é melhor de três. As rodadas correm no relógio: deixe sua carta sem jogar por quarenta e cinco segundos e a partida vai para o outro lado, a menos que nenhuma rodada tenha sido decidida ainda, caso em que ela é simplesmente descartada sem vencedor. Se os dois deixarem o tempo acabar depois de cartas jogadas, o duelo é registrado como empate. As mesmas regras valem se for você quem sai. Você precisa estar junto do Mestre das Cartas para entrar na fila, mas uma vez pareado o tabuleiro se abre sozinho e você pode jogar de qualquer lugar. São precisos dois, então o mundo offline nunca oferece isso."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Rostos que você vai conhecer",
@@ -8255,16 +8255,16 @@ export const pt_BR: EnTranslations = {
     "buyConfirmCancel": "Cancelar"
   },
   "cardDuel": {
-    "title": "Duelo de Cartas",
+    "title": "ClaudeStone",
     "close": "Fechar",
     "join": "Entrar na Fila",
-    "joinAria": "Entrar na fila do Duelo de Cartas",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Sair da Fila",
-    "leaveAria": "Sair da fila do Duelo de Cartas",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Desistir",
-    "forfeitAria": "Desistir do Duelo de Cartas",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Aguardando um oponente...",
-    "unavailable": "O Duelo de Cartas requer outro jogador online.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "vs {name}",
     "round": "Pontuação da rodada: {mine} - {theirs}",
     "counts": "Baralho: {deck} · Descarte: {discard}",
@@ -15127,7 +15127,7 @@ export const pt_BR: EnTranslations = {
       "card_master": {
         "name": "Mestre das Cartas",
         "title": "Distribuidor do Acaso",
-        "greeting": "Que tal um Duelo de Cartas? Melhor de três, quem vence fica com os direitos de se gabar."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Tesoureira Petra Vell",

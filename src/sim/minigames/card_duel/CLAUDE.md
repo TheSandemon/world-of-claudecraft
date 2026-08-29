@@ -1,4 +1,4 @@
-<!-- src/sim/minigames/card_duel/: the Card Duel rules engine. Parent
+<!-- src/sim/minigames/card_duel/: the ClaudeStone rules engine. Parent
      src/sim/minigames/CLAUDE.md owns what a minigame folder may contain;
      root CLAUDE.md owns the repo-wide rules. Don't repeat either here. -->
 

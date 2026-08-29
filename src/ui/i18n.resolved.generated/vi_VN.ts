@@ -5666,7 +5666,7 @@ export const vi_VN: EnTranslations = {
       "typeEscortTitle": "Hộ tống",
       "typeEscortBody": "Có người cần được hộ tống đến một nơi nguy hiểm. Hãy nhận nhiệm vụ, tìm người đang đợi ở đầu con đường, và bắt chuyện với họ để lên đường. Họ đi theo lối riêng của mình trong khi bạn bám sát, và mối nguy nằm dọc đường sẽ nhắm vào họ, không phải lúc nào cũng nhắm vào bạn. Hãy ở gần: kẻ địch phục kích chuyến đi theo từng đợt, và chuyến đi chỉ tiếp tục khi một đợt đã bị dẹp xong. Bạn không thể tấn công người mình đang hộ tống, nhưng có thể chữa lành cho họ, và nếu họ ngã xuống thì lượt chạy đơn giản được đặt lại để bạn thử lại. Đến được điểm cuối cùng khi họ còn sống và bạn ở bên cạnh, nhiệm vụ sẽ được tính.",
       "cardMasterTitle": "Không phải NPC nào cũng có nhiệm vụ: Bậc Thầy Bài",
-      "cardMasterBody": "Một NPC ở Eastbrook chia bài thay vì giao việc vặt. Hãy nói chuyện với Bài Sư, chọn dòng Đấu Bài trong bảng chọn của ông ta, và bạn vào hàng chờ để ghép với người chơi kế tiếp đang đợi. Lớp nhân vật nào cũng ngồi vào được, cấp độ hay trang bị đều không tính. Mỗi người chơi bộ bài hai mươi lá của riêng mình: mỗi giá trị từ một đến mười có đúng hai lá và không lá nào lặp lại, nên mọi bộ bài đều mang cùng sức mạnh thô, khác nhau chỉ ở chỗ bạn chọn những lá nào. Bạn cầm bốn lá trên tay và bù lại đủ bốn sau mỗi ván. Lá bài làm được nhiều hơn con số của nó: một con sói mạnh lên theo cả bầy phía sau, một hòn đá khiến lá của đối thủ im tiếng suốt ván đó, một ngọn nến ban phước cho lá thây ma bạn đánh kế tiếp. Sau tất cả những điều đó, lá cao hơn thắng ván, còn hai lá bằng nhau là hòa và không ai được điểm. Ai thắng hai ván trước thì thắng trận, nên một cuộc đấu là thể thức ba ván hai thắng. Các ván chạy theo đồng hồ: để lá bài không đánh trong bốn mươi lăm giây thì trận thuộc về bên kia, trừ khi chưa ván nào ngã ngũ, khi đó trận chỉ bị hủy mà không có người thắng. Nếu cả hai để hết giờ sau khi đã có bài được đánh, cuộc đấu được ghi là hòa. Cùng những luật ấy áp dụng nếu chính bạn bỏ đi. Bạn phải đứng cạnh Bài Sư mới vào được hàng chờ, nhưng khi đã ghép cặp thì bàn bài tự mở ra và bạn có thể đánh từ bất cứ đâu. Cần đủ hai người, nên thế giới ngoại tuyến không bao giờ có trò này."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Những gương mặt bạn sẽ dần quen biết",
@@ -8255,16 +8255,16 @@ export const vi_VN: EnTranslations = {
     "buyConfirmCancel": "Hủy bỏ"
   },
   "cardDuel": {
-    "title": "Đấu Bài",
+    "title": "ClaudeStone",
     "close": "Đóng",
     "join": "Tham Gia Hàng Chờ",
-    "joinAria": "Tham gia hàng chờ Đấu Bài",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Rời Hàng Chờ",
-    "leaveAria": "Rời hàng chờ Đấu Bài",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Bỏ Cuộc",
-    "forfeitAria": "Bỏ cuộc Đấu Bài",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Đang đợi đối thủ...",
-    "unavailable": "Đấu Bài cần có một người chơi khác đang trực tuyến.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "vs {name}",
     "round": "Điểm hiệp: {mine} - {theirs}",
     "counts": "Bộ bài: {deck} · Thải bài: {discard}",
@@ -15127,7 +15127,7 @@ export const vi_VN: EnTranslations = {
       "card_master": {
         "name": "Bậc Thầy Bài",
         "title": "Kẻ Chia Bài May Rủi",
-        "greeting": "Muốn thử Đấu Bài không? Chơi ba ván, người thắng lấy quyền khoe."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Thủ Quỹ Petra Vell",

@@ -1,7 +1,7 @@
-/* cards.css: the whole Card Duel visual grammar in one sheet: the duel window
+/* cards.css: the whole ClaudeStone visual grammar in one sheet: the duel window
    shell, the duel table, the round theater, the deck builder, and the card
    face. Moved out of components.css (which is a named extraction target) so
-   that the ONE place a Card Duel surface is styled is the one place both
+   that the ONE place a ClaudeStone match surface is styled is the one place both
    consumers can load it.
 
    Both consumers, deliberately. The in-game window loads it through the

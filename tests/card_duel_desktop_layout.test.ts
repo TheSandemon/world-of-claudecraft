@@ -1,4 +1,4 @@
-// The Card Duel DESKTOP table (the "card duel desktop table" section of
+// The ClaudeStone DESKTOP table (the "card duel desktop table" section of
 // src/styles/cards.css).
 //
 // The table above that section is a phone table, and on a desktop viewport it was

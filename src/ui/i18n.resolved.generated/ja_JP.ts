@@ -5666,7 +5666,7 @@ export const ja_JP: EnTranslations = {
       "typeEscortTitle": "護衛",
       "typeEscortBody": "誰かが危険な道のりを歩いて渡らなければならない、という依頼です。クエストを受けたら、道の入口で待っている相手を見つけ、話しかけて出発しましょう。相手は自分の足で進み、あなたはその歩調に合わせます。道すがらに潜む厄介ごとは、あなたではなく相手を狙ってくることもあります。離れずについていきましょう。敵は波状に待ち伏せしてきて、その波を片づけるまで歩みは再開しません。護衛する相手を攻撃することはできませんが、回復してあげることはできます。相手が倒れても道行きが最初からやり直しになるだけなので、何度でも挑戦できます。相手を生かしたまま、あなたも隣にいる状態で終点にたどり着けば、クエストが達成されます。",
       "cardMasterTitle": "すべてのNPCがクエストを持つわけではありません：カードマスター",
-      "cardMasterBody": "イーストブルックには、お使いではなくカードを配るNPCがいます。カードマスターに話しかけ、メニューからカードデュエルを選ぶと、次に待っているプレイヤーと組ませる待機列に入ります。どの職業でも座れますし、レベルも装備も関係ありません。互いに自分の二十枚のデッキで戦います。値一から十まで各二枚ずつ、同じカードは入れられないので、どのデッキも素の強さは同じで、違いは選んだカードだけです。手札は常に四枚で、各ラウンドの後に四枚まで補充されます。カードは数字以上のことをします。群れを従えて強くなる狼、相手のカードをそのラウンドだけ黙らせる石、次に出すアンデッドを祝福する蝋燭。すべてを処理したうえで高い方がラウンドを取り、同値なら引き分けでどちらにも点は入りません。先に二ラウンド取った方が勝ちなので、デュエルは三本勝負です。ラウンドには制限時間があります。四十五秒カードを出さないと試合は相手のものになりますが、まだどのラウンドも決まっていない場合は勝者なしで破棄されるだけです。カードが出された後に双方とも時間切れになった場合、そのデュエルは引き分けとして記録されます。自分から立ち去った場合も同じ規則です。待機列に入るにはカードマスターのそばに立つ必要がありますが、組み合わされれば盤は自動的に開き、どこからでも出せます。二人必要なので、オフラインの世界では決して遊べません。"
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "やがて知ることになる顔ぶれ",
@@ -8255,16 +8255,16 @@ export const ja_JP: EnTranslations = {
     "buyConfirmCancel": "キャンセル"
   },
   "cardDuel": {
-    "title": "カードデュエル",
+    "title": "ClaudeStone",
     "close": "閉じる",
     "join": "キューに参加",
-    "joinAria": "カードデュエルのキューに参加する",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "キューを離れる",
-    "leaveAria": "カードデュエルのキューを離れる",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "棄権",
-    "forfeitAria": "カードデュエルを棄権する",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "対戦相手を待っています……",
-    "unavailable": "カードデュエルには、オンラインの対戦相手がもう一人必要です。",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "対 {name}",
     "round": "ラウンドスコア：{mine} - {theirs}",
     "counts": "山札：{deck} ・ 捨て札：{discard}",
@@ -15127,7 +15127,7 @@ export const ja_JP: EnTranslations = {
       "card_master": {
         "name": "カードマスター",
         "title": "運命の胴元",
-        "greeting": "カードデュエルはいかが？三本勝負、勝者には自慢の種が手に入る。"
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "出納官ペトラ・ヴェル",

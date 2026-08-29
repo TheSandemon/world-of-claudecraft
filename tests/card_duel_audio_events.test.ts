@@ -6,7 +6,7 @@ import type { SimEvent } from '../src/sim/types';
 import { groundHeight } from '../src/sim/world';
 import { cardOfValue, cardsOfValues } from './helpers/card_duel_fixtures';
 
-// Card Duel had zero audio events before this change (only generic 'log'
+// ClaudeStone had zero audio events before this change (only generic 'log'
 // text). Drives the real sim end-to-end and asserts the new typed events
 // (cardDuelMatchStart, cardPlayed, cardRoundResolved, cardDuelMatchEnd) fire
 // at the exact moments hud.ts's audio wiring depends on.
@@ -50,7 +50,7 @@ function forceHands(match: CardDuelMatch, aValue: number, bValue: number): void 
   match.state.b.cards.hand[0] = cardOfValue(bValue);
 }
 
-describe('Card Duel audio event wiring', () => {
+describe('ClaudeStone audio event wiring', () => {
   it('emits cardDuelMatchStart for both sides the tick they get matched', () => {
     const sim = makeWorld();
     const { a, b, events } = queueDuo(sim);

@@ -1,12 +1,12 @@
-<!-- src/ui/cards/: the Card Duel presentation layer (the card face, the duel
+<!-- src/ui/cards/: the ClaudeStone presentation layer (the card face, the duel
      table, the round theater). src/ui/CLAUDE.md owns the HUD-wide contracts
      (pure cores, painters, i18n, the perf budget); the rules engine lives in
      src/sim/minigames/card_duel/; the styling is src/styles/cards.css. Don't
      repeat any of them here. -->
 
-# src/ui/cards - the Card Duel presentation layer
+# src/ui/cards - the ClaudeStone presentation layer
 
-Everything that shows a Card Duel goes through this folder: the duel window
+Everything that shows a ClaudeStone match goes through this folder: the duel window
 (`src/ui/card_duel_window.ts`), the deck builder, and every other surface that
 paints a card. One card component, one table grammar, one stylesheet
 (`src/styles/cards.css`), so a card cannot look or read differently depending

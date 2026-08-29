@@ -371,9 +371,9 @@ Fiesta) and every world/spatial sound ignore the toggle.
 | `ui_fiesta_word_0` through `ui_fiesta_word_3` | escalating Fiesta takedown tiers |
 | `ui_fiesta_score_mine`, `ui_fiesta_score_other` | team score feedback |
 | `ui_fiesta_wave`, `ui_fiesta_augment`, `ui_fiesta_down`, `ui_fiesta_revive` | Fiesta round and player-state feedback |
-| `ui_card_play`, `ui_card_reveal` | Card Duel minigame (`src/sim/social/card_duel.ts`): a card played, and every round's simultaneous reveal. High-frequency (once per round each), multi-take. |
-| `ui_card_round_push` | Card Duel: layers on top of the reveal cue when a round ties (nobody scores), never a replacement for it |
-| `ui_card_shuffle` | Card Duel: the initial deal at match start AND a mid-match reshuffle (discard pile shuffled back into the deck once it empties), same cue for both moments |
+| `ui_card_play`, `ui_card_reveal` | ClaudeStone minigame (`src/sim/social/card_duel.ts`): a card played, and every round's simultaneous reveal. High-frequency (once per round each), multi-take. |
+| `ui_card_round_push` | ClaudeStone: layers on top of the reveal cue when a round ties (nobody scores), never a replacement for it |
+| `ui_card_shuffle` | ClaudeStone: the initial deal at match start AND a mid-match reshuffle (discard pile shuffled back into the deck once it empties), same cue for both moments |
 | `ui_gather_cast` | the gather cast starting (Professions 2.0 Phase 12b), a soft tool wind-up; PLACEHOLDER (deterministic synth, issue #2208) ONLY as the flat fallback for when `gatherCast()` is called with no node type known. In practice `ui_gather_cast_<nodeType>` below always takes over: `harvestNode` is the sole gather `castStart` emit site and always sets the type |
 | `ui_gather_cast_ore`, `ui_gather_cast_wood`, `ui_gather_cast_herb` | the real, per-node-type "pulling the tool out" recordings that supersede `ui_gather_cast` above, via `audio.gatherCast(nodeType)` |
 | `ui_fish_cast` | the fishing line cast whoosh and plop |

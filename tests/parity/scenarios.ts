@@ -4637,7 +4637,7 @@ function chatSocial(): Scenario {
   };
 }
 
-// Card Duel minigame: queue two players at the Card Master, let the tick
+// ClaudeStone minigame: queue two players at the Card Master, let the tick
 // matchmake them, then play out one full round of cards. Exercises the rng
 // draws createCardHand (two, on match start) and drawOne (two, per round)
 // so they land in the golden trace instead of never being captured (no prior
@@ -4646,7 +4646,7 @@ function cardDuel(): Scenario {
   return {
     name: 'card_duel',
     coverage: [
-      'Card Duel minigame: queue + matchmake at the Card Master',
+      'ClaudeStone minigame: queue + matchmake at the Card Master',
       'createCardHand rng draw (match start, both sides)',
       'refillHand rng draws (round resolution, both sides)',
       'mid-refill reshuffle (the deck runs dry partway through one refill)',

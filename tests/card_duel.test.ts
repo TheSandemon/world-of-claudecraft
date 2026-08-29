@@ -154,7 +154,7 @@ describe('card_duel', () => {
       },
     } as unknown as SimContext;
     joinCardMinigameQueue(ctx, 1);
-    expect(error).toHaveBeenCalledWith(1, 'Card Duel requires another player online.');
+    expect(error).toHaveBeenCalledWith(1, 'ClaudeStone requires another player online.');
     expect(ctx.cardDuelQueue).toEqual([]);
   });
 
@@ -345,7 +345,7 @@ describe('card_duel', () => {
   it('rejects playing a card when not in any match', () => {
     const { ctx, error } = makeCtx();
     playCardInDuel(ctx, 5000, 3);
-    expect(error).toHaveBeenCalledWith(3, 'You are not in a Card Duel.');
+    expect(error).toHaveBeenCalledWith(3, 'You are not in a ClaudeStone match.');
   });
 
   it('leaving the queue removes the pid without touching a live match', () => {
@@ -372,7 +372,10 @@ describe('card_duel', () => {
     expect(cardDuelMatchFor(ctx, 1)).toBeNull();
     expect(cardDuelMatchFor(ctx, 2)).toBeNull();
     expect(emit).toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'Your opponent forfeited the Card Duel. You win!', pid: 2 }),
+      expect.objectContaining({
+        text: 'Your opponent forfeited the ClaudeStone match. You win!',
+        pid: 2,
+      }),
     );
     expect(bumpDeedStat).toHaveBeenCalledTimes(1);
     expect(bumpDeedStat.mock.calls[0][0]).toBe(players.get(2));
@@ -395,23 +398,23 @@ describe('card_duel', () => {
     expect(bumpDeedStat).not.toHaveBeenCalled();
     expect(emit).toHaveBeenCalledWith(
       expect.objectContaining({
-        text: 'Your Card Duel is void: neither side played in time.',
+        text: 'Your ClaudeStone match is void: neither side played in time.',
         pid: 1,
       }),
     );
     expect(emit).toHaveBeenCalledWith(
       expect.objectContaining({
-        text: 'Your Card Duel is void: neither side played in time.',
+        text: 'Your ClaudeStone match is void: neither side played in time.',
         pid: 2,
       }),
     );
     // Neither the forfeit-specific nor the win-credit messaging fires: this is
     // routed through voidMatch, not the normal forfeit win/lose lines.
     expect(emit).not.toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'You forfeit the Card Duel.' }),
+      expect.objectContaining({ text: 'You forfeit the ClaudeStone match.' }),
     );
     expect(emit).not.toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'Your opponent forfeited the Card Duel. You win!' }),
+      expect.objectContaining({ text: 'Your opponent forfeited the ClaudeStone match. You win!' }),
     );
   });
 
@@ -430,10 +433,13 @@ describe('card_duel', () => {
     expect(bumpDeedStat.mock.calls[0][0]).toBe(players.get(1));
     expect(bumpDeedStat.mock.calls[0][1]).toBe('cardDuelsWon');
     expect(emit).toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'You forfeit the Card Duel.', pid: 2 }),
+      expect.objectContaining({ text: 'You forfeit the ClaudeStone match.', pid: 2 }),
     );
     expect(emit).toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'Your opponent forfeited the Card Duel. You win!', pid: 1 }),
+      expect.objectContaining({
+        text: 'Your opponent forfeited the ClaudeStone match. You win!',
+        pid: 1,
+      }),
     );
   });
 
@@ -449,14 +455,14 @@ describe('card_duel', () => {
     // The player is now free to re-queue: before the fix this errored
     // 'already_in_duel' forever, since nothing ever cleared ctx.cardDuels.
     joinCardMinigameQueue(ctx, 1);
-    expect(error).not.toHaveBeenCalledWith(1, 'You are already in a Card Duel.');
+    expect(error).not.toHaveBeenCalledWith(1, 'You are already in a ClaudeStone match.');
     expect(ctx.cardDuelQueue).toContain(1);
   });
 
   it('forfeitCardDuelMatch errors when not in a live match', () => {
     const { ctx, error } = makeCtx();
     forfeitCardDuelMatch(ctx, 3);
-    expect(error).toHaveBeenCalledWith(3, 'You are not in a Card Duel.');
+    expect(error).toHaveBeenCalledWith(3, 'You are not in a ClaudeStone match.');
   });
 
   it('an expired round deadline forfeits the side that never played the round', () => {
@@ -483,10 +489,13 @@ describe('card_duel', () => {
     expect(bumpDeedStat).toHaveBeenCalledTimes(1);
     expect(bumpDeedStat.mock.calls[0][1]).toBe('cardDuelsWon');
     expect(emit).toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'You forfeit the Card Duel.', pid: 2 }),
+      expect.objectContaining({ text: 'You forfeit the ClaudeStone match.', pid: 2 }),
     );
     expect(emit).toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'Your opponent forfeited the Card Duel. You win!', pid: 1 }),
+      expect.objectContaining({
+        text: 'Your opponent forfeited the ClaudeStone match. You win!',
+        pid: 1,
+      }),
     );
   });
 
@@ -514,10 +523,13 @@ describe('card_duel', () => {
     expect(cardDuelMatchFor(ctx, 2)).toBeNull();
     expect(bumpDeedStat).toHaveBeenCalledTimes(1);
     expect(emit).toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'You forfeit the Card Duel.', pid: 1 }),
+      expect.objectContaining({ text: 'You forfeit the ClaudeStone match.', pid: 1 }),
     );
     expect(emit).toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'Your opponent forfeited the Card Duel. You win!', pid: 2 }),
+      expect.objectContaining({
+        text: 'Your opponent forfeited the ClaudeStone match. You win!',
+        pid: 2,
+      }),
     );
   });
 
@@ -536,13 +548,13 @@ describe('card_duel', () => {
     expect(bumpDeedStat).not.toHaveBeenCalled();
     expect(emit).toHaveBeenCalledWith(
       expect.objectContaining({
-        text: 'Your Card Duel is void: neither side played in time.',
+        text: 'Your ClaudeStone match is void: neither side played in time.',
         pid: 1,
       }),
     );
     expect(emit).toHaveBeenCalledWith(
       expect.objectContaining({
-        text: 'Your Card Duel is void: neither side played in time.',
+        text: 'Your ClaudeStone match is void: neither side played in time.',
         pid: 2,
       }),
     );
@@ -585,7 +597,7 @@ describe('card_duel', () => {
     expect(bumpDeedStat).not.toHaveBeenCalled();
     for (const pid of [1, 2]) {
       expect(emit).toHaveBeenCalledWith(
-        expect.objectContaining({ text: 'Your Card Duel ends in a draw.', pid }),
+        expect.objectContaining({ text: 'Your ClaudeStone match ends in a draw.', pid }),
       );
       expect(emit).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'cardDuelMatchEnd', won: false, draw: true, pid }),
@@ -616,7 +628,7 @@ describe('card_duel', () => {
     (ctx as unknown as { time: number }).time = match.roundDeadline + 1;
     updateCardDuelDeadlines(ctx);
     expect(emit).toHaveBeenCalledWith(
-      expect.objectContaining({ text: 'Your Card Duel ends in a draw.', pid: 1 }),
+      expect.objectContaining({ text: 'Your ClaudeStone match ends in a draw.', pid: 1 }),
     );
   });
 
@@ -749,7 +761,7 @@ describe('card_duel', () => {
     // Only pids 2 and 3 exist besides 1, and both are bots: no queueable
     // human opponent exists, so joining must still be refused.
     joinCardMinigameQueue(ctx, 1);
-    expect(error).toHaveBeenCalledWith(1, 'Card Duel requires another player online.');
+    expect(error).toHaveBeenCalledWith(1, 'ClaudeStone requires another player online.');
     expect(ctx.cardDuelQueue).toEqual([]);
   });
 

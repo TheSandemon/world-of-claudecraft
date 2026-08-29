@@ -1,4 +1,4 @@
-// The Card Duel minigame: a class-agnostic 1v1 card game, hosted by the Card
+// The ClaudeStone minigame: a class-agnostic 1v1 card game, hosted by the Card
 // Master NPC (src/sim/content/card_master.ts). Deliberately NOT built on top of
 // src/sim/social/duel.ts's HP-based DuelState: that system is combat-coupled
 // (forfeit-by-death, HP dueling range, ccDr clearing) and growing it for a
@@ -282,11 +282,11 @@ export function joinCardMinigameQueue(ctx: SimContext, pid?: number): void {
     return;
   }
   if (!cardMasterInRange(ctx, r.e)) {
-    ctx.error(r.meta.entityId, 'You must be at the Card Master to queue for a Card Duel.');
+    ctx.error(r.meta.entityId, 'You must be at the Card Master to queue for a ClaudeStone match.');
     return;
   }
   if (!cardMinigameAvailable(ctx, r.meta.entityId)) {
-    ctx.error(r.meta.entityId, 'Card Duel requires another player online.');
+    ctx.error(r.meta.entityId, 'ClaudeStone requires another player online.');
     return;
   }
   const result = joinCardDuelQueue(
@@ -299,15 +299,15 @@ export function joinCardMinigameQueue(ctx: SimContext, pid?: number): void {
     // call) so the localization_fixes S3 guard's literal-argument scraper
     // actually sees both strings.
     if (result.reason === 'already_in_duel') {
-      ctx.error(r.meta.entityId, 'You are already in a Card Duel.');
+      ctx.error(r.meta.entityId, 'You are already in a ClaudeStone match.');
     } else {
-      ctx.error(r.meta.entityId, 'You are already queued for a Card Duel.');
+      ctx.error(r.meta.entityId, 'You are already queued for a ClaudeStone match.');
     }
     return;
   }
   ctx.emit({
     type: 'log',
-    text: 'You queue for a Card Duel.',
+    text: 'You queue for a ClaudeStone match.',
     color: '#fa6',
     pid: r.meta.entityId,
   });
@@ -319,7 +319,7 @@ export function leaveCardMinigameQueue(ctx: SimContext, pid?: number): void {
   if (leaveCardDuelQueue(ctx.cardDuelQueue, r.meta.entityId)) {
     ctx.emit({
       type: 'log',
-      text: 'You leave the Card Duel queue.',
+      text: 'You leave the ClaudeStone queue.',
       color: '#fa6',
       pid: r.meta.entityId,
     });
@@ -395,7 +395,9 @@ export function startCardDuelMatch(
     // unreachable, so it stays handled rather than asserted away.
     ctx.emit({
       type: 'log',
-      text: opponent ? `Your Card Duel against ${opponent.name} begins!` : 'Your Card Duel begins!',
+      text: opponent
+        ? `Your ClaudeStone match against ${opponent.name} begins!`
+        : 'Your ClaudeStone match begins!',
       color: '#fa6',
       pid,
     });
@@ -464,11 +466,11 @@ export function playCardInDuel(ctx: SimContext, cardIid: number, pid?: number): 
   if (!r) return;
   const match = ctx.cardDuels.get(r.meta.entityId);
   if (!match) {
-    ctx.error(r.meta.entityId, 'You are not in a Card Duel.');
+    ctx.error(r.meta.entityId, 'You are not in a ClaudeStone match.');
     return;
   }
   // Mirrors joinCardMinigameQueue's join-time gate: a player who dies mid-match
-  // (Card Duel needs no proximity to play, so death is the only way the sim can
+  // (ClaudeStone needs no proximity to play, so death is the only way the sim can
   // catch this) cannot keep playing as a ghost. The other side is not left
   // hanging: the existing per-round clock forfeits the dead side exactly like
   // any other unresponsive opponent, so no separate death-triggers-forfeit path
@@ -546,7 +548,7 @@ export function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
     const mySeat: CardSeat = isA ? 'a' : 'b';
     ctx.emit({
       type: 'log',
-      text: `Card Duel round: you played ${mine}, opponent played ${theirs}.`,
+      text: `ClaudeStone round: you played ${mine}, opponent played ${theirs}.`,
       color: '#fa6',
       pid,
     });
@@ -663,8 +665,8 @@ function endCardDuelMatch(ctx: SimContext, match: CardDuelMatch, winnerPid: numb
       ctx.emit({
         type: 'log',
         text: loserMeta
-          ? `You win the Card Duel against ${loserMeta.name}!`
-          : 'You win the Card Duel!',
+          ? `You win the ClaudeStone match against ${loserMeta.name}!`
+          : 'You win the ClaudeStone match!',
         color: '#fa6',
         pid,
       });
@@ -672,8 +674,8 @@ function endCardDuelMatch(ctx: SimContext, match: CardDuelMatch, winnerPid: numb
       ctx.emit({
         type: 'log',
         text: winnerMeta
-          ? `You lose the Card Duel against ${winnerMeta.name}.`
-          : 'You lose the Card Duel.',
+          ? `You lose the ClaudeStone match against ${winnerMeta.name}.`
+          : 'You lose the ClaudeStone match.',
         color: '#fa6',
         pid,
       });
@@ -722,7 +724,7 @@ function forfeitMatch(ctx: SimContext, match: CardDuelMatch, forfeiterPid: numbe
   if (ctx.players.has(forfeiterPid)) {
     ctx.emit({
       type: 'log',
-      text: 'You forfeit the Card Duel.',
+      text: 'You forfeit the ClaudeStone match.',
       color: '#fa6',
       pid: forfeiterPid,
     });
@@ -736,7 +738,7 @@ function forfeitMatch(ctx: SimContext, match: CardDuelMatch, forfeiterPid: numbe
   if (winnerMeta) {
     ctx.emit({
       type: 'log',
-      text: 'Your opponent forfeited the Card Duel. You win!',
+      text: 'Your opponent forfeited the ClaudeStone match. You win!',
       color: '#fa6',
       pid: winnerPid,
     });
@@ -758,7 +760,7 @@ function drawMatch(ctx: SimContext, match: CardDuelMatch): void {
   for (const pid of [match.a, match.b]) {
     ctx.emit({
       type: 'log',
-      text: 'Your Card Duel ends in a draw.',
+      text: 'Your ClaudeStone match ends in a draw.',
       color: '#fa6',
       pid,
     });
@@ -783,7 +785,7 @@ function voidMatch(ctx: SimContext, match: CardDuelMatch): void {
   for (const pid of [match.a, match.b]) {
     ctx.emit({
       type: 'log',
-      text: 'Your Card Duel is void: neither side played in time.',
+      text: 'Your ClaudeStone match is void: neither side played in time.',
       color: '#fa6',
       pid,
     });
@@ -804,7 +806,7 @@ export function forfeitCardDuelMatch(ctx: SimContext, pid?: number): void {
   if (!r) return;
   const match = ctx.cardDuels.get(r.meta.entityId);
   if (!match) {
-    ctx.error(r.meta.entityId, 'You are not in a Card Duel.');
+    ctx.error(r.meta.entityId, 'You are not in a ClaudeStone match.');
     return;
   }
   forfeitMatch(ctx, match, r.meta.entityId);

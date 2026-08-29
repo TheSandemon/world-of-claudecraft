@@ -26,7 +26,7 @@ const MASTER_GAINS_DB = {
   ui_fiesta_down: 6.66,
   ui_fiesta_revive: 4.01,
   ui_gather_cast: 0,
-  // Card Duel narration (src/ui/cards/duel_beats_core.ts): one cue per effect
+  // ClaudeStone narration (src/ui/cards/duel_beats_core.ts): one cue per effect
   // that lands, and one for the health that comes off. Both are per-BEAT
   // sounds fired several times a round, so they are deliberately short and
   // quiet next to the existing card cues.

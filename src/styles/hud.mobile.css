@@ -7814,7 +7814,7 @@
       font-size: 9px;
     }
 
-    /* Card Duel: the hand grows to a real touch target and the rules text
+    /* ClaudeStone: the hand grows to a real touch target and the rules text
        comes out of hiding, because a phone has no hover to reveal it with.
        Every number the face shows is the same one the desktop face shows, at
        the same moment: this is layout, never information. */

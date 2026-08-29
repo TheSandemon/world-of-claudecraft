@@ -1,4 +1,4 @@
-// Where a Card Duel card physically GOES: hand to table, table to discard, for
+// Where a ClaudeStone match card physically GOES: hand to table, table to discard, for
 // both seats.
 //
 // The table could say what every card was worth and never showed one moving.

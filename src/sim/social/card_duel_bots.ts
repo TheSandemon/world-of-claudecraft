@@ -1,4 +1,4 @@
-// The Card Duel bot seat: the named regulars a player sits down against, and
+// The ClaudeStone bot seat: the named regulars a player sits down against, and
 // the tick that lets them commit.
 //
 // A sibling of social/card_duel.ts, following the social/fiesta.ts +
@@ -56,11 +56,11 @@ export function startCardDuelAgainstOpponent(
     return;
   }
   if (!cardMasterInRange(ctx, r.e)) {
-    ctx.error(r.meta.entityId, 'You must be at the Card Master to queue for a Card Duel.');
+    ctx.error(r.meta.entityId, 'You must be at the Card Master to queue for a ClaudeStone match.');
     return;
   }
   if (inCardDuel(ctx, r.meta.entityId)) {
-    ctx.error(r.meta.entityId, 'You are already in a Card Duel.');
+    ctx.error(r.meta.entityId, 'You are already in a ClaudeStone match.');
     return;
   }
   const opponent = cardOpponentById(opponentId);

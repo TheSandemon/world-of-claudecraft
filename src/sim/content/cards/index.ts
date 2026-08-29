@@ -1,4 +1,4 @@
-// The Card Duel catalog: every authored card, plus the lookup the rules engine
+// The ClaudeStone catalog: every authored card, plus the lookup the rules engine
 // takes as its `CardCatalog`.
 //
 // One barrel per the content conventions (src/sim/content/CLAUDE.md, "New

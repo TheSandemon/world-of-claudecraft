@@ -1,4 +1,4 @@
-// The Card Duel deck builder window: the thin consumer of deck_builder_view.ts.
+// The ClaudeStone deck builder window: the thin consumer of deck_builder_view.ts.
 //
 // The Book of Deeds and Reliquary windows are the family this copies: cold and
 // event-driven off a refresh signature, a DOM-free view model, and no repeating

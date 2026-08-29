@@ -1,4 +1,4 @@
-// Pure view-core for the Card Duel minigame window (Card Master NPC).
+// Pure view-core for the ClaudeStone minigame window (Card Master NPC).
 //
 // Maps the IWorldCardMinigame read surface (cardMinigameInfo) to a render
 // model: DOM/i18n-free, so tests/card_duel_view.test.ts drives it directly
@@ -71,7 +71,7 @@ export interface CardDuelViewModel {
   activeEffects: CardMinigameEffect[];
 }
 
-/** Build the structured Card Duel view from the live IWorld snapshot. */
+/** Build the structured ClaudeStone view from the live IWorld snapshot. */
 export function buildCardDuelView(info: CardMinigameInfo): CardDuelViewModel {
   if (!info.match) {
     return {

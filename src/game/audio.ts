@@ -46,7 +46,7 @@ export const UI_CUES = {
   fiestaAugment: 'ui_fiesta_augment',
   fiestaDown: 'ui_fiesta_down',
   fiestaRevive: 'ui_fiesta_revive',
-  // Card Duel minigame (src/sim/social/card_duel.ts). cardShuffle covers both
+  // ClaudeStone minigame (src/sim/social/card_duel.ts). cardShuffle covers both
   // the initial deal (cardDuelMatchStart) and a mid-match reshuffle
   // (cardRoundResolved.reshuffled); match win/lose deliberately reuse the
   // existing duelEnd/arenaLoss cues rather than new recordings (Jamie's
@@ -347,7 +347,7 @@ export class GameAudio {
     this.play(UI_CUES.duelStart);
   }
 
-  // Card Duel: live in-match feedback, same ungated category as the Fiesta
+  // ClaudeStone: live in-match feedback, same ungated category as the Fiesta
   // cues above (match win/lose reuse duelEnd()/arenaLoss() directly, no
   // dedicated methods needed for those).
   cardPlay(): void {

@@ -5006,7 +5006,7 @@ export const en_CA: EnTranslations = {
       "mobileTitle": "On a phone or a tablet",
       "mobileBody": "Touch controls appear on their own, and the layout sizes itself to your screen: a compact arrangement on a small phone, a standard one on a larger phone, and a roomier one on a tablet.\n\nYour abilities sit in a ring rather than a number row: the attack button with five action buttons beside it, and a page toggle that swaps the ring through the rest of your slots, up to seven pages once you have all three action bars switched on. Around them sit the buttons a touch player reaches for most, swapping target, using what is in front of you, and jumping, plus a pull-out row of your consumables that fills itself from what you are carrying.\n\nAlong the bottom edge are Chat, Social, Quests, Settings, and More. More opens a tray holding the rest of your windows, including your character, the Dungeon Finder, PvP, the Vale Cup, emotes, and the wiki. Windows fill the screen here rather than floating over it.\n\nMoving your unit frames is a desktop thing: on touch the layout places them for you.",
       "railTitle": "The button rail",
-      "railBody": "Down in the bottom right corner of the screen, a long way from the minimap, sits a rail of small square buttons, one per window, arranged in two short columns side by side. Most of them are printed with their default key.\n\nThe first column covers your character, spellbook, talents, quest log, Book of Deeds, professions, world map, bags, and crafting. The second opens with the WOC Store and runs on through PvP, the Dungeon Finder, the Vale Cup, Card Duel, the leaderboard, emotes, music, friends and guild, this wiki, and the game menu. A few more join them only when they apply."
+      "railBody": "Down in the bottom right corner of the screen, a long way from the minimap, sits a rail of small square buttons, one per window, arranged in two short columns side by side. Most of them are printed with their default key.\n\nThe first column covers your character, spellbook, talents, quest log, Book of Deeds, professions, world map, bags, and crafting. The second opens with the WOC Store and runs on through PvP, the Dungeon Finder, the Vale Cup, ClaudeStone, the leaderboard, emotes, music, friends and guild, this wiki, and the game menu. A few more join them only when they apply."
     },
     "commandsPage": {
       "intro": "Every command you can type into chat, grouped by what it is for, with its short forms.",
@@ -5666,7 +5666,7 @@ export const en_CA: EnTranslations = {
       "typeEscortTitle": "Escort",
       "typeEscortBody": "Someone needs walking somewhere dangerous. Take the quest, find the person waiting at the start of the road, and speak to them to set off. They walk their own path while you keep pace, and the trouble that lives along it comes for them, not always for you. Stay close: enemies ambush the walk in waves, and the walk only resumes once a wave is down. You cannot attack the person you are escorting, but you can heal them, and if they fall the run simply resets so you can try again. Reach the far end with them alive and you beside them, and the quest credits.",
       "cardMasterTitle": "Not every NPC has a quest: the Card Master",
-      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the Card Duel line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Faces you will come to know",
@@ -8255,16 +8255,16 @@ export const en_CA: EnTranslations = {
     "buyConfirmCancel": "Cancel"
   },
   "cardDuel": {
-    "title": "Card Duel",
+    "title": "ClaudeStone",
     "close": "Close",
     "join": "Join Queue",
-    "joinAria": "Join the Card Duel queue",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Leave Queue",
-    "leaveAria": "Leave the Card Duel queue",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Forfeit",
-    "forfeitAria": "Forfeit the Card Duel",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Waiting for an opponent...",
-    "unavailable": "Card Duel requires another player online.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "vs {name}",
     "round": "Round score: {mine} - {theirs}",
     "counts": "Deck: {deck} · Discard: {discard}",
@@ -15127,7 +15127,7 @@ export const en_CA: EnTranslations = {
       "card_master": {
         "name": "Card Master",
         "title": "Dealer of Chance",
-        "greeting": "Care for a Card Duel? Best of three, winner takes the bragging rights."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Bursar Petra Vell",

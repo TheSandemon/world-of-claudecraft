@@ -1,4 +1,4 @@
-// The Card Duel rules language: every shape a card, a match, or the resolver
+// The ClaudeStone rules language: every shape a card, a match, or the resolver
 // speaks in. Types only, no logic, so this file is data-as-code and correctly
 // large (docs/design/card-duel-rules-language.md is the authoring spec,
 // docs/prd/card-duel-v2.md the implementation plan).

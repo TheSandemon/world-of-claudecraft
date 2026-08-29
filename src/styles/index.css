@@ -24,7 +24,7 @@
    In practice the two never share a selector, so this is precedence insurance, not an
    active tie-break.
 
-   cards.css is the Card Duel sheet (window, table, round theater, deck builder,
+   cards.css is the ClaudeStone sheet (window, table, round theater, deck builder,
    card face), also in @layer components and imported after components.css. It is
    its own module because the standalone /cards playtest slice imports it DIRECTLY
    (with tokens.css and nothing else): the slice composes the real rules engine and

@@ -1,4 +1,4 @@
-// The two Card Duel HUD windows, built together.
+// The two ClaudeStone HUD windows, built together.
 //
 // A tiny factory rather than two more declarations on the coordinator: hud.ts
 // is a named monolith under the extraction ratchet (root CLAUDE.md), and the

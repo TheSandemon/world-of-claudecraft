@@ -120,7 +120,7 @@ Sly, theatrical mid-tenor that lifts on every offer, shuffling its own
 consonants. Playful, insinuating, delighted either way by how the hand falls.
 Age 30s to 40s, male.
 
-**Voice test:** *"Care for a Card Duel? Best of three, winner takes the bragging rights."*
+**Voice test:** *"Care for a ClaudeStone match? Best of three, winner takes the bragging rights."*
 
 ### Saul the Chronicler: *The Vale Chronicle*
 **Visual:** `npc_chronicler`, amber (#d08a2e), deeds ledger.

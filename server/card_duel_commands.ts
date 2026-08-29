@@ -1,4 +1,4 @@
-// The Card Duel command arms: the queue, the play, the forfeit, the named
+// The ClaudeStone command arms: the queue, the play, the forfeit, the named
 // regulars, and the deck builder.
 //
 // A sibling of the dispatch rather than more of it: server/game.ts is a named
@@ -18,7 +18,7 @@ type CardDuelCommandMessage = {
 };
 
 /**
- * Handles one Card Duel command. Returns whether the message was one, so the
+ * Handles one ClaudeStone command. Returns whether the message was one, so the
  * dispatch can stay a single arm over the whole family.
  *
  * Every branch shape-checks its payload and then hands off: the sim refuses an

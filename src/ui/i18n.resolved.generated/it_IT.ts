@@ -5666,7 +5666,7 @@ export const it_IT: EnTranslations = {
       "typeEscortTitle": "Scorta",
       "typeEscortBody": "Qualcuno ha bisogno di essere scortato in un luogo pericoloso. Accetta la missione, trova la persona che aspetta all'inizio della strada, e parlale per mettervi in cammino. Percorre la propria strada mentre tu le tieni il passo, e i guai che vi si annidano ce l'hanno con lei, non sempre con te. Resta vicino: i nemici tendono agguati alla marcia a ondate, e il cammino riprende solo dopo che un'ondata è stata abbattuta. Non puoi attaccare la persona che stai scortando, ma puoi curarla, e se cade la missione si reimposta semplicemente, così puoi riprovare. Raggiungi la fine del percorso con lei viva al tuo fianco, e ottieni il credito della missione.",
       "cardMasterTitle": "Not every NPC has a quest: the Card Master",
-      "cardMasterBody": "Un PNG di Eastbrook distribuisce carte invece di incarichi. Parla con il Maestro di Carte, scegli la voce del Duello di Carte dal suo menu ed entrerai in una coda che ti abbina al prossimo giocatore in attesa. Qualsiasi classe può sedersi, e né il livello né l'equipaggiamento contano. Ognuno gioca il proprio mazzo di venti carte: due per ogni valore da uno a dieci e nessuna carta ripetuta, così ogni mazzo porta la stessa forza grezza e la differenza sta nelle carte che hai scelto. Ne tieni quattro in mano e torni a quattro dopo ogni round. Le carte fanno più del loro numero: un lupo che cresce con il branco alle spalle, una pietra che zittisce l'avversario per il round, una candela che benedice il prossimo non morto che giochi. La carta più alta dopo tutto questo vince il round, e due carte uguali sono una parità che non segna per nessuno. Il primo a due round vince la partita, quindi un duello è al meglio dei tre. I round vanno a tempo: lascia la tua carta non giocata per quarantacinque secondi e la partita passa all'altro lato, a meno che nessun round sia stato ancora deciso, nel qual caso viene semplicemente annullata senza vincitori. Se entrambi lasciate scadere il tempo dopo aver giocato delle carte, il duello viene registrato come parità. Le stesse regole valgono se sei tu ad andartene. Devi stare accanto al Maestro di Carte per entrare in coda, ma una volta abbinati il tavolo si apre da solo e puoi giocare da ovunque. Servono in due, quindi il mondo offline non lo offre mai."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Volti che imparerai a conoscere",
@@ -8255,16 +8255,16 @@ export const it_IT: EnTranslations = {
     "buyConfirmCancel": "Annulla"
   },
   "cardDuel": {
-    "title": "Duello di Carte",
+    "title": "ClaudeStone",
     "close": "Chiudi",
     "join": "Entra in coda",
-    "joinAria": "Entra nella coda del Duello di Carte",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Lascia la coda",
-    "leaveAria": "Lascia la coda del Duello di Carte",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Abbandona",
-    "forfeitAria": "Abbandona il Duello di Carte",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "In attesa di un avversario...",
-    "unavailable": "Il Duello di Carte richiede un altro giocatore connesso.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "vs {name}",
     "round": "Punteggio del turno: {mine} - {theirs}",
     "counts": "Mazzo: {deck} - Scarti: {discard}",
@@ -15127,7 +15127,7 @@ export const it_IT: EnTranslations = {
       "card_master": {
         "name": "Maestro delle Carte",
         "title": "Mercante del Caso",
-        "greeting": "Ti va un Duello di Carte? Al meglio dei tre turni, il vincitore si porta a casa i vanti."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Economa Petra Vell",

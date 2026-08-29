@@ -117,7 +117,6 @@ export const table: DeedLocaleTable = {
   },
   pvp_card_duel_first_win: {
     name: 'Vlastní pravidla',
-    desc: 'Vyhraj Karetní souboj u Karetního mistra.',
   },
   prog_first_steps: {
     name: 'První kroky',

@@ -5666,7 +5666,7 @@ export const tr_TR: EnTranslations = {
       "typeEscortTitle": "Eşlik",
       "typeEscortBody": "Someone needs walking somewhere dangerous. Take the quest, find the person waiting at the start of the road, and speak to them to set off. They walk their own path while you keep pace, and the trouble that lives along it comes for them, not always for you. Stay close: enemies ambush the walk in waves, and the walk only resumes once a wave is down. You cannot attack the person you are escorting, but you can heal them, and if they fall the run simply resets so you can try again. Reach the far end with them alive and you beside them, and the quest credits.",
       "cardMasterTitle": "Not every NPC has a quest: the Card Master",
-      "cardMasterBody": "Eastbrook'ta bir NPC ayak işi yerine kart dağıtır. Kart Ustası ile konuş, menüsünden Kart Düellosu satırını seç ve seni bekleyen bir sonraki oyuncuyla eşleştiren sıraya gir. Her sınıf masaya oturabilir, seviyenin de teçhizatının da hiçbir etkisi yoktur. İkiniz de kendi yirmi kartlık destenizle oynarsınız: birden ona kadar her değerden ikişer kart ve hiçbir kart tekrar etmez, yani her deste aynı ham gücü taşır, fark hangi kartları seçtiğindedir. Elinde dört kart tutar, her turdan sonra yeniden dörde tamamlarsın. Kartlar sayılarından fazlasını yapar: arkasındaki sürüyle güçlenen bir kurt, rakibin kartını o tur boyunca susturan bir taş, oynayacağın bir sonraki hortlağı kutsayan bir mum. Tüm bunlardan sonra yüksek kalan kart turu alır, iki eşit kart ise kimseye puan getirmeyen bir beraberliktir. İki turu önce kazanan maçı alır, yani bir düello üç turun ikisi üzerinedir. Turlar saatle işler: kartını kırk beş saniye oynamazsan maç karşı tarafa geçer, ancak henüz hiçbir tur karara bağlanmamışsa maç kazananı olmadan iptal edilir. Kartlar oynandıktan sonra ikiniz de süreyi doldurursanız düello beraberlik olarak kaydedilir. Kendin masadan kalkarsan da aynı kurallar geçerlidir. Sıraya girmek için Kart Ustası'nın yanında durman gerekir, ama eşleşme olunca masa kendiliğinden açılır ve her yerden oynayabilirsin. İki kişi gerektiği için çevrimdışı dünya bunu asla sunmaz."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Tanışacağın yüzler",
@@ -8255,16 +8255,16 @@ export const tr_TR: EnTranslations = {
     "buyConfirmCancel": "İptal etmek"
   },
   "cardDuel": {
-    "title": "Kart Düellosu",
+    "title": "ClaudeStone",
     "close": "Kapat",
     "join": "Sıraya Gir",
-    "joinAria": "Kart Düellosu sırasına gir",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Sıradan Çık",
-    "leaveAria": "Kart Düellosu sırasından çık",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Teslim Ol",
-    "forfeitAria": "Kart Düellosundan Çekil",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Rakip bekleniyor...",
-    "unavailable": "Kart Düellosu için başka bir oyuncu çevrimiçi olmalıdır.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "{name} ile",
     "round": "Tur puanı: {mine} - {theirs}",
     "counts": "Deste: {deck} · Atılan: {discard}",
@@ -15127,7 +15127,7 @@ export const tr_TR: EnTranslations = {
       "card_master": {
         "name": "Kart Ustası",
         "title": "Şans Dağıtıcısı",
-        "greeting": "Kart Düellosu ister misin? Üçte iki galip gelen övünme hakkını kazanır."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Veznedar Petra Vell",

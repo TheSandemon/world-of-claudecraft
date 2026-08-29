@@ -5666,7 +5666,7 @@ export const sv_SE: EnTranslations = {
       "typeEscortTitle": "Eskort",
       "typeEscortBody": "Någon behöver följas till en farlig plats. Ta uppdraget, hitta personen som väntar vid vägens början, och tala med denne för att ge er av. De vandrar sin egen väg medan du håller jämna steg, och besvären som lever längs den söker upp dem, inte alltid dig. Håll dig nära: fiender bakhåller vandringen i vågor, och den återupptas först när en våg är nedgjord. Du kan inte anfalla den du eskorterar, men du kan läka denne, och om de faller återställs försöket helt enkelt så att du kan pröva igen. Nå fram till andra änden med dem vid liv och dig vid deras sida, så tillgodoräknas uppdraget.",
       "cardMasterTitle": "Inte varje NPC har ett uppdrag: Kortmästaren",
-      "cardMasterBody": "En NPC i Eastbrook delar ut kort i stället för ärenden. Prata med Kortmästaren, välj Kortduellen ur hans meny, så hamnar du i en kö som parar ihop dig med nästa väntande spelare. Vilken klass som helst får sätta sig, och varken nivå eller utrustning spelar någon roll. Ni spelar var sin egen kortlek på tjugo kort: två av varje valör från ett till tio och inget kort i dubbletter, så alla lekar bär samma råa styrka och skillnaden ligger i vilka kort du valde. Du håller fyra på hand och fyller på till fyra igen efter varje omgång. Korten gör mer än sitt tal: en varg som växer med flocken bakom sig, en sten som tystar motståndarens kort under omgången, ett ljus som välsignar din nästa vandöd. Det efter allt detta högre kortet tar omgången, och två lika kort blir oavgjort som inte ger poäng åt någon. Den som först tar två omgångar vinner matchen, så en duell avgörs i bäst av tre. Omgångarna går på klocka: låt kortet ligga ospelat i fyrtiofem sekunder och matchen går till motståndaren, om inte någon omgång ännu avgjorts, då rivs den helt enkelt utan segrare. Låter ni båda klockan gå ut efter att kort spelats registreras duellen som oavgjord. Samma regler gäller om du själv går därifrån. Du måste stå hos Kortmästaren för att gå med i kön, men när ni väl parats ihop öppnar sig bordet av sig självt och du kan spela varifrån du vill. Det krävs två, så offlinevärlden erbjuder det aldrig."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Ansikten du kommer att lära känna",
@@ -8255,16 +8255,16 @@ export const sv_SE: EnTranslations = {
     "buyConfirmCancel": "Avbryt"
   },
   "cardDuel": {
-    "title": "Kortduell",
+    "title": "ClaudeStone",
     "close": "Stäng",
     "join": "Gå med i kö",
-    "joinAria": "Gå med i kortduellskön",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Lämna kön",
-    "leaveAria": "Lämna kortduellskön",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Ge upp",
-    "forfeitAria": "Ge upp kortduellen",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Väntar på en motståndare...",
-    "unavailable": "Kortduell kräver en annan spelare online.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "mot {name}",
     "round": "Omgångsresultat: {mine} - {theirs}",
     "counts": "Kortlek: {deck} · Kasserad: {discard}",
@@ -15127,7 +15127,7 @@ export const sv_SE: EnTranslations = {
       "card_master": {
         "name": "Kortmästare",
         "title": "Slumpmakare",
-        "greeting": "Hur är det med en kortduell? Bäst av tre, vinnaren tar skryträtten."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Kamrer Petra Vell",

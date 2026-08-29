@@ -1,4 +1,4 @@
-// What a resolved Card Duel round does to the client: the audio cues plus the
+// What a resolved ClaudeStone round does to the client: the audio cues plus the
 // round theater, in one place.
 //
 // It lives here rather than in the hud.ts event switch because both halves are
@@ -18,7 +18,7 @@ import type { SimEvent } from '../../sim/types';
 
 type CardRoundResolved = Extract<SimEvent, { type: 'cardRoundResolved' }>;
 
-/** The audio surface this needs, narrowed to the Card Duel round cues. */
+/** The audio surface this needs, narrowed to the ClaudeStone round cues. */
 export interface CardRoundAudio {
   cardReveal(): void;
   cardRoundPush(): void;

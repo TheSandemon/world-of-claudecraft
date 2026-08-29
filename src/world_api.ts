@@ -818,7 +818,7 @@ export const COMMAND_FACETS = {
   bg_leave: 'IWorldBattleground',
   bg_respond: 'IWorldBattleground',
   bg_flag: 'IWorldBattleground',
-  // IWorldCardMinigame: the Card Duel minigame queue + in-match card plays.
+  // IWorldCardMinigame: the ClaudeStone minigame queue + in-match card plays.
   // cardMinigameInfo is a snapshot read (no send).
   card_queue_join: 'IWorldCardMinigame',
   card_queue_leave: 'IWorldCardMinigame',

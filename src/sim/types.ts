@@ -3347,7 +3347,7 @@ export interface NpcDef {
   // Purchasing itself stays emergent from the stock carrying priceHonor, so an
   // unflagged honor vendor still sells its stock through the ordinary grid.
   warfareVendor?: boolean;
-  // The Card Master: talking to this NPC joins/leaves the Card Duel minigame
+  // The Card Master: talking to this NPC joins/leaves the ClaudeStone minigame
   // queue (src/sim/social/card_duel.ts) instead of any vendor/bank flow.
   cardMaster?: boolean;
   greeting: string;
@@ -5153,7 +5153,7 @@ export interface PendingResurrection {
 export type DamageEventKind = 'hit' | 'miss' | 'dodge' | 'parry' | 'block' | 'resist' | 'evade';
 
 /**
- * One narrated moment of a Card Duel round, as the player who receives it sees
+ * One narrated moment of a ClaudeStone round, as the player who receives it sees
  * it: the engine's seat-shaped `CardRoundStep` rewritten to mine/theirs.
  *
  * Declared structurally here rather than imported from the minigame so the
@@ -5174,7 +5174,7 @@ export interface CardRoundStepEvent {
   valueAfter?: number;
 }
 
-/** What a finished Card Duel came to, for the end-of-match summary. Every
+/** What a finished ClaudeStone came to, for the end-of-match summary. Every
  *  number is from the receiving player's point of view. */
 export interface CardDuelSummaryEvent {
   rounds: number;
@@ -5666,7 +5666,7 @@ export type SimEvent = { pid?: number } & (
       duration: number;
     }
   // The Vale Cup (docs/prd/vale-cup.md). Queue lifecycle events carry pid
-  // Card Duel minigame (src/sim/social/card_duel.ts). Personal (pid), text-free
+  // ClaudeStone minigame (src/sim/social/card_duel.ts). Personal (pid), text-free
   // on purpose (the client picks its own audio/copy off the structured
   // fields, same as gatherResult/craftResult above).
   | { type: 'cardDuelMatchStart'; pid?: number }

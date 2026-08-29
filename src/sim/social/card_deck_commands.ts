@@ -1,4 +1,4 @@
-// The Card Duel deck-building commands: save, select, and discard a deck.
+// The ClaudeStone deck-building commands: save, select, and discard a deck.
 //
 // A sibling of social/card_duel.ts rather than more of it: these touch only the
 // player's saved decks, never the live match, so they have no business inside

@@ -117,7 +117,6 @@ export const table: DeedLocaleTable = {
   },
   pvp_card_duel_first_win: {
     name: 'Luật Của Ta',
-    desc: 'Thắng một ván Đấu Bài tại Bậc Thầy Bài.',
   },
   prog_first_steps: {
     name: 'Những Bước Đầu Tiên',

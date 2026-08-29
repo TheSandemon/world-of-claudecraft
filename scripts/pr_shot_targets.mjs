@@ -4127,7 +4127,7 @@ export const TARGETS = [
   },
   {
     key: 'card-duel',
-    label: 'Card Duel window (Card Master)',
+    label: 'ClaudeStone window (Card Master)',
     when: [
       'ui/card_duel',
       'ui/cards/',

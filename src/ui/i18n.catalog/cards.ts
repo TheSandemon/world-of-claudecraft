@@ -1,4 +1,4 @@
-// i18n source catalog - the Card Duel surface: card names, rules text, tribes,
+// i18n source catalog - the ClaudeStone surface: card names, rules text, tribes,
 // counters, and the Card Master's regulars. English values only; the locale translations live in src/ui/i18n.locales/<lang>.ts
 // (the runtime-authoritative overlays), filled by the maintainer at release.
 //

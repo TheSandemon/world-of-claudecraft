@@ -5666,7 +5666,7 @@ export const id_ID: EnTranslations = {
       "typeEscortTitle": "Mengawal",
       "typeEscortBody": "Seseorang perlu diantar ke tempat yang berbahaya. Ambil misinya, temui orang yang menunggu di awal jalan, dan ajak bicara untuk berangkat. Mereka berjalan di jalurnya sendiri sementara kamu mengimbangi langkahnya, dan bahaya yang bersarang di sepanjang jalan itu mengincar mereka, tidak selalu mengincarmu. Tetaplah dekat: musuh menyergap perjalanan itu dalam gelombang, dan perjalanan baru berlanjut setelah satu gelombang tumbang. Kamu tidak bisa menyerang orang yang sedang kamu antar, tetapi kamu bisa menyembuhkannya, dan jika ia tumbang, perjalanan itu langsung diatur ulang agar kamu bisa mencoba lagi. Capai ujung jalan bersamanya dalam keadaan hidup dan kamu di sisinya, maka misi pun tercatat selesai.",
       "cardMasterTitle": "Tidak setiap NPC punya misi: Ahli Kartu",
-      "cardMasterBody": "Satu NPC di Eastbrook membagikan kartu alih-alih tugas suruhan. Bicaralah dengan Sang Ahli Kartu, pilih baris Duel Kartu dari menunya, dan kamu masuk antrean yang memasangkanmu dengan pemain berikutnya yang menunggu. Kelas apa pun boleh ikut duduk, dan level maupun perlengkapanmu sama sekali tidak berpengaruh. Kalian masing-masing bermain dengan dek sendiri berisi dua puluh kartu: dua untuk tiap nilai dari satu sampai sepuluh dan tidak ada kartu yang berulang, jadi setiap dek membawa kekuatan mentah yang sama dan bedanya hanya pada kartu apa yang kamu pilih. Kamu memegang empat kartu dan mengisi kembali sampai empat setiap selesai ronde. Kartu melakukan lebih dari sekadar angkanya: serigala yang menguat bersama kawanan di belakangnya, batu yang membungkam kartu lawan selama ronde itu, lilin yang memberkati kartu undead berikutnya. Kartu yang lebih tinggi setelah semua itu memenangi ronde, dan dua kartu bernilai sama adalah seri yang tidak memberi angka kepada siapa pun. Yang lebih dulu menang dua ronde memenangi pertandingan, jadi satu duel adalah dua kemenangan ronde. Ronde berjalan dengan waktu: biarkan kartumu tidak dimainkan selama empat puluh lima detik dan pertandingan jatuh ke pihak lawan, kecuali belum ada ronde yang diputuskan, maka pertandingan itu dibatalkan begitu saja tanpa pemenang. Jika kalian berdua membiarkan waktu habis setelah kartu dimainkan, duel dicatat sebagai seri. Aturan yang sama berlaku jika kamu sendiri yang pergi. Kamu harus berdiri di dekat Sang Ahli Kartu untuk masuk antrean, tetapi begitu dipasangkan, mejanya terbuka sendiri dan kamu bisa bermain dari mana saja. Perlu dua orang, jadi dunia offline tidak pernah menawarkannya."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Wajah-wajah yang akan kamu kenali",
@@ -8255,16 +8255,16 @@ export const id_ID: EnTranslations = {
     "buyConfirmCancel": "Membatalkan"
   },
   "cardDuel": {
-    "title": "Duel Kartu",
+    "title": "ClaudeStone",
     "close": "Tutup",
     "join": "Masuk Antrean",
-    "joinAria": "Masuk ke antrean Duel Kartu",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Keluar Antrean",
-    "leaveAria": "Keluar dari antrean Duel Kartu",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Menyerah",
-    "forfeitAria": "Menyerah dari Duel Kartu",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Menunggu lawan...",
-    "unavailable": "Duel Kartu membutuhkan pemain lain yang sedang daring.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "vs {name}",
     "round": "Skor ronde: {mine} - {theirs}",
     "counts": "Dek: {deck} · Buang: {discard}",
@@ -15127,7 +15127,7 @@ export const id_ID: EnTranslations = {
       "card_master": {
         "name": "Ahli Kartu",
         "title": "Penyebar Nasib",
-        "greeting": "Mau Duel Kartu? Tiga babak terbaik, pemenang mendapat hak membual."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Bendahara Petra Vell",

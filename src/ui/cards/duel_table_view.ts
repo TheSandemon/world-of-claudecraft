@@ -1,4 +1,4 @@
-// The pure model behind the Card Duel table: the state a player reads BETWEEN
+// The pure model behind the ClaudeStone table: the state a player reads BETWEEN
 // reveals, as shapes rather than sentences.
 //
 // The complaint this core answers: a live match used to state itself as three

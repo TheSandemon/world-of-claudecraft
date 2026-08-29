@@ -1562,7 +1562,7 @@ export class ClientWorld implements IWorld {
   dungeonFinderBoard: import('../world_api').DungeonFinderBoard | null = null;
   honor = 0;
   lifetimeHonor = 0;
-  // --- IWorldCardMinigame: Card Duel queue/match state, mirrored from the
+  // --- IWorldCardMinigame: ClaudeStone queue/match state, mirrored from the
   // snapshot self (`s.cardDuel`, delta-omitted). ---
   cardMinigameInfo: CardMinigameInfo = {
     queued: false,
@@ -4855,7 +4855,7 @@ export class ClientWorld implements IWorld {
   dungeonFinderApplicationRespond(applicantPid: number, accept: boolean): void {
     this.cmd({ cmd: 'df_app_respond', applicant: applicantPid, accept });
   }
-  // --- IWorldCardMinigame: Card Duel queue + in-match card plays (cardMinigameInfo
+  // --- IWorldCardMinigame: ClaudeStone queue + in-match card plays (cardMinigameInfo
   // is a snapshot read). ---
   joinCardDuelQueue(): void {
     this.cmd({ cmd: 'card_queue_join' });

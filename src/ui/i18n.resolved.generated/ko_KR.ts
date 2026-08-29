@@ -5666,7 +5666,7 @@ export const ko_KR: EnTranslations = {
       "typeEscortTitle": "호위",
       "typeEscortBody": "누군가 위험한 길을 함께 걸어 줄 사람을 찾고 있습니다. 퀘스트를 받고, 길 초입에서 기다리는 사람을 찾아 말을 걸면 여정이 시작됩니다. 그는 자기 걸음으로 길을 걷고 당신은 발을 맞추며, 그 길에 사는 위협은 당신이 아니라 그에게 달려듭니다. 가까이 붙어 계세요. 적들은 파도를 이루어 여정을 덮치고, 한 파도를 정리해야 다시 걸음이 이어집니다. 호위 대상은 공격할 수 없지만 치유해 줄 수는 있으며, 그가 쓰러지면 진행이 그저 처음으로 되돌아가 다시 시도할 수 있습니다. 그를 살린 채 당신과 나란히 길 끝에 이르면 퀘스트가 완료됩니다.",
       "cardMasterTitle": "모든 NPC가 퀘스트를 주지는 않습니다: 카드 마스터",
-      "cardMasterBody": "이스트브룩에는 심부름 대신 카드를 돌리는 NPC가 있습니다. 카드 마스터에게 말을 걸고 메뉴에서 카드 듀얼을 고르면, 다음으로 기다리던 플레이어와 짝지어 주는 대기열에 들어갑니다. 어떤 직업이든 앉을 수 있고, 레벨도 장비도 아무 상관이 없습니다. 서로 자기 덱 스무 장으로 겨룹니다. 1부터 10까지 값마다 두 장씩, 같은 카드는 넣을 수 없으니 모든 덱의 기본 힘은 같고 차이는 어떤 카드를 골랐느냐뿐입니다. 손에는 늘 네 장을 들고, 라운드가 끝날 때마다 다시 네 장으로 채웁니다. 카드는 숫자 이상의 일을 합니다. 무리를 등에 업고 강해지는 늑대, 상대 카드를 그 라운드 동안 침묵시키는 돌, 다음에 낼 언데드를 축복하는 촛불이 있습니다. 그 모든 것을 적용한 뒤 더 높은 쪽이 라운드를 가져가고, 값이 같으면 무승부라 양쪽 모두 점수가 없습니다. 먼저 두 라운드를 이긴 쪽이 대전을 가져가니 듀얼은 삼판 이선승입니다. 라운드에는 제한 시간이 있습니다. 사십오 초 동안 카드를 내지 않으면 대전이 상대에게 넘어가지만, 아직 어떤 라운드도 결정되지 않았다면 승자 없이 그냥 무효가 됩니다. 카드가 오간 뒤 양쪽 다 시간을 넘기면 그 듀얼은 무승부로 기록됩니다. 스스로 자리를 뜰 때도 같은 규칙이 적용됩니다. 대기열에 들어가려면 카드 마스터 곁에 서 있어야 하지만, 짝이 정해지면 판은 알아서 열리고 어디서든 카드를 낼 수 있습니다. 두 사람이 필요하므로 오프라인 세계에서는 결코 제공되지 않습니다."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "차차 알게 될 얼굴들",
@@ -8255,16 +8255,16 @@ export const ko_KR: EnTranslations = {
     "buyConfirmCancel": "취소"
   },
   "cardDuel": {
-    "title": "카드 대결",
+    "title": "ClaudeStone",
     "close": "닫기",
     "join": "대기열 참가",
-    "joinAria": "카드 대결 대기열에 참가",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "대기열 나가기",
-    "leaveAria": "카드 대결 대기열에서 나가기",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "기권",
-    "forfeitAria": "카드 대결 기권하기",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "상대를 기다리는 중...",
-    "unavailable": "카드 대결을 하려면 다른 플레이어가 온라인 상태여야 합니다.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "{name}와(과) 대결",
     "round": "라운드 점수: {mine} - {theirs}",
     "counts": "덱: {deck} · 버린 카드: {discard}",
@@ -15127,7 +15127,7 @@ export const ko_KR: EnTranslations = {
       "card_master": {
         "name": "카드 마스터",
         "title": "운명의 딜러",
-        "greeting": "카드 대결 한 판 어떻소? 삼판양승, 승자에게는 자랑거리가 생기지."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "출납관 페트라 벨",

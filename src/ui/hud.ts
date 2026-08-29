@@ -1873,7 +1873,7 @@ export class Hud {
   // trading: locally staged offer, pushed to the server on change (shared with
   // the bags window and the woc_trade controller, which resets it on open/close)
   private stagedTrade: { items: InvSlot[]; copper: number } = { items: [], copper: 0 };
-  // Card Duel: latches the prior in-match state so a false->true transition
+  // ClaudeStone: latches the prior in-match state so a false->true transition
   // (a queued match just started) auto-opens the window, mirroring the trade
   // window's transition-based auto-open (hud/woc_trade). Without this a
   // player who closed the window (or was never at the NPC) while queued has
@@ -5382,7 +5382,7 @@ export class Hud {
     root: () => $('#bg-proposal-popup'),
     world: () => this.sim,
   });
-  // The Card Duel pair (src/ui/cards/card_windows.ts): the duel window, which
+  // The ClaudeStone pair (src/ui/cards/card_windows.ts): the duel window, which
   // the Card Master's gossip menu and the persistent #mm-cardduel micromenu
   // button both toggle and which auto-opens the moment a match starts, plus the
   // deck builder it opens. Hud drives both render()s from the mediumHud band.
@@ -9647,7 +9647,7 @@ export class Hud {
       if ($('#dungeon-finder-window').style.display === 'flex') this.dungeonFinderWindow.render();
       if (this.dungeonFinderProposalPopup.isOpen) this.dungeonFinderProposalPopup.render();
       if (this.bgProposalPopup.isOpen) this.bgProposalPopup.render();
-      // Auto-open the Card Duel window the instant a queued match starts (a
+      // Auto-open the ClaudeStone window the instant a queued match starts (a
       // false->true transition on match presence), mirroring the trade window's
       // transition-based auto-open (hud/woc_trade): the sim allows playing a card from anywhere
       // once matched, but the only OTHER way to open this window is the Card

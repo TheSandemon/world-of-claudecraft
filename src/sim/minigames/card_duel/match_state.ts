@@ -1,4 +1,4 @@
-// Live Card Duel match state: the two seats, the round board the resolver
+// Live ClaudeStone match state: the two seats, the round board the resolver
 // mutates, the modifier list, and the played-card history every history query
 // reads. Pure: no SimContext, no clock, no rng (deck.ts and selectors.ts own
 // the draws).

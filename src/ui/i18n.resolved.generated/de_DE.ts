@@ -5666,7 +5666,7 @@ export const de_DE: EnTranslations = {
       "typeEscortTitle": "Eskorte",
       "typeEscortBody": "Jemand muss sicher durch gefährliches Gebiet geleitet werden. Nimm die Quest an, finde die Person, die am Anfang des Weges wartet, und sprich sie an, um aufzubrechen. Sie geht ihren eigenen Pfad, während du Schritt hältst, und das Unheil, das dort lauert, gilt ihr, nicht immer dir. Bleib in ihrer Nähe: Feinde legen dem Weg Hinterhalte in Wellen, und der Weg setzt sich erst fort, sobald eine Welle erledigt ist. Du kannst die Person, die du eskortierst, nicht angreifen, aber du kannst sie heilen, und fällt sie, setzt sich der Lauf einfach zurück, damit du es erneut versuchen kannst. Erreiche das andere Ende mit ihr lebendig und dir an ihrer Seite, und die Quest wird angerechnet.",
       "cardMasterTitle": "Nicht jeder NPC hat eine Quest: der Kartenmeister",
-      "cardMasterBody": "Ein NPC in Eastbrook gibt statt Botengängen Karten aus. Sprich mit dem Kartenmeister, wähle den Kartenkampf aus seinem Menü, und du trittst einer Warteschlange bei, die dich mit dem nächsten wartenden Spieler zusammenbringt. Jede Klasse kann sich setzen, und weder deine Stufe noch deine Ausrüstung spielen eine Rolle. Ihr spielt beide aus einem eigenen Deck von zwanzig Karten: zwei pro Wert von eins bis zehn, keine Karte doppelt. Jedes Deck trägt also dieselbe rohe Kraft, und der Unterschied liegt darin, welche Karten du gewählt hast. Du hältst vier auf der Hand und füllst nach jeder Runde wieder auf vier auf. Karten können mehr als ihre Zahl: ein Wolf, der mit dem Rudel hinter ihm wächst, ein Stein, der den Gegner für die Runde verstummen lässt, eine Kerze, die deinen nächsten Untoten segnet. Die nach allem höhere Karte gewinnt die Runde, zwei gleiche Karten sind ein Unentschieden, das für niemanden zählt. Wer zuerst zwei Runden gewinnt, gewinnt das Spiel, ein Duell geht also auf zwei Gewinnrunden. Runden laufen auf Zeit: Lässt du deine Karte fünfundvierzig Sekunden lang liegen, geht das Spiel an die Gegenseite, es sei denn, es wurde noch keine Runde entschieden, dann wird es einfach ohne Sieger verworfen. Lassen beide nach gespielten Karten die Zeit ablaufen, wird das Duell als Unentschieden gewertet. Dieselben Regeln gelten, wenn du selbst davongehst. Zum Anstellen musst du beim Kartenmeister stehen, doch sobald ihr zusammengeführt seid, öffnet sich das Brett von selbst und du kannst von überall spielen. Es braucht zwei, deshalb bietet die Offline-Welt es nie an."
+      "cardMasterBody": "One NPC in Eastbrook deals cards instead of errands. Talk to the Card Master, pick the ClaudeStone line out of his menu, and you join a queue that pairs you with the next player waiting. Any class can sit down, and nothing about your level or your gear comes into it. You each play from your own deck of twenty cards, two at every value from one to ten and no card repeated, so every deck carries the same raw power and the difference is which cards you chose. You hold four at a time and refill back to four after every round. Cards do things beyond their number: a wolf that grows with the pack behind it, a stone that shuts an opponent up for the round, a candle that blesses the next undead you play. The higher card as it stands after all of that takes the round, and two equal cards are a push that scores for neither of you. First to two rounds takes the match, so a duel is best of three. Rounds run on a clock: leave your card unplayed for forty five seconds and the match goes to the other side, unless no round has been scored yet, in which case it is simply thrown out with no winner. If both of you let the clock run out after cards have been played, the duel is recorded as a draw. The same rules cover walking away yourself. You have to be standing with the Card Master to join the queue, but once you are matched the board opens itself and you can play from anywhere. It takes two, so the offline world never offers it."
     },
     "lore": {
       "figuresTitle": "Gesichter, die du kennenlernen wirst",
@@ -8255,16 +8255,16 @@ export const de_DE: EnTranslations = {
     "buyConfirmCancel": "Abbrechen"
   },
   "cardDuel": {
-    "title": "Kartenkampf",
+    "title": "ClaudeStone",
     "close": "Schließen",
     "join": "Warteschlange beitreten",
-    "joinAria": "Der Warteschlange für den Kartenkampf beitreten",
+    "joinAria": "Join the ClaudeStone queue",
     "leave": "Warteschlange verlassen",
-    "leaveAria": "Die Warteschlange für den Kartenkampf verlassen",
+    "leaveAria": "Leave the ClaudeStone queue",
     "forfeit": "Aufgeben",
-    "forfeitAria": "Den Kartenkampf aufgeben",
+    "forfeitAria": "Forfeit the ClaudeStone match",
     "queued": "Warte auf einen Gegner...",
-    "unavailable": "Für den Kartenkampf wird ein weiterer Online-Spieler benötigt.",
+    "unavailable": "ClaudeStone requires another player online.",
     "vsOpponent": "gegen {name}",
     "round": "Rundenpunkte: {mine} - {theirs}",
     "counts": "Deck: {deck} · Ablagestapel: {discard}",
@@ -15127,7 +15127,7 @@ export const de_DE: EnTranslations = {
       "card_master": {
         "name": "Kartenmeister",
         "title": "Händler des Zufalls",
-        "greeting": "Lust auf einen Kartenkampf? Wer zwei von drei Runden gewinnt, darf sich brüsten."
+        "greeting": "Care for a ClaudeStone match? Best of three, winner takes the bragging rights."
       },
       "bursar_petra_vell": {
         "name": "Kämmerin Petra Vell",

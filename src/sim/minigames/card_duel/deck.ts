@@ -1,4 +1,4 @@
-// Pure deck/hand engine for the Card Duel minigame (docs: Card Master NPC,
+// Pure deck/hand engine for the ClaudeStone minigame (docs: Card Master NPC,
 // src/sim/social/card_duel.ts). No SimContext, no class coupling: any player
 // can hold a CardHandState. Determinism: shuffling draws only from the `Rng`
 // passed in, never `Math.random`.
