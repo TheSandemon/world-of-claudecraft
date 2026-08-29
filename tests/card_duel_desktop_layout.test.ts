@@ -36,6 +36,10 @@ function section(name: string): string {
 }
 
 const DESKTOP = section('card duel desktop table');
+// The touch layout is the OTHER place the two slots sit side by side (its query
+// covers a landscape phone via max-height), so the seat sides are pinned there
+// too: fixing one and leaving the other is the shape this bug would come back in.
+const TOUCH = section('card duel touch layout');
 
 describe('card duel desktop table', () => {
   it('has a wide section at all, and it is a real slice of the sheet', () => {
@@ -125,6 +129,64 @@ describe('card duel desktop table', () => {
     // block may only turn the sentence ON. The accessible name and the inspector
     // carry it everywhere else, at every size, on every device.
     expect(DESKTOP).toMatch(/\.dt-hand \.cf-size-hand \.cf-rules \{\s*display: block;\s*\}/);
+  });
+
+  it('seats YOUR card on the left of the board and theirs on the right', () => {
+    // Ownership across the two side-by-side slots reads left to right, and the
+    // seat the player acts from is the one the eye lands on first. Pinned as
+    // the ORDER values rather than the source order, because the slots are
+    // written theirs-first in duel_table_markup.ts and it is the flex/grid
+    // order that decides which side of the felt each one lands on.
+    const mine = Number(DESKTOP.match(/\.dt-slot-mine\s*\{[^}]*order:\s*(\d+)/)?.[1]);
+    const theirs = Number(DESKTOP.match(/\.dt-slot-theirs\s*\{[^}]*order:\s*(\d+)/)?.[1]);
+    expect(Number.isFinite(mine)).toBe(true);
+    expect(Number.isFinite(theirs)).toBe(true);
+    expect(mine, 'your own card must sit left of the opponent card').toBeLessThan(theirs);
+
+    // And the clash lunges follow the seats: each card leans INTO the other,
+    // so the card on the left strikes right. A swap that moved the slots and
+    // left the animations behind would have them lunging apart.
+    const lungeMine = DESKTOP.match(
+      /\[data-beat="clash"\]\s*\.dt-slot-mine\s*\{[^}]*animation-name:\s*([\w-]+)/,
+    )?.[1];
+    const lungeTheirs = DESKTOP.match(
+      /\[data-beat="clash"\]\s*\.dt-slot-theirs\s*\{[^}]*animation-name:\s*([\w-]+)/,
+    )?.[1];
+    expect(lungeMine).toBe('dt-lunge-right');
+    expect(lungeTheirs).toBe('dt-lunge-left');
+  });
+
+  it('seats the same way on the landscape/touch layout, lunges included', () => {
+    expect(TOUCH).not.toBe('');
+    expect(TOUCH).not.toContain('card duel desktop table');
+    const mine = Number(TOUCH.match(/\.dt-slot-mine\s*\{[^}]*order:\s*(\d+)/)?.[1]);
+    const theirs = Number(TOUCH.match(/\.dt-slot-theirs\s*\{[^}]*order:\s*(\d+)/)?.[1]);
+    expect(Number.isFinite(mine)).toBe(true);
+    expect(Number.isFinite(theirs)).toBe(true);
+    expect(mine).toBeLessThan(theirs);
+    expect(
+      TOUCH.match(
+        /\[data-beat="clash"\]\s*\.dt-slot-mine\s*\{[^}]*animation-name:\s*([\w-]+)/,
+      )?.[1],
+    ).toBe('dt-lunge-right');
+    expect(
+      TOUCH.match(
+        /\[data-beat="clash"\]\s*\.dt-slot-theirs\s*\{[^}]*animation-name:\s*([\w-]+)/,
+      )?.[1],
+    ).toBe('dt-lunge-left');
+  });
+
+  it('the narration line is the readable size, not the smallest type on the board', () => {
+    // The caption is what a player READS while the round plays out, on the
+    // widest surface the table has. It was 13px here, under the 14px the seat
+    // names and the rail chips got, which is backwards.
+    const beats = DESKTOP.match(/\.dt-beats\s*\{([^}]*)\}/)?.[1] ?? '';
+    const size = Number(beats.match(/font-size:\s*(\d+)px/)?.[1]);
+    expect(size).toBeGreaterThanOrEqual(16);
+    // Room for the wrapped case: a caption that grows a line mid-round would
+    // reflow the stage above it and move the cards it is describing.
+    const minHeight = Number(beats.match(/min-height:\s*(\d+)px/)?.[1]);
+    expect(minHeight).toBeGreaterThanOrEqual(2 * size);
   });
 
   it('fairness: the wide layout hides nothing a player acts on', () => {

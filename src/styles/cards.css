@@ -1492,10 +1492,14 @@
       width: 36px;
       height: 50px;
     }
-    .dt-slot-theirs {
+    /* Your card on the LEFT, theirs on the right. A player reads their own
+       side first, so the seat they act from is the one the eye lands on; the
+       BANDS still carry ownership top to bottom (them above, you below), which
+       is the axis that says whose health is whose. */
+    .dt-slot-mine {
       order: 1;
     }
-    .dt-slot-mine {
+    .dt-slot-theirs {
       order: 2;
     }
     .dt-clash {
@@ -1521,10 +1525,12 @@
     .dt-beats {
       order: 6;
     }
-    .dt-stage[data-beat="clash"] .dt-slot-theirs {
+    /* Each card leans INTO the other, so the directions follow the swap
+       above: yours sits on the left and strikes right, theirs strikes left. */
+    .dt-stage[data-beat="clash"] .dt-slot-mine {
       animation-name: dt-lunge-right;
     }
-    .dt-stage[data-beat="clash"] .dt-slot-mine {
+    .dt-stage[data-beat="clash"] .dt-slot-theirs {
       animation-name: dt-lunge-left;
     }
     /* A landscape phone is about 430px tall, and the HAND is the part a player
@@ -1858,15 +1864,15 @@
        and "Resolving the round" as well as a number, and at 20px display type
        those wrapped into a headline in a 15rem rail. */
     .dt-clock-num {
-      font-size: 17px;
+      font-size: 19px;
       line-height: 1.2;
     }
     .dt-waiting {
-      min-height: 18px;
-      font-size: 13px;
+      min-height: 20px;
+      font-size: 15px;
     }
     .dt-effects-title {
-      font-size: 11px;
+      font-size: 13px;
     }
     /* A column of chips rather than a wrapping row: the rail is narrow and
        tall, which is the shape a list of parked effects wanted all along. */
@@ -1878,13 +1884,13 @@
     }
     .dt-fx {
       justify-content: space-between;
-      padding: 4px 8px;
+      padding: 5px 9px;
       border-radius: var(--radius-sm);
-      font-size: 11px;
+      font-size: 13px;
     }
     .dt-fx-name,
     .dt-fx-amount {
-      font-size: 12px;
+      font-size: 13px;
     }
 
     /* The seat bands stop wrapping to three lines: name, commit lamp, health,
@@ -1934,7 +1940,7 @@
     }
     .dt-oppo-row .cf-name,
     .dt-oppo-row .cf-tribes {
-      font-size: 9px;
+      font-size: 11px;
     }
 
     /* The stage becomes the table it has been describing all along: an inset
@@ -1957,10 +1963,12 @@
         linear-gradient(160deg, var(--panel-base, #17242c), #0a1116);
       box-shadow: inset 0 0 calc(38px * var(--fx-shadow, 1)) #00000080;
     }
-    /* Their card, the gutter, your card. Ownership still reads top to bottom
-       across the BANDS, exactly as it does on the short-viewport layout, and
-       each slot keeps its own label. */
-    .dt-slot-theirs {
+    /* Your card, the gutter, their card. The seat a player acts from is on
+       the left, which is where the eye starts, and it is the same hand-to-
+       stage direction the hand below reads in. Ownership still reads top to
+       bottom across the BANDS, exactly as it does on the short-viewport
+       layout, and each slot keeps its own label. */
+    .dt-slot-mine {
       order: 1;
     }
     .dt-clash {
@@ -1969,8 +1977,17 @@
       width: 88px;
       height: auto;
     }
-    .dt-slot-mine {
+    .dt-slot-theirs {
       order: 3;
+    }
+    /* Side by side, the clash is a HORIZONTAL meeting: the base rule leans the
+       cards down and up, which on this layout has them lunging past each other
+       instead of into each other. Same 220ms, same easing, same beat. */
+    .dt-stage[data-beat="clash"] .dt-slot-mine {
+      animation-name: dt-lunge-right;
+    }
+    .dt-stage[data-beat="clash"] .dt-slot-theirs {
+      animation-name: dt-lunge-left;
     }
     .dt-clash::before {
       content: "";
@@ -1986,7 +2003,7 @@
     .dt-verdict {
       order: 4;
       grid-column: 1 / -1;
-      font-size: 17px;
+      font-size: 20px;
     }
     .dt-note {
       order: 5;
@@ -1999,16 +2016,29 @@
     .dt-damage-num {
       font-size: 22px;
     }
+    /* The caption line is what a player READS while the round plays, and at
+       13px on a 1040px board it was the smallest type on the widest surface.
+       It gets display weight and room for two lines: the min-height is set
+       against the wrapped case so a long step caption cannot reflow the stage
+       under it mid-beat, which would move the cards it is describing. */
     .dt-beats {
       order: 7;
-      min-height: 17px;
+      min-height: 42px;
+      font-family: var(--title-font);
+      font-size: 16px;
+      line-height: 1.3;
+      color: var(--color-text);
+    }
+    /* The reshuffle note sits with the caption and was never resized for this
+       board, so it stayed at the phone's 10px. */
+    .dt-note {
       font-size: 13px;
     }
     .dt-slot {
       gap: 6px;
     }
     .dt-slot-label {
-      font-size: 12px;
+      font-size: 14px;
     }
     .dt-slot-card,
     .dt-slot-card .cf-size-stage {
@@ -2019,8 +2049,8 @@
       font-size: 23px;
     }
     .dt-slot-card .cf-size-stage .cf-rules {
-      padding: 4px 6px;
-      font-size: 11px;
+      padding: 5px 7px;
+      font-size: 12px;
     }
     .dt-plate-value {
       font-size: 24px;
