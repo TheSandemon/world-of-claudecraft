@@ -4154,6 +4154,15 @@ export const TARGETS = [
     // teleport itself streams a new zone, which raises that loading screen back OVER a
     // HUD that is already laid out, so the shot also waits for it to go.
     async capture(page) {
+      // The tutorial greeting an NPC opens on the Proving Shore lands ON TOP of
+      // the duel window and covers the stage: the verdict, the caption line and
+      // half of one card. It is dismissible and nothing about it is the subject
+      // of this shot, so close whatever is open before the table is set up.
+      await page.evaluate(() => {
+        for (const btn of document.querySelectorAll('button')) {
+          if (btn.offsetParent && /understood/i.test(btn.textContent ?? '')) btn.click();
+        }
+      });
       await page.evaluate(() => {
         const sim = window.__game?.sim;
         const p = sim?.player;
