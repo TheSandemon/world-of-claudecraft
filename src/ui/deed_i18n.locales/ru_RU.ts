@@ -157,6 +157,7 @@ export const table: DeedLocaleTable = {
   },
   pvp_card_duel_first_win: {
     name: 'Свои правила',
+    desc: 'Победите в ClaudeStone у Карточного мастера.',
   },
   prog_first_steps: {
     name: 'Первые шаги',

@@ -157,6 +157,7 @@ export const table: DeedLocaleTable = {
   },
   pvp_card_duel_first_win: {
     name: '以牌为规',
+    desc: '在牌局大师处赢得一场ClaudeStone。',
   },
   prog_first_steps: { name: '千里之行', desc: '达到2级，在漫漫长路上迈出你的第一步。' },
   prog_finding_your_feet: { name: '站稳脚跟', desc: '达到5级；荒野看上去已经小了一些。' },
