@@ -478,8 +478,16 @@ describe('Eastbrook authored gameplay data integration', () => {
     expect(ZONE1_NPCS.apothecary_lin.greeting).toBe(
       'Careful where you step in the northeastern woods, friend.',
     );
+    // Re-minted a fifth time for the ClaudeStone rename: exactly one
+    // non-placement field moved, the Card Master's greeting, because the
+    // minigame he hosts changed its name. Asserted BEFORE the digest, same as
+    // Apothecary Lin above, so the one moved field is described where it can
+    // actually fail rather than only shifting an opaque hash.
+    expect(ZONE1_NPCS.card_master.greeting).toBe(
+      'Care for a ClaudeStone match? Best of three, winner takes the bragging rights.',
+    );
     expect(createHash('sha256').update(JSON.stringify(stableTownNpcPayload())).digest('hex')).toBe(
-      '2f6072ad2baa2341ce32484144915a0d6cbc9836d0ed4c9d70112e3dbeb87146',
+      'be9783df6e3824b86c2018a4896539a0bcf3f2df49778fdc6a2e376e31220a3a',
     );
     expect(ZONE1_TOWN_NPC_IDS).toHaveLength(15);
     for (const id of ZONE1_TOWN_NPC_IDS) {
