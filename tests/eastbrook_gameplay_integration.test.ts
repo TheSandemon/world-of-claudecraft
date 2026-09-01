@@ -504,7 +504,7 @@ describe('Eastbrook authored gameplay data integration', () => {
       'Care for a ClaudeStone match? Best of three, winner takes the bragging rights.',
     );
     expect(createHash('sha256').update(JSON.stringify(stableTownNpcPayload())).digest('hex')).toBe(
-      '3943f298cc9eff07d9dc040c8ff68d401da70e4a1ba9c17efc681aebc0fede44',
+      '128686a4533b7c6e1bf800f621148a1f654f24f1949235313f6f2ad51f0c7312',
     );
     expect(ZONE1_TOWN_NPC_IDS).toHaveLength(15);
     for (const id of ZONE1_TOWN_NPC_IDS) {

@@ -1700,7 +1700,10 @@ describe('Hud.update() drives exactly the registered set, on the registered band
       // window 44 -> 46: the crucible vendor's out-of-range close (the third
       // #vendor-window tenant, on the heroic vendor's exact row shape).
       // Both deltas apply on the merged tree.
-    ).toEqual({ window: 46, chrome: 84, none: 17 });
+      // window 46 -> 47 on the v0.42.0 merge: the ClaudeStone deck builder's
+      // render row joins the release's own 44 -> 46 (the crucible vendor's
+      // out-of-range close). Read off a run of the merged tree.
+    ).toEqual({ window: 47, chrome: 84, none: 17 });
     const windows = HUD_UPDATE_DRIVES.filter((r) => r.surface === 'window');
     expect(windows.map((r) => r.call)).toContain('this.spellbookWindow.tickOpen');
     expect(windows.map((r) => r.call)).toContain('this.refreshOpenTownFocusIfChanged');
@@ -1719,7 +1722,10 @@ describe('Hud.update() drives exactly the registered set, on the registered band
       // Store ladder-signature row (phase 15) land beside the release's
       // woc_market_window and trade-window rows, less the Vale Cup window,
       // briefing and betting module guards the retirement takes with it.
-      module: 24,
+      // 24 -> 25 on the v0.42.0 merge: the ClaudeStone deck builder is a cold
+      // window with its own module-side signature, the same guard kind as the
+      // duel window beside it.
+      module: 25,
       // Phase 20's refreshCharSheetIfChanged and its siblings. Their latches are
       // HUD fields (lastCharSheetSig et al) because the cold char_window painter
       // holds no signature of its own to diff. The release's trade row left this
@@ -1762,7 +1768,8 @@ describe('Hud.update() drives exactly the registered set, on the registered band
         'bags_window.ts: if (!bagsMoneyRowStale(el.style.display, this.deps.world().copper, this.lastMoneyCopper)) return;',
         'bank_window.ts: if (sig === this.lastSig) return;',
         'calendar_window.ts: if (sig === this.lastSig) return;',
-        'card_duel_window.ts: if (sig === this.lastSig) return;',
+        'card_duel_window.ts: if (shell !== this.lastShell) {',
+        'deck_builder_window.ts: if (sig === this.lastSig) return;',
         'daily_rewards_window.ts: if (!this.charterFit.changedFrom(this.deps.world().bankPurchasedSlots)) return;',
         'deeds_window.ts: if (sig === this.lastSig) return;',
         'dungeon_finder_proposal_popup.ts: if (view.sig !== this.lastSig) {',

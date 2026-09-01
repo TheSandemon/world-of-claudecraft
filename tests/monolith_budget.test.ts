@@ -273,7 +273,12 @@ const MONOLITHS: MonolithRow[] = [
     // Re-pinned to the exact merged count of the OSSBrain v0.41.0 base
     // merge: both parents had already ratcheted for their own work, so
     // the composite is the honest size. Exact count, zero slack.
-    ceiling: 18905,
+    // Re-pinned on the v0.42.0 merge: the release's own extractions took this
+    // to 18905 while the ClaudeStone branch carries the duel/deck window
+    // wiring. The merged file is 18920 lines, which is the exact merged count
+    // per the ratchet rule and stays far below the branch's old 19015 pin. Any
+    // further growth reds again.
+    ceiling: 18920,
     seam: 'pure view core + thin painter on PainterHost (src/ui/CLAUDE.md)',
   },
   {
@@ -638,7 +643,9 @@ const MONOLITHS: MonolithRow[] = [
     // Re-pinned to the exact merged count of the OSSBrain v0.41.0 base
     // merge: both parents had already ratcheted for their own work, so
     // the composite is the honest size. Exact count, zero slack.
-    ceiling: 5908,
+    // Re-pinned on the v0.42.0 merge for the ClaudeStone mirror (the deck
+    // fields and the card command family on ClientWorld). Exact merged count.
+    ceiling: 5932,
     seam: 'a src/net sibling module (the refactor/net-online split is the template)',
   },
   {
