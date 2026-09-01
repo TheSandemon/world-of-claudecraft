@@ -214,6 +214,10 @@ export const IWORLD_MEMBERS = [
   { name: 'joinCardDuelQueue', kind: 'method' },
   { name: 'leaveCardDuelQueue', kind: 'method' },
   { name: 'playCardInDuel', kind: 'method' },
+  { name: 'startCardDuelAgainstOpponent', kind: 'method' },
+  { name: 'saveCardDeck', kind: 'method' },
+  { name: 'selectCardDeck', kind: 'method' },
+  { name: 'deleteCardDeck', kind: 'method' },
   { name: 'forfeitCardDuel', kind: 'method' },
   { name: 'marketInfo', kind: 'data' },
   { name: 'marketCollectPending', kind: 'data' },
@@ -579,7 +583,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
   it('pins total / data / method counts', () => {
     // The merged Talent V2 + mage-line surface (selectTalentRow supersedes
     // pickRowTalent; rowPicks stays off the seam, rows live on the allocation)
-    // plus the release's Card Duel facet, the Professions 2.0 identity
+    // plus the release's ClaudeStone facet, the Professions 2.0 identity
     // surface, the mobile-station pair (placeMobileStation +
     // activeMobileStationCraft), the commissions unbindItem command, and the
     // Rift + mounts surface. The v0.31.0 base merge added the release's three new
@@ -762,6 +766,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'deedsLeaderboard',
       'deedsRarity',
       'deedsRecent',
+      'deleteCardDeck',
       'deleteLoadout',
       'deliverCommissionOrder',
       'delveBuyShopItem',
@@ -948,8 +953,10 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'riftFloor',
       'salvageItem',
       'saveActionBarLayout',
+      'saveCardDeck',
       'saveLoadout',
       'searchCharacters',
+      'selectCardDeck',
       'selectTalentRow',
       'sellAllJunk',
       'sellItem',
@@ -975,6 +982,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'spectating',
       'spinDailyReward',
       'startAutoAttack',
+      'startCardDuelAgainstOpponent',
       'startTutorial',
       'stationPlacements',
       'stopAutoAttack',
@@ -1176,6 +1184,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'deedsLeaderboard',
       'deedsRarity',
       'deedsRecent',
+      'deleteCardDeck',
       'deleteLoadout',
       'deliverCommissionOrder',
       'delveBuyShopItem',
@@ -1314,8 +1323,10 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'riftEventMsRemaining',
       'salvageItem',
       'saveActionBarLayout',
+      'saveCardDeck',
       'saveLoadout',
       'searchCharacters',
+      'selectCardDeck',
       'selectTalentRow',
       'sellAllJunk',
       'sellItem',
@@ -1339,6 +1350,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'sortInventory',
       'spinDailyReward',
       'startAutoAttack',
+      'startCardDuelAgainstOpponent',
       'startTutorial',
       'stopAutoAttack',
       'submitLootRoll',
@@ -1705,6 +1717,10 @@ const FACET_CARD_MINIGAME = [
   'leaveCardDuelQueue',
   'playCardInDuel',
   'forfeitCardDuel',
+  'startCardDuelAgainstOpponent',
+  'saveCardDeck',
+  'selectCardDeck',
+  'deleteCardDeck',
 ] as const satisfies readonly (keyof IWorldCardMinigame)[];
 type _ExhaustCardMinigame = AssertNever<
   Exclude<keyof IWorldCardMinigame, (typeof FACET_CARD_MINIGAME)[number]>

@@ -51,7 +51,7 @@ export const UI_CUES = {
   fiestaAugment: 'ui_fiesta_augment',
   fiestaDown: 'ui_fiesta_down',
   fiestaRevive: 'ui_fiesta_revive',
-  // Card Duel minigame (src/sim/social/card_duel.ts). cardShuffle covers both
+  // ClaudeStone minigame (src/sim/social/card_duel.ts). cardShuffle covers both
   // the initial deal (cardDuelMatchStart) and a mid-match reshuffle
   // (cardRoundResolved.reshuffled); match win/lose deliberately reuse the
   // existing duelEnd/arenaLoss cues rather than new recordings (Jamie's
@@ -60,6 +60,11 @@ export const UI_CUES = {
   cardReveal: 'ui_card_reveal',
   cardRoundPush: 'ui_card_round_push',
   cardShuffle: 'ui_card_shuffle',
+  // The narration cues (src/ui/cards/duel_beats_core.ts): one per effect that
+  // lands, one for the health it takes off. Fired several times a round, so
+  // both are short and sit under the four cues above.
+  cardEffect: 'ui_card_effect',
+  cardHit: 'ui_card_hit',
   // Gathering rhythm (Professions 2.0 Phase 12b, issue #2208): fishCast/
   // fishBite/fishReel are real, shipped fishing cues. gatherCast branches by
   // node type (gatherCastByNodeType below); this flat cue is only the
@@ -347,7 +352,7 @@ export class GameAudio {
     this.play(UI_CUES.duelStart);
   }
 
-  // Card Duel: live in-match feedback, same ungated category as the Fiesta
+  // ClaudeStone: live in-match feedback, same ungated category as the Fiesta
   // cues above (match win/lose reuse duelEnd()/arenaLoss() directly, no
   // dedicated methods needed for those).
   cardPlay(): void {
@@ -364,6 +369,14 @@ export class GameAudio {
 
   cardShuffle(): void {
     this.play(UI_CUES.cardShuffle);
+  }
+
+  cardEffect(): void {
+    this.play(UI_CUES.cardEffect);
+  }
+
+  cardHit(): void {
+    this.play(UI_CUES.cardHit);
   }
 
   // Gathering rhythm (Professions 2.0 Phase 12b). All of these are personal

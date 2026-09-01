@@ -29,7 +29,7 @@ describe('playerDeath audio wiring', () => {
   it('leaves every minigame/PvP loss chime on the shared generic cue', () => {
     // Fiesta, Yumi, Rift race and Thornhollow Fields losses are NOT a
     // character death and must keep using the shared stinger. Arena rating and
-    // Card Duel losses use the dedicated audio.arenaLoss() cue, so they do not
+    // ClaudeStone losses use the dedicated audio.arenaLoss() cue, so they do not
     // count here.
     const matches = hud.match(/audio\.death\(\);/g) ?? [];
     expect(matches.length).toBe(4);

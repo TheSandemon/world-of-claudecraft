@@ -4292,6 +4292,7 @@
   body.mobile-touch #arena-window,
   body.mobile-touch #dungeon-finder-window,
   body.mobile-touch #card-duel-window,
+  body.mobile-touch #deck-builder-window,
   body.mobile-touch #delve-board,
   body.mobile-touch #leaderboard-window,
   body.mobile-touch #guild-board-window,
@@ -8434,6 +8435,33 @@
     }
     body.mobile-touch #fiesta-augments .fa-cat {
       font-size: 9px;
+    }
+
+    /* ClaudeStone: the hand grows to a real touch target and the rules text
+       comes out of hiding, because a phone has no hover to reveal it with.
+       Every number the face shows is the same one the desktop face shows, at
+       the same moment: this is layout, never information. */
+    body.mobile-touch .cf-size-hand {
+      width: 84px;
+      height: 122px;
+    }
+    body.mobile-touch .cf-size-hand .cf-value {
+      font-size: 20px;
+    }
+    body.mobile-touch .cf-size-hand .cf-name {
+      font-size: 12px;
+    }
+    body.mobile-touch .cf-size-hand .cf-tribes {
+      font-size: 11px;
+    }
+    body.mobile-touch .dt-hand {
+      gap: 8px;
+    }
+    body.mobile-touch .dt-clock-num {
+      font-size: 15px;
+    }
+    body.mobile-touch .dt-plate-value {
+      font-size: 24px;
     }
   }
 

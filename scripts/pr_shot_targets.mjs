@@ -44,6 +44,29 @@ async function awaitWorldPainted(page) {
     },
     { timeout: 120000 },
   );
+
+// Wait until the loading screen has been continuously GONE for `stableMs`. A recipe
+// that teleports across a zone boundary raises it back over a HUD that is already laid
+// out, asynchronously, so a one-shot check races it and photographs the logo instead of
+// the screen under test. Continuous rather than instantaneous for exactly that race.
+async function waitForWorldVisible(page, stableMs = 2500, attempts = 240, intervalMs = 250) {
+  let since = 0;
+  for (let i = 0; i < attempts; i++) {
+    const gone = await page.evaluate(() => {
+      const el = document.querySelector('#loading-screen');
+      if (!el) return true;
+      const cs = getComputedStyle(el);
+      return cs.display === 'none' || cs.opacity === '0' || cs.visibility === 'hidden';
+    });
+    if (gone) {
+      if (since === 0) since = Date.now();
+      if (Date.now() - since >= stableMs) return true;
+    } else {
+      since = 0;
+    }
+    await wait(intervalMs);
+  }
+  return false;
 }
 
 // Seed the theme preset BEFORE the document loads (variant.beforeLoad), in string
@@ -4807,30 +4830,73 @@ export const TARGETS = [
   },
   {
     key: 'card-duel',
-    label: 'Card Duel window (Card Master)',
+    label: 'ClaudeStone window (Card Master)',
     when: [
       'ui/card_duel',
+      'ui/cards/',
+      'styles/cards.css',
       'sim/social/card_duel',
       'sim/content/card_master',
-      'sim/minigames/card_hand',
+      'sim/minigames/card_duel',
     ],
-    // Teleport next to the Card Master (Eastbrook zone1, {13, 2}) so joinCardDuelQueue's
-    // range gate passes, then open the Card Duel window directly (idle state: this target
-    // only covers the bring-up the diff implies; queued/in-match/complete states are
-    // fixture-driven separately for the PR screenshot set, see docs/screenshots/card-duel).
+    // Teleport onto the LIVE Card Master so the range gate passes, open the window,
+    // then SIT DOWN against one of his named regulars: a bot match starts immediately,
+    // which is the only way to reach a live table in a single-player world. The idle
+    // window shows an affordance; the played round shows the thing a reviewer needs to
+    // judge (the seats, the clock, the stage, the hand).
+    //
+    // The destination is READ from the NPC rather than written as a literal. It was
+    // {13, 2}, which the NPC has since left: the range gate then refused every sit-down
+    // and, because each step degrades rather than failing, this target quietly shot the
+    // idle affordance forever instead of a table.
+    //
+    // Every step past the window itself degrades to the idle shot rather than failing
+    // the run, and each wait is a pollForSize (a laid-out, displayed element) rather
+    // than a bare selector match: the HUD's markup exists while the loading screen is
+    // still up, so a presence-only wait silently photographs a mid-boot frame. The
+    // teleport itself streams a new zone, which raises that loading screen back OVER a
+    // HUD that is already laid out, so the shot also waits for it to go.
     async capture(page) {
+      // The tutorial greeting an NPC opens on the Proving Shore lands ON TOP of
+      // the duel window and covers the stage: the verdict, the caption line and
+      // half of one card. It is dismissible and nothing about it is the subject
+      // of this shot, so close whatever is open before the table is set up.
       await page.evaluate(() => {
-        const p = window.__game?.sim?.player;
-        if (p?.pos) {
-          p.pos.x = 13;
-          p.pos.z = 2;
+        for (const btn of document.querySelectorAll('button')) {
+          if (btn.offsetParent && /understood/i.test(btn.textContent ?? '')) btn.click();
+        }
+      });
+      await page.evaluate(() => {
+        const sim = window.__game?.sim;
+        const p = sim?.player;
+        const npc = [...(sim?.entities?.values?.() ?? [])].find(
+          (e) => e.kind === 'npc' && e.templateId === 'card_master',
+        );
+        if (p?.pos && npc?.pos) {
+          p.pos.x = npc.pos.x + 1;
+          p.pos.y = npc.pos.y;
+          p.pos.z = npc.pos.z + 1;
         }
         const el = document.querySelector('#card-duel-window');
         if (el) el.style.display = 'none';
         window.__game?.hud?.toggleCardDuel?.();
       });
-      const open = await pollForSize(page, '#card-duel-window');
-      return open ? { clip: '#card-duel-window' } : {};
+      if (!(await pollForSize(page, '#card-duel-window'))) return {};
+      if (await pollForSize(page, '#card-duel-window .cd-regular')) {
+        await page.evaluate(() => {
+          document.querySelector('#card-duel-window .cd-regular')?.click();
+        });
+        if (await pollForSize(page, '#card-duel-window [data-cd-hand] .cf')) {
+          await page.evaluate(() => {
+            document.querySelector('#card-duel-window [data-cd-hand] .cf:not([disabled])')?.click();
+          });
+          // The bot's commit plus the whole round theater, which the engine caps at
+          // CARD_NARRATION_MAX_S, so the shot carries a told round and not a bare stage.
+          await wait(9000);
+        }
+      }
+      await waitForWorldVisible(page);
+      return { clip: '#card-duel-window' };
     },
   },
   {

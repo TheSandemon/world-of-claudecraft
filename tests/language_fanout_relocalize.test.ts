@@ -458,12 +458,18 @@ function openCardDuel(): { win: CardDuelWindow; root: HTMLElement } {
     root: () => root,
     world: () =>
       ({
-        cardMinigameInfo: { queued: false, inQueue: 0, match: null },
+        cardMinigameInfo: {
+          queued: false,
+          available: true,
+          decks: { names: [], active: '', activeCards: [] },
+          match: null,
+        },
         joinCardDuelQueue: noop,
         leaveCardDuelQueue: noop,
         forfeitCardDuel: noop,
         playCardInDuel: noop,
       }) as unknown as IWorld,
+    openDeckBuilder: noop,
     closeOthers: noop,
     captureFocus: () => null,
     restoreFocus: noop,
@@ -475,20 +481,27 @@ function openCardDuel(): { win: CardDuelWindow; root: HTMLElement } {
 
 describe('#2529 card duel: the orphaned relocalize is the only thing that repaints it', () => {
   it('no-ops on a direct render() and repaints on relocalize()', () => {
-    const title = bilingual('cardDuel.title');
+    // Witnessed on the close button rather than the heading beside it: the
+    // heading is `cardDuel.title`, which is the minigame's own NAME and so
+    // reads "ClaudeStone" in every locale on purpose (it sits in the brand
+    // allow-list in tests/i18n_completeness.test.ts). A brand cannot witness a
+    // re-localization. The close label rides the same shell rebuild, so it
+    // still fails on exactly the defect this test is here for.
+    const close = bilingual('cardDuel.close');
     const { win, root } = openCardDuel();
-    const heading = (): string => root.querySelector('#card-duel-title')?.textContent?.trim() ?? '';
-    expect(heading()).toBe(title.en);
+    const label = (): string =>
+      root.querySelector('[data-close]')?.getAttribute('aria-label') ?? '';
+    expect(label()).toBe(close.en);
 
     // The signature check lives INSIDE render(), so wiring the fan-out to
     // render() (the shape three other windows use) would have been a silent
     // no-op here. That is why this window needs its relocalize called.
     setLanguage(OTHER);
     win.render();
-    expect(heading(), 'render() rebuilt on an unchanged signature').toBe(title.en);
+    expect(label(), 'render() rebuilt on an unchanged signature').toBe(close.en);
 
     win.relocalize();
-    expect(heading()).toBe(title.other);
+    expect(label()).toBe(close.other);
 
     // relocalize() clears then re-latches inside the same render, so the medium
     // band goes straight back to eliding.

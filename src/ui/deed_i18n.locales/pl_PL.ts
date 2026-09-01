@@ -117,7 +117,6 @@ export const table: DeedLocaleTable = {
   },
   pvp_card_duel_first_win: {
     name: 'Zasady Domu',
-    desc: 'Wygraj Pojedynek Karciany u Mistrza Kart.',
   },
   prog_first_steps: {
     name: 'Pierwsze Kroki',

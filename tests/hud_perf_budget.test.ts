@@ -761,6 +761,16 @@ const COLD_PAINTER_ALLOWANCES: ReadonlyArray<ColdPainter> = [
     reflowAllow: { '.getBoundingClientRect': 1 },
     driverAllow: {},
   },
+  // The ClaudeStone window's card flight: ONE rect, read on the CLICK that plays a
+  // card, because the commit repaints the hand without it and by the time the
+  // stage shows the card there is nothing left to measure. Once per commit (a
+  // few times a match), never on a repaint and never in a loop; the flight
+  // itself lives in card_flight.ts, which reads the destination rect there.
+  {
+    file: 'card_duel_window.ts',
+    reflowAllow: { '.getBoundingClientRect': 1 },
+    driverAllow: {},
+  },
   // The scroll pair is the shape repeated across the windows: read the position before a
   // rebuild, write it back after, so the list does not jump under the player. Legitimate and
   // stable, granted per file, and the count is what makes a THIRD read in the same file (the

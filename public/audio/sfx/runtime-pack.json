@@ -1,8 +1,8 @@
 {
   "format": "woc-sfx-runtime-pack",
   "version": 1,
-  "bundleId": "273e14f66bca6b7db9c55fe577ce7c6df039fd941d45a698869e264c1e21c3a1",
-  "catalogHash": "cc91b2a188eaa0fe425b3e8be17cea0735f0a8c324086f57b06b26a7c6f4fbc7",
+  "bundleId": "6eea0d891a7ba780501eed930ef53b714f45ad41f25854e6d10f61f8e4c60f8e",
+  "catalogHash": "6fa5b5a9677232639855e1b5297184b720e3ace0c1fd1b87141aca937ade1e50",
   "clips": {
     "amb_birds": {
       "variants": [
@@ -3887,6 +3887,30 @@
           "url": "/audio/sfx/ui_bag_open.mp3?v=d7636eace2a0",
           "bytes": 10074,
           "sha256": "d7636eace2a03be6bd8273bb8a170703509f3f73ec7d24f27fc4c57553d8b5bc"
+        }
+      ],
+      "gain": 1,
+      "playbackRate": 1
+    },
+    "ui_card_effect": {
+      "variants": [
+        {
+          "id": "main",
+          "url": "/audio/sfx/ui_card_effect.mp3?v=c32f47b81626",
+          "bytes": 13835,
+          "sha256": "c32f47b81626759c1c993bb5403de676fb40d69df73180d9cc444473fe274b13"
+        }
+      ],
+      "gain": 1,
+      "playbackRate": 1
+    },
+    "ui_card_hit": {
+      "variants": [
+        {
+          "id": "main",
+          "url": "/audio/sfx/ui_card_hit.mp3?v=6eed8b879e91",
+          "bytes": 15716,
+          "sha256": "6eed8b879e91d8d9e92593373dbcff1c9833776b85cf7e94b6a0c7d188206085"
         }
       ],
       "gain": 1,

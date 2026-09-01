@@ -178,6 +178,18 @@ const _VIEW_SIG_RETURN = 'if (view.sig === this.lastSig) return;';
 // field, so the Thornhollow Fields arm names its signature apart to stay pinnable.
 const RAVENRIFT_SIG_RETURN = 'if (ravenriftSig === this.lastSig) return;';
 const VIEW_SIG_BLOCK = 'if (view.sig !== this.lastSig) {';
+// The ClaudeStone window's shell guard. It guards the REBUILD rather than the
+// whole method, because the round clock must still paint on every poll: the
+// clock is actionable information, so it may never wait for the rest of the
+// window to change. It is its own constant, and not one of the shared
+// signature shapes above, because that window carries no single signature over
+// its whole body: the shell rebuilds only when the window's STATE changes (a
+// live match keeps one shell for its whole length, so a playing round theater
+// is never rebuilt out from under itself), and each region inside it carries
+// its own memo. The shell identity is the window's state OR the finished-match
+// summary sitting on top of it, which is why the guard compares a resolved
+// `shell` rather than `view.state` directly.
+const SHELL_BLOCK = 'if (shell !== this.lastShell) {';
 
 /**
  * Every statement-position call `Hud.update()` makes, in SOURCE ORDER, so the table reads as
@@ -1029,20 +1041,28 @@ const HUD_UPDATE_DRIVES: readonly DriveRow[] = [
     why: 'the battleground queue-pop prompt; a *_popup name the painter gate does not sweep either',
   },
   {
-    call: 'this.cardDuelWindow.toggle',
+    call: 'this.cardWindows.cardDuel.toggle',
     band: 'medium',
-    gate: 'cardDuelInMatch && !this.cardDuelWasInMatch && !this.cardDuelWindow.isOpen',
+    gate: 'cardDuelInMatch && !this.cardDuelWasInMatch && !this.cardWindows.cardDuel.isOpen',
     surface: 'window',
     guard: { kind: 'callsite' },
     why: 'auto-opens the card duel window on the false->true match edge',
   },
   {
-    call: 'this.cardDuelWindow.render',
+    call: 'this.cardWindows.cardDuel.render',
     band: 'medium',
     gate: "$('#card-duel-window').style.display === 'block'",
     surface: 'window',
-    guard: { kind: 'module', module: 'card_duel_window.ts', proof: SIG_RETURN },
-    why: 'the card duel window',
+    guard: { kind: 'module', module: 'card_duel_window.ts', proof: SHELL_BLOCK },
+    why: 'the card duel table (the shell rebuilds on the window state; each region inside repaints behind its own memo, and the round clock still paints every poll)',
+  },
+  {
+    call: 'this.cardWindows.deckBuilder.render',
+    band: 'medium',
+    gate: 'this.cardWindows.deckBuilder.isOpen',
+    surface: 'window',
+    guard: { kind: 'module', module: 'deck_builder_window.ts', proof: SIG_RETURN },
+    why: 'the deck builder window',
   },
   {
     call: 'this.lootWindow.updateProximity',

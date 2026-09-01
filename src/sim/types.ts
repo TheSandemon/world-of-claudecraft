@@ -3441,7 +3441,7 @@ export interface NpcDef {
   // A flag on the warfareVendor precedent so a second placement never widens a
   // hard-keyed constant.
   crucibleVendor?: boolean;
-  // The Card Master: talking to this NPC joins/leaves the Card Duel minigame
+  // The Card Master: talking to this NPC joins/leaves the ClaudeStone minigame
   // queue (src/sim/social/card_duel.ts) instead of any vendor/bank flow.
   cardMaster?: boolean;
   greeting: string;
@@ -5562,6 +5562,45 @@ export interface PendingResurrection {
 
 export type DamageEventKind = 'hit' | 'miss' | 'dodge' | 'parry' | 'block' | 'resist' | 'evade';
 
+/**
+ * One narrated moment of a ClaudeStone round, as the player who receives it sees
+ * it: the engine's seat-shaped `CardRoundStep` rewritten to mine/theirs.
+ *
+ * Declared structurally here rather than imported from the minigame so the
+ * event union stays a leaf: `effect` carries the engine's primitive name, which
+ * the client maps to a line of text.
+ */
+export interface CardRoundStepEvent {
+  /** Whose card did it. */
+  side: 'mine' | 'theirs';
+  /** The card that did it, by catalog id. */
+  cardId: string;
+  /** The engine effect primitive ('modifyValue', 'silence', ...). */
+  effect: string;
+  /** Whose card the value moved on, or absent when nothing moved. */
+  target?: 'mine' | 'theirs';
+  /** The signed change, and the value it left behind. */
+  amount?: number;
+  valueAfter?: number;
+}
+
+/** What a finished ClaudeStone came to, for the end-of-match summary. Every
+ *  number is from the receiving player's point of view. */
+export interface CardDuelSummaryEvent {
+  rounds: number;
+  myHp: number;
+  theirHp: number;
+  maxHp: number;
+  damageDealt: number;
+  damageTaken: number;
+  /** The biggest single hit this player landed, if they landed one. */
+  bestHit?: { round: number; cardId: string; amount: number };
+  /** The opponent, so the summary can name them: a player name, or the content
+   *  id of one of the Card Master's regulars (never English on the wire). */
+  opponentName?: string;
+  opponentId?: string;
+}
+
 // `pid` (when present) marks a personal event that should only be delivered to
 // that player entity's owner; events without pid are world-visible.
 export type SimEvent = { pid?: number } & (
@@ -6056,22 +6095,59 @@ export type SimEvent = { pid?: number } & (
       duration: number;
     }
   // The Vale Cup (docs/prd/vale-cup.md). Queue lifecycle events carry pid
-  // Card Duel minigame (src/sim/social/card_duel.ts). Personal (pid), text-free
+  // ClaudeStone minigame (src/sim/social/card_duel.ts). Personal (pid), text-free
   // on purpose (the client picks its own audio/copy off the structured
   // fields, same as gatherResult/craftResult above).
   | { type: 'cardDuelMatchStart'; pid?: number }
   | { type: 'cardPlayed'; pid?: number }
   | {
       type: 'cardRoundResolved';
+      // The values the round was DECIDED on: base plus every effect that
+      // resolved. The printed numbers ride alongside as mineBase/theirsBase.
       mine: number;
       theirs: number;
       outcome: 'win' | 'lose' | 'push';
-      // True when this side's post-round draw emptied the deck and had to
-      // reshuffle the discard pile back in (see card_hand.ts drawOne).
+      // True when this side's post-round refill emptied the deck and had to
+      // reshuffle the discard pile back in (see card_duel/deck.ts refillHand).
       reshuffled: boolean;
+      // The printed face values, so the client can show the delta an effect
+      // applied without recomputing it. Added with the rules engine; absent on
+      // an event minted before it.
+      mineBase?: number;
+      theirsBase?: number;
+      // The two card ids that clashed, so the client's reveal can show the
+      // real faces instead of two bare numbers. Public by the rules the
+      // instant the round resolves. Absent on an event minted before them.
+      mineCardId?: string;
+      theirsCardId?: string;
+      // What the round DID, in order, so the client can tell the story instead
+      // of announcing the result: one entry per effect that visibly changed
+      // something (minigames/card_duel/resolve.ts CardRoundStep), rewritten
+      // from seats to this viewer's point of view. Bounded by the engine.
+      steps?: CardRoundStepEvent[];
+      // The health the round took off the loser, and where both sides stand
+      // after it. Absent on an event minted before health decided a match.
+      damage?: number;
+      // Which side took it, from this viewer's point of view. Absent on a push.
+      damageTo?: 'mine' | 'theirs';
+      myHp?: number;
+      theirHp?: number;
+      maxHp?: number;
       pid?: number;
     }
-  | { type: 'cardDuelMatchEnd'; won: boolean; pid?: number }
+  | {
+      type: 'cardDuelMatchEnd';
+      won: boolean;
+      // True when both clocks expired after at least one card had been played:
+      // a recorded result that credits nobody, distinct from the unrecorded
+      // void where no card was ever played. Absent means the old win/loss pair.
+      draw?: boolean;
+      // What the match came to, for the end-of-match summary. Absent when the
+      // match ended before anything worth summarizing (a void), and on an
+      // event minted before the summary existed.
+      summary?: CardDuelSummaryEvent;
+      pid?: number;
+    }
   | {
       type: 'heal2';
       sourceId: number;

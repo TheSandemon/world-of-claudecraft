@@ -180,7 +180,8 @@ import {
 import { blockLandingLogKey } from './block_landing_feedback_core';
 import { BootcampOverlay } from './bootcamp';
 import { CalendarWindow } from './calendar_window';
-import { CardDuelWindow } from './card_duel_window';
+import { applyCardRoundFeedback } from './cards/card_round_feedback';
+import { createCardWindows } from './cards/card_windows';
 import { CastBarPainter, type CastBarPaintInput } from './cast_bar_painter';
 import { charBagsPaired } from './char_bags_pairing_core';
 import { charSheetRefreshSig } from './char_sheet_sig_core';
@@ -1892,7 +1893,7 @@ export class Hud {
   // trading: locally staged offer, pushed to the server on change (shared with
   // the bags window and the woc_trade controller, which resets it on open/close)
   private stagedTrade: { items: InvSlot[]; copper: number } = { items: [], copper: 0 };
-  // Card Duel: latches the prior in-match state so a false->true transition
+  // ClaudeStone: latches the prior in-match state so a false->true transition
   // (a queued match just started) auto-opens the window, mirroring the trade
   // window's transition-based auto-open (hud/woc_trade). Without this a
   // player who closed the window (or was never at the NPC) while queued has
@@ -3627,7 +3628,8 @@ export class Hud {
         break;
       case 'card-duel-window':
         // Route through the painter so focus returns to the opener (WCAG 2.2 AA).
-        this.cardDuelWindow.close();
+        this.cardWindows.cardDuel.close();
+        this.cardWindows.deckBuilder.close();
         break;
       case 'vendor-window':
         this.closeVendor();
@@ -5414,18 +5416,15 @@ export class Hud {
     root: () => $('#bg-proposal-popup'),
     world: () => this.sim,
   });
-  // Card Duel window painter (card_duel_view.ts model + card_duel_window.ts
-  // painter, the ValeCupWindow shape scaled down). The Card Master NPC's gossip
-  // menu AND the persistent #mm-cardduel micromenu button (the sim allows
-  // playing a card once matched without proximity, so the window must stay
-  // reachable away from the NPC too) both
-  // toggle it; Hud drives render() from the mediumHud band while open, and
-  // auto-opens it the moment a match starts (see the mediumHud band below).
-  private readonly cardDuelWindow = new CardDuelWindow({
-    root: () => $('#card-duel-window'),
+  // The ClaudeStone pair (src/ui/cards/card_windows.ts): the duel window, which
+  // the Card Master's gossip menu and the persistent #mm-cardduel micromenu
+  // button both toggle and which auto-opens the moment a match starts, plus the
+  // deck builder it opens. Hud drives both render()s from the mediumHud band.
+  private readonly cardWindows = createCardWindows({
+    root: (selector) => $(selector),
     world: () => this.sim,
-    closeOthers: () => this.closeOtherWindows('#card-duel-window'),
-    ...this.windowFocus('#card-duel-window'),
+    closeOthers: (selector) => this.closeOtherWindows(selector),
+    focus: (selector) => this.windowFocus(selector),
   });
 
   // Thornhollow Fields in-match scoreboard strip + wave-respawn overlay (self-mounting,
@@ -6995,7 +6994,8 @@ export class Hud {
     this.calendarWindow.relocalize();
     this.mailboxWindow.relocalize();
     this.socialWindow.relocalize();
-    this.cardDuelWindow.relocalize();
+    this.cardWindows.cardDuel.relocalize();
+    this.cardWindows.deckBuilder.relocalize();
     this.spellbookWindow.relocalize();
     this.barEditorWindow.relocalize();
     this.lockpickController.relocalize();
@@ -9647,7 +9647,7 @@ export class Hud {
       if ($('#dungeon-finder-window').style.display === 'flex') this.dungeonFinderWindow.render();
       if (this.dungeonFinderProposalPopup.isOpen) this.dungeonFinderProposalPopup.render();
       if (this.bgProposalPopup.isOpen) this.bgProposalPopup.render();
-      // Auto-open the Card Duel window the instant a queued match starts (a
+      // Auto-open the ClaudeStone window the instant a queued match starts (a
       // false->true transition on match presence), mirroring the trade window's
       // transition-based auto-open (hud/woc_trade): the sim allows playing a card from anywhere
       // once matched, but the only OTHER way to open this window is the Card
@@ -9655,11 +9655,12 @@ export class Hud {
       // away (or closed the window) would otherwise have no path back into a
       // live match before the AFK forfeit deadline.
       const cardDuelInMatch = this.sim.cardMinigameInfo.match !== null;
-      if (cardDuelInMatch && !this.cardDuelWasInMatch && !this.cardDuelWindow.isOpen) {
-        this.cardDuelWindow.toggle();
+      if (cardDuelInMatch && !this.cardDuelWasInMatch && !this.cardWindows.cardDuel.isOpen) {
+        this.cardWindows.cardDuel.toggle();
       }
       this.cardDuelWasInMatch = cardDuelInMatch;
-      if ($('#card-duel-window').style.display === 'block') this.cardDuelWindow.render();
+      if ($('#card-duel-window').style.display === 'block') this.cardWindows.cardDuel.render();
+      if (this.cardWindows.deckBuilder.isOpen) this.cardWindows.deckBuilder.render();
       this.lootWindow.updateProximity();
       if (this.openVendorNpcId !== null) {
         const npc = sim.entities.get(this.openVendorNpcId);
@@ -10723,7 +10724,7 @@ export class Hud {
   }
 
   toggleCardDuel(): void {
-    this.cardDuelWindow.toggle();
+    this.cardWindows.cardDuel.toggle();
   }
 
   // The pinned in-match banner: opponent name + countdown / live match timer.
@@ -13431,13 +13432,27 @@ export class Hud {
           audio.cardPlay();
           break;
         case 'cardRoundResolved':
-          audio.cardReveal();
-          if (ev.outcome === 'push') audio.cardRoundPush();
-          if (ev.reshuffled) audio.cardShuffle();
+          applyCardRoundFeedback(ev, audio, this.cardWindows.cardDuel);
           break;
         case 'cardDuelMatchEnd':
           if (ev.won) audio.duelEnd();
           else audio.arenaLoss();
+          // The match ends ON the table: the window keeps the summary up until
+          // the player leaves it or sits down again. Without the payload there
+          // is nothing to summarize (a void match), and the window falls back
+          // to its ordinary idle body.
+          if (ev.summary) {
+            this.cardWindows.cardDuel.showMatchEnd({ won: ev.won, draw: ev.draw, ...ev.summary });
+          }
+          this.showBanner(
+            t(
+              ev.draw
+                ? 'cardDuel.summary.draw'
+                : ev.won
+                  ? 'cardDuel.summary.win'
+                  : 'cardDuel.summary.loss',
+            ),
+          );
           break;
         case 'fiestaWord': {
           const { text, tier, color } = this.fiestaWordParts(ev.flavor, ev.n);
@@ -15200,7 +15215,7 @@ export class Hud {
   // -------------------------------------------------------------------------
 
   openQuestDialog(npcId: number): void {
-    this.questDialog.open(npcId);
+    if (!this.cardWindows.cardDuel.holdsUnreadSummary) this.questDialog.open(npcId);
   }
 
   // Open the read-only quest detail for a chat-link click. Shows Accept only when the

@@ -22,6 +22,7 @@
 // in a way the sim itself does not already expose.
 
 import { supportHeightAt } from '../../src/sim/colliders';
+import { CARD_MASTER_NPC_ID } from '../../src/sim/content/card_master';
 import {
   arenaOrigin,
   DELVES,
@@ -4731,7 +4732,7 @@ function chatSocial(): Scenario {
   };
 }
 
-// Card Duel minigame: queue two players at the Card Master, let the tick
+// ClaudeStone minigame: queue two players at the Card Master, let the tick
 // matchmake them, then play out one full round of cards. Exercises the rng
 // draws createCardHand (two, on match start) and drawOne (two, per round)
 // so they land in the golden trace instead of never being captured (no prior
@@ -4740,9 +4741,10 @@ function cardDuel(): Scenario {
   return {
     name: 'card_duel',
     coverage: [
-      'Card Duel minigame: queue + matchmake at the Card Master',
+      'ClaudeStone minigame: queue + matchmake at the Card Master',
       'createCardHand rng draw (match start, both sides)',
-      'drawOne rng draw (round resolution, both sides)',
+      'refillHand rng draws (round resolution, both sides)',
+      'mid-refill reshuffle (the deck runs dry partway through one refill)',
     ],
     sampleEvery: 5,
     build: () => new Sim({ seed: 1010, playerClass: 'warrior', noPlayer: true }),
@@ -4750,16 +4752,40 @@ function cardDuel(): Scenario {
       const sim = rec.sim;
       const a = sim.addPlayer('warrior', 'Aleph');
       const b = sim.addPlayer('mage', 'Bet');
-      teleport(sim, requireEntity(sim, a, 'parity scenario entity'), 13, 2);
-      teleport(sim, requireEntity(sim, b, 'parity scenario entity'), 13, 2);
+      // Both seats stand at the LIVE Card Master: joinCardDuelQueue gates on
+      // cardMasterInRange, so a hardcoded seat that stops being in range makes
+      // this whole scenario a no-op that still records a golden. It did: the
+      // Eastbrook harbor move relocated him, and the recorded trace fell to six
+      // rng draws with every coverage claim above dead.
+      const master = [...sim.entities.values()].find(
+        (e: AnyEntity) => e.templateId === CARD_MASTER_NPC_ID,
+      );
+      if (!master) throw new Error('card_master missing from the parity world');
+      for (const pid of [a, b]) {
+        teleport(
+          sim,
+          requireEntity(sim, pid, 'parity scenario entity'),
+          master.pos.x,
+          master.pos.z,
+        );
+      }
       sim.joinCardDuelQueue(a);
       sim.joinCardDuelQueue(b);
       rec.tick(1); // updateCardDuelQueue() matchmakes the pair (createCardHand x2)
       const match = sim.cardDuelMatchFor(a);
-      if (match) {
-        sim.playCardInDuel(match.handA.hand[0], a);
-        sim.playCardInDuel(match.handB.hand[0], b); // resolves the round (drawOne x2)
+      if (!match) throw new Error('card_duel scenario recorded no match: the queue gate refused');
+      // Force the case the refill rule is easy to get wrong: the deck runs
+      // dry PARTWAY THROUGH one refill, so the discard has to shuffle back in
+      // and the same refill continue. Each side keeps one card in the deck
+      // and sheds two from hand, so the post-round refill needs three draws
+      // from a one-card deck. Pure state movement, no rng, so the draw log
+      // below is entirely the engine's own.
+      for (const side of [match.state.a, match.state.b]) {
+        side.cards.discard.push(...side.cards.deck.splice(1));
+        side.cards.discard.push(...side.cards.hand.splice(2));
       }
+      sim.playCardInDuel(match.state.a.cards.hand[0].iid, a);
+      sim.playCardInDuel(match.state.b.cards.hand[0].iid, b); // resolves the round
       rec.tick(20 * 2);
     },
   };

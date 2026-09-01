@@ -318,6 +318,22 @@ const UI_PURE_CORES = [
   'src/ui/hud/vendor/train_learn_core.ts',
   'src/ui/hud/vendor/unbind_view.ts',
   'src/ui/card_duel_view.ts',
+  // The card face: one pure core behind the hand, the reveal stage, and a
+  // collection cell (src/ui/cards/).
+  'src/ui/cards/card_face_view.ts',
+  // Where the enlarged copy of a hovered card sits: pure rectangle math, so the
+  // placement is argued about in Node rather than by eye against a phone.
+  'src/ui/cards/card_inspect_view.ts',
+  // The geometry of a card leaving the hand for the table.
+  'src/ui/cards/card_flight_core.ts',
+  // The duel table and its round theater: what a match reads like between
+  // reveals, and the beat timeline one resolved round plays out over.
+  'src/ui/cards/duel_beats_core.ts',
+  'src/ui/cards/duel_outro_core.ts',
+  'src/ui/cards/duel_summary_view.ts',
+  'src/ui/cards/duel_table_view.ts',
+  // The deck builder's row model: ten value rows, two slots each.
+  'src/ui/deck_builder_view.ts',
   'src/ui/claudium_launcher_balance_core.ts',
   'src/ui/claudium_view.ts',
   'src/ui/charter_card_view.ts',
@@ -2248,6 +2264,9 @@ const UI_DOM_MODULES = [
   'src/ui/bank_window.ts',
   'src/ui/breath_bar.ts',
   'src/ui/calendar_window.ts',
+  'src/ui/card_duel_window.ts',
+  'src/ui/cards/card_flight.ts',
+  'src/ui/cards/duel_theater_host.ts',
   'src/ui/hud/action_bar/bar_editor/bar_editor_window.ts',
   'src/ui/hud/action_bar/consumable_seat_controller.ts',
   'src/ui/hud/action_bar/mobile_action_ring_controller.ts',

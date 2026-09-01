@@ -1,4 +1,4 @@
-// Pure, dependency-free FIFO matchmaking core for the Card Duel minigame.
+// Pure, dependency-free FIFO matchmaking core for the ClaudeStone minigame.
 // Open to any class/entity (no eligibility gate beyond "not already queued or
 // dueling"): unlike src/sim/social/arena.ts this holds no SimContext and draws
 // no rng, so it is unit-testable directly.

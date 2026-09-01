@@ -1,5 +1,5 @@
 // Range gate for the Card Master NPC (src/sim/content/card_master.ts): joining
-// the Card Duel queue requires standing at the NPC, same reach as the
+// the ClaudeStone queue requires standing at the NPC, same reach as the
 // copper-vendor family (items.ts vendorInRange) and the heroic quartermaster
 // (src/sim/instances/heroic_vendor.ts). Leaving the queue, and playing cards
 // once matched, do not require proximity: a match can be played from anywhere.

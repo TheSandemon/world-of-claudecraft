@@ -1570,9 +1570,14 @@ export class ClientWorld extends ReconWireState implements IWorld {
   dungeonFinderBoard: import('../world_api').DungeonFinderBoard | null = null;
   honor = 0;
   lifetimeHonor = 0;
-  // --- IWorldCardMinigame: Card Duel queue/match state, mirrored from the
+  // --- IWorldCardMinigame: ClaudeStone queue/match state, mirrored from the
   // snapshot self (`s.cardDuel`, delta-omitted). ---
-  cardMinigameInfo: CardMinigameInfo = { queued: false, available: true, match: null };
+  cardMinigameInfo: CardMinigameInfo = {
+    queued: false,
+    available: true,
+    decks: { names: [], active: '', activeCards: [] },
+    match: null,
+  };
   // --- IWorldSocialGraph: persistent friends/blocks/guild, set ONLY by the
   // `social`/`socialpos` frames (there is no `s.social` snapshot field). ---
   socialInfo: SocialInfo | null = null;
@@ -4880,7 +4885,7 @@ export class ClientWorld extends ReconWireState implements IWorld {
   dungeonFinderApplicationRespond(applicantPid: number, accept: boolean): void {
     this.cmd({ cmd: 'df_app_respond', applicant: applicantPid, accept });
   }
-  // --- IWorldCardMinigame: Card Duel queue + in-match card plays (cardMinigameInfo
+  // --- IWorldCardMinigame: ClaudeStone queue + in-match card plays (cardMinigameInfo
   // is a snapshot read). ---
   joinCardDuelQueue(): void {
     this.cmd({ cmd: 'card_queue_join' });
@@ -4888,8 +4893,27 @@ export class ClientWorld extends ReconWireState implements IWorld {
   leaveCardDuelQueue(): void {
     this.cmd({ cmd: 'card_queue_leave' });
   }
-  playCardInDuel(cardValue: number): void {
-    this.cmd({ cmd: 'play_card', value: cardValue });
+  startCardDuelAgainstOpponent(opponentId: string): void {
+    this.cmd({ cmd: 'card_play_opponent', opponentId });
+  }
+
+  saveCardDeck(name: string, cardIds: readonly string[]): void {
+    this.cmd({ cmd: 'card_deck_save', name, cardIds: [...cardIds] });
+  }
+
+  selectCardDeck(name: string): void {
+    this.cmd({ cmd: 'card_deck_select', name });
+  }
+
+  deleteCardDeck(name: string): void {
+    this.cmd({ cmd: 'card_deck_delete', name });
+  }
+
+  playCardInDuel(cardIid: number): void {
+    // `iid`, not the old `value`: the payload names a hand INSTANCE now, and a
+    // stale client still sending `value` is refused server-side rather than
+    // resolving to an arbitrary card of that number.
+    this.cmd({ cmd: 'play_card', iid: cardIid });
   }
   forfeitCardDuel(): void {
     this.cmd({ cmd: 'card_forfeit' });

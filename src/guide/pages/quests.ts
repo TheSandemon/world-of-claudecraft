@@ -1,5 +1,5 @@
 // Quests: how the quest loop works, why an NPC may have nothing for you yet, the kinds of
-// objective you meet (including escort runs), the Card Master's Card Duel as the one NPC
+// objective you meet (including escort runs), the Card Master's ClaudeStone as the one NPC
 // errand that is not a quest at all, and a spoiler-safe telling of the main-story saga as a
 // trail north (no endings, no boss names), plus the optional side-chains.
 

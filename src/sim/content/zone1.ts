@@ -841,7 +841,7 @@ export const ZONE1_NPCS: Record<string, NpcDef> = {
     color: 0x7a2f8f,
     questIds: [],
     cardMaster: true,
-    greeting: 'Care for a Card Duel? Best of three, winner takes the bragging rights.',
+    greeting: 'Care for a ClaudeStone match? Best of three, winner takes the bragging rights.',
   },
   chronicler_saul: {
     id: 'chronicler_saul',

@@ -10,6 +10,7 @@ import type { SavedDeedStats } from './deeds';
 import type { PlayerEquipment } from './entity';
 import type { JailState } from './jail';
 import type { SavedMaterialsVaultState } from './materials_vault';
+import type { SavedCardDecks } from './minigames/card_duel';
 import type { ArchetypeState } from './professions/archetype';
 import type { ToolEffectSlot } from './professions/tools';
 import type { SavedReliquaryState } from './reliquary';
@@ -278,6 +279,9 @@ export interface CharacterState {
   // The Reliquary (JSONB; optional, written only when non-empty so pre-system
   // saves load cleanly and stay byte-equal until the system engages).
   reliquary?: SavedReliquaryState;
+  // Saved ClaudeStone decks (same omit-empty rule). Absent means a fresh
+  // character, who plays the default deck.
+  cards?: SavedCardDecks;
 }
 
 export interface PetState {

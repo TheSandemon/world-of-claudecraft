@@ -1,0 +1,2304 @@
+/* cards.css: the whole ClaudeStone visual grammar in one sheet: the duel window
+   shell, the duel table, the round theater, the deck builder, and the card
+   face. Moved out of components.css (which is a named extraction target) so
+   that the ONE place a ClaudeStone match surface is styled is the one place both
+   consumers can load it.
+
+   Both consumers, deliberately. The in-game window loads it through the
+   index.css barrel in @layer components, exactly where these rules lived
+   before. The standalone playtest slice (src/cards/, the /cards route) imports
+   it directly alongside tokens.css: the slice composes the REAL rules engine
+   and the REAL card face, so styling it from a lookalike sheet would let the
+   thing playtesters look at drift away from the thing players get. It still
+   loads none of the rest of the HUD.
+
+   The grammar, stated once so every rule below can be read against it:
+
+     POSITION is ownership.  The opponent is the top band and the top stage
+                             slot, the player is the bottom ones, always.
+     SHAPE is category.      Health is a bar, a counter is a token, a pile is a
+                             stack, a card is a card.
+     COLOR is state.         Gold is the player's own and the winner's; the
+                             stat-bonus green is a value going up; the
+                             legendary orange is a value coming down; the
+                             craft-full amber is the clock running out.
+     MOTION is causality.    Every animation answers where a thing came from,
+                             what changed it, or which of two things won. No
+                             motion here is decoration, which is why dropping
+                             all of it costs no information at all.
+
+   FAIRNESS. Every number a player acts on (the clock, the value plates, the
+   card values, the modifier deltas, both health bars) paints at every graphics tier,
+   on every device, with no hover requirement and no animation delay. The tier
+   rules at the bottom of this file touch transitions and animations only. The
+   ONE bounded exception is the stage's own deal beat: the two cards of an
+   ALREADY DECIDED round stay face-down for one beat while they land. The health
+   bars and the hand underneath have already moved, so nothing a player is still
+   deciding on is ever staged.
+
+   MOTION LEVELS. A round is never told all at once: `full` and `calm` both play
+   every beat, and differ only in whether the picture MOVES (see the calm block
+   further down, and src/ui/cards/CLAUDE.md). */
+@layer components {
+  /* ---------- card duel (the Card Master minigame) ---------- */
+  /* Wider than the old 340px: the table is now a real board (two seat bands, a
+     stage where the cards meet, a clock, a hand) rather than three lines of
+     prose, and a board that has to wrap reads worse than one that fits. */
+  #card-duel-window {
+    width: 380px;
+    /* The table is a tall board (two seat bands, a stage, a clock, a hand), so
+       it scrolls inside itself rather than running off a short desktop
+       viewport. The mobile sheet sets its own placement in hud.mobile.css. */
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+  .cd-body {
+    padding: 8px;
+  }
+  .cd-status {
+    font-size: 12px;
+    margin: 4px 0;
+    color: var(--color-text-light);
+  }
+  .cd-counts {
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .cd-action-btn {
+    display: block;
+    width: 100%;
+    min-height: 40px;
+    padding: 8px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    cursor: var(--cursor-point);
+    background: #ffffff10;
+    color: inherit;
+    font-family: var(--ui-font);
+  }
+  .cd-action-btn:hover {
+    background: #ffffff20;
+  }
+
+  /* The Card Master's regulars: always offered, online or offline, because a
+     lone player must still be able to sit down and play. */
+  .cd-regulars {
+    margin: 8px 0;
+  }
+  .cd-regulars-title {
+    margin: 0 0 4px;
+    font-family: var(--title-font);
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+  .cd-regular {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    width: 100%;
+    min-height: 40px;
+    margin-bottom: 4px;
+    padding: 6px 8px;
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-sm);
+    background: #ffffff10;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: var(--cursor-point);
+  }
+  .cd-regular:hover {
+    background: #ffffff20;
+  }
+  .cd-regular-name {
+    font-family: var(--title-font);
+    font-size: 13px;
+    color: var(--gold);
+  }
+  .cd-regular-title {
+    flex: 1 1 auto;
+    font-size: 11px;
+    color: var(--color-text-light);
+  }
+  .cd-regular-tier {
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+
+  /* ---------- the duel table (src/ui/cards/duel_table_markup.ts) ---------- */
+  /* What a match reads like BETWEEN reveals. Every block here is fed by the
+     snapshot and is correct the instant it arrives. */
+  .dt {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  /* The three groups the body is built from (card_duel_window.ts): the board,
+     the side readouts, and the hand. They are plain stacks here and become a
+     two-column grid on a short viewport (the touch block below). */
+  .dt-board,
+  .dt-side {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  /* A seat band: who, whether they have committed, their score, their
+     counters. The two bands are identical in structure and mirrored in tone,
+     so the player can compare them without reading either. */
+  .dt-seat {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: var(--radius-sm);
+    background: #ffffff08;
+  }
+  .dt-seat-mine {
+    /* The player's own band carries the gold edge; the opponent's a plain
+       one. One glance answers "which of these is me". */
+    border-left: 3px solid var(--gold);
+  }
+  .dt-seat-theirs {
+    border-left: 3px solid var(--color-text-muted);
+  }
+  .dt-seat-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-family: var(--title-font);
+    font-size: 13px;
+    color: var(--gold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dt-seat-theirs .dt-seat-name {
+    color: var(--color-text-light);
+  }
+
+  /* The commit lamp: the answer to "why is nothing happening". A seat still
+     choosing breathes; a seat locked in is a steady filled dot. The TEXT says
+     the same thing beside it, so the lamp is never the only carrier. */
+  .dt-commit {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .dt-lamp {
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--color-text-muted);
+    border-radius: 50%;
+  }
+  .dt-seat[data-commit="choosing"] .dt-lamp {
+    animation: dt-breathe 1.6s ease-in-out infinite;
+    animation-play-state: var(--fx-ambient-anim, running);
+  }
+  .dt-seat[data-commit="locked"] .dt-lamp {
+    border-color: var(--color-stat-bonus);
+    background: var(--color-stat-bonus);
+  }
+  .dt-seat[data-commit="locked"] .dt-commit {
+    color: var(--color-stat-bonus);
+  }
+
+  /* Health: what the match is decided on, so it is the widest thing on the
+     band. The numbers sit ON the bar, because "can that card finish me" is a
+     question a bar alone cannot answer.
+
+     The FILL slides to its new width, which is the only part of this a graphics
+     preset touches (the tier block at the bottom cuts the transition). The
+     number itself is written by the snapshot and never waits for anything. */
+  .dt-hp {
+    position: relative;
+    flex: 1 1 120px;
+    min-width: 90px;
+    height: 14px;
+    border: 1px solid var(--gold-dim);
+    border-radius: var(--radius-sm);
+    background: #00000055;
+    overflow: hidden;
+  }
+  /* The fill sits UNDER the numbers, so it is held at part strength: a
+     saturated bar with figures on top of it is a bar you cannot read the
+     figures off, which defeats the point of putting them there. */
+  .dt-hp-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--color-stat-bonus);
+    opacity: 0.55;
+    transition: width 320ms ease-out;
+  }
+  .dt-hp[data-band="hurt"] .dt-hp-fill {
+    background: var(--color-craft-full);
+  }
+  .dt-hp[data-band="critical"] .dt-hp-fill {
+    background: var(--mkt-name-legendary);
+  }
+  .dt-hp-num {
+    position: relative;
+    display: block;
+    font-family: var(--title-font);
+    font-size: 11px;
+    line-height: 14px;
+    text-align: center;
+    color: var(--color-text-light);
+    text-shadow: 0 1px 2px #000;
+  }
+  .dt-hp-max {
+    opacity: 0.7;
+  }
+  /* Rounds won, now a readout rather than the win condition: small, beside the
+     bar, and still there because cards read the round score. */
+  .dt-rounds {
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+
+  /* Counters (Web, Dread) as physical tokens on the board rather than a line
+     of text nobody reads. Each keeps its own color so the same counter is the
+     same color on both sides of the table. */
+  .dt-tokens {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .dt-token {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    padding: 1px 5px;
+    border: 1px solid var(--color-text-muted);
+    border-radius: 9px;
+    font-size: 10px;
+    color: var(--color-text-light);
+  }
+  .dt-token-count {
+    font-family: var(--title-font);
+    font-size: 12px;
+  }
+  .dt-token[data-counter="Web"] {
+    border-color: var(--color-debuff-nature);
+    color: var(--color-debuff-nature);
+  }
+  .dt-token[data-counter="Dread"] {
+    border-color: var(--color-debuff-shadow);
+    color: var(--color-debuff-shadow);
+  }
+
+  /* The clock. A ring that drains plus the seconds in figures: the ring is
+     read at a glance and the number is read exactly, and neither is ever
+     tiered, delayed, or hover-gated, because a round is racing this. */
+  .dt-clock {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dt-clock-ring {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    /* A conic sweep is the cheapest correct drain: one custom property, no
+       extra element, no per-second layout. */
+    background: conic-gradient(var(--gold) calc(var(--dt-clock-ratio, 1) * 360deg), #ffffff1a 0);
+    mask: radial-gradient(circle, transparent 55%, #000 57%);
+  }
+  .dt-clock-ring[data-band="urgent"] {
+    background: conic-gradient(
+      var(--color-craft-full) calc(var(--dt-clock-ratio, 1) * 360deg),
+      #ffffff1a 0
+    );
+    animation: dt-pulse 1s ease-in-out infinite;
+    animation-play-state: var(--fx-ambient-anim, running);
+  }
+  .dt-clock-ring[data-band="out"] {
+    background: var(--mkt-name-legendary);
+  }
+  /* Held: the sim has genuinely stopped the clock while the round is told, so
+     the ring stops draining and stops pulsing instead of freezing mid-tick and
+     looking like a stall. */
+  .dt-clock-ring[data-band="held"] {
+    background: #ffffff20;
+    animation: none;
+  }
+  .dt-clock-num {
+    font-family: var(--title-font);
+    font-size: 13px;
+    color: var(--gold);
+  }
+  .dt-clock-ring[data-band="urgent"] ~ .dt-clock-num,
+  .dt-clock-ring[data-band="out"] ~ .dt-clock-num {
+    color: var(--color-craft-full);
+  }
+
+  /* Whose card the round is on, said in words beside the two lamps that show
+     it. One short line, in one fixed place, every round. */
+  .dt-waiting {
+    min-height: 15px;
+    font-size: 12px;
+    color: var(--color-text-light);
+  }
+
+  .dt-hand {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 2px 0;
+  }
+
+  /* The two piles, as stacks that carry their own counts. A deck running low
+     is a thing a player should SEE getting shorter. */
+  .dt-piles {
+    display: inline-flex;
+    gap: 10px;
+  }
+  .dt-pile {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .dt-pile-stack {
+    width: 12px;
+    height: 16px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+    box-shadow:
+      2px -2px 0 -1px var(--gold-dim),
+      4px -4px 0 -2px var(--gold-dim);
+  }
+  .dt-pile[data-pile="discard"] .dt-pile-stack {
+    border-style: dashed;
+  }
+  /* The opponent's discard: a PLACE, not a readout. Their count is not on the
+     wire, so the pile carries no figure; it is here so their spent cards have
+     somewhere to be swept to at the end of a round. */
+  .dt-piles-place {
+    opacity: 0.7;
+  }
+  .dt-pile-count {
+    font-family: var(--title-font);
+    font-size: 12px;
+    color: var(--color-text-light);
+  }
+
+  /* The opponent's hand: one face-down place per card they hold, with the ones
+     a reveal effect exposed turned face up AMONG them. A revealed card needs a
+     hand to be revealed in, or the player has nowhere to look. */
+  .dt-oppo-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: flex-end;
+  }
+  .dt-oppo-note {
+    margin-top: 2px;
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+  .dt-oppo-back {
+    width: 34px;
+    height: 48px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    background:
+      repeating-linear-gradient(45deg, #ffffff0e 0 3px, transparent 3px 6px),
+      linear-gradient(160deg, var(--panel-base, #17242c), #0a1116);
+  }
+  /* A revealed card sits at the hand's own scale, so the row reads as "these
+     two of their four, I can see". */
+  .dt-oppo-row .cf-size-hand {
+    width: 48px;
+    height: 68px;
+  }
+  .dt-oppo-row .cf-name,
+  .dt-oppo-row .cf-tribes {
+    font-size: 8px;
+  }
+
+  /* The effects row: every parked modifier still in play, yours first. Chips
+     rather than sentences, each carrying its source card's own rules text as
+     its accessible name. */
+  .dt-effects-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+  }
+  .dt-effects-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+  }
+  .dt-fx {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    padding: 2px 6px;
+    border: 1px solid var(--color-text-muted);
+    border-radius: 9px;
+    font-size: 10px;
+    color: var(--color-text-light);
+  }
+  /* Whose cards it rides, at a glance: yours takes the gold edge, exactly like
+     the seat band. */
+  .dt-fx[data-side="mine"] {
+    border-color: var(--gold);
+  }
+  .dt-fx-name {
+    font-family: var(--title-font);
+    font-size: 11px;
+  }
+  .dt-fx-amount {
+    font-family: var(--title-font);
+    font-size: 11px;
+  }
+  .dt-fx-up {
+    color: var(--color-stat-bonus);
+  }
+  .dt-fx-down {
+    color: var(--mkt-name-legendary);
+  }
+  .dt-fx-when {
+    color: var(--color-text-muted);
+  }
+
+  /* The screen-reader line for a resolved round. Off-screen rather than
+     display:none, which would take it away from the reader too. */
+  .dt-announce {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ---------- the round theater (src/ui/cards/duel_beats_core.ts) ---------- */
+  /* One resolved round, played out as beats. Every rule in this section is
+     selected by the data-beat attribute the theater writes, and every one of
+     them is transform or opacity only, so no beat costs a layout pass and the
+     whole section can be switched off without moving a single number. */
+  .dt-stage {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    /* Card width, and left-aligned with the hand below it: a stage as wide as
+       its container is mostly empty field, and a centered one would sit off
+       the axis every other row on the table shares. */
+    max-width: 340px;
+    padding: 6px;
+    border-radius: var(--radius-md);
+    background: radial-gradient(ellipse at 50% 50%, #ffffff10, #00000030 70%);
+  }
+  .dt-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .dt-slot-label {
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+  /* The card and its face-down back share one box, so the flip is a pair of
+     scale animations on two stacked children rather than a 3D transform. */
+  .dt-slot-card {
+    position: relative;
+    width: 96px;
+    height: 148px;
+    /* The card is what dims when it loses; its VALUE PLATE, one row below,
+       never does. */
+    transition: opacity 120ms ease-out;
+  }
+  .dt-slot-card .cf-size-stage {
+    width: 96px;
+    height: 148px;
+  }
+  .dt-slot-card .cf-size-stage .cf-value {
+    font-size: 19px;
+  }
+  .dt-back {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--gold-dim);
+    border-radius: 5px;
+    background:
+      repeating-linear-gradient(45deg, #ffffff0e 0 4px, transparent 4px 8px),
+      linear-gradient(160deg, var(--panel-base, #17242c), #0a1116);
+  }
+  .dt-slot-empty .dt-back {
+    border-style: dashed;
+    opacity: 0.5;
+  }
+
+  /* The value plate: what the comparison used, with the printed value and the
+     signed delta beside it whenever an effect moved it. Same size and same
+     place every round, because at the clash these two plates are the whole
+     comparison. */
+  .dt-plate {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .dt-plate-value {
+    font-family: var(--title-font);
+    font-size: 20px;
+    color: var(--gold);
+  }
+  .dt-plate-base {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+  }
+  .dt-chip {
+    font-family: var(--title-font);
+    font-size: 12px;
+  }
+  .dt-chip-up {
+    color: var(--color-stat-bonus);
+  }
+  .dt-chip-down {
+    color: var(--mkt-name-legendary);
+  }
+
+  .dt-clash {
+    position: relative;
+    width: 100%;
+    height: 10px;
+  }
+  .dt-spark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 2px;
+    margin: -1px 0 0 -30px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0;
+  }
+  .dt-verdict {
+    font-family: var(--title-font);
+    font-size: 14px;
+    color: var(--color-text-light);
+  }
+  .dt-verdict-idle {
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .dt-stage[data-outcome="win"] .dt-verdict {
+    color: var(--color-stat-bonus);
+  }
+  .dt-stage[data-outcome="lose"] .dt-verdict {
+    color: var(--mkt-name-legendary);
+  }
+  .dt-note {
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+
+  /* The caption line: one sentence saying what the stage is doing right now,
+     written by the theater once per beat.
+
+     This is what makes a beat legible when there is no motion at all: at the
+     lowest preset, and under reduced motion, a clash has nothing to tell it
+     apart from the beat before it except this line, and a step beat's line is
+     the only place the CARD that moved a number is named. It reserves its own
+     height so a caption appearing never shifts the table under it. */
+  .dt-beats {
+    grid-column: 1 / -1;
+    min-height: 14px;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    text-align: center;
+    color: var(--color-text-light);
+  }
+  /* An effect landing is the beat that explains the round, so its line reads
+     in the same green a value going up does. */
+  .dt-stage[data-beat="step"] .dt-beats {
+    color: var(--color-stat-bonus);
+  }
+  .dt-stage[data-beat="damage"] .dt-beats {
+    color: var(--mkt-name-legendary);
+  }
+
+  /* The hit: how much health the round took, and off whom. Written with the
+     stage (the bar underneath has already moved) and pointed at by the damage
+     beat, so the number never waits on an animation. */
+  .dt-damage {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    min-height: 18px;
+    opacity: 0;
+  }
+  .dt-stage[data-beat="damage"] .dt-damage,
+  .dt-stage[data-beat="verdict"] .dt-damage,
+  .dt-stage[data-beat="settle"] .dt-damage {
+    opacity: 1;
+  }
+  .dt-stage[data-beat="damage"] .dt-damage {
+    animation: dt-hit-in 260ms ease-out;
+  }
+  .dt-damage-num {
+    font-family: var(--title-font);
+    font-size: 18px;
+    color: var(--mkt-name-legendary);
+    text-shadow: 0 1px 2px #000;
+  }
+  .dt-damage-who {
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+
+  /* Beat 1, deal: the two cards arrive from their owner's side of the table,
+     face-down. Where a card came from is the first thing the eye is told. */
+  .dt-stage[data-beat="deal"] .dt-slot-theirs,
+  .dt-stage[data-beat="deal"] .dt-slot-mine {
+    animation: dt-land 240ms ease-out;
+  }
+  .dt-stage[data-beat="deal"] .dt-slot-mine {
+    animation-name: dt-land-up;
+  }
+  /* Face-down until the reveal beat. The only delayed thing in the whole
+     table, bounded at one beat, and only ever over a round that is already
+     decided (see the FAIRNESS note in this file's header). */
+  .dt-stage[data-beat="idle"] .cf,
+  .dt-stage[data-beat="deal"] .cf {
+    opacity: 0;
+  }
+  .dt-stage[data-beat="idle"] .dt-plate,
+  .dt-stage[data-beat="deal"] .dt-plate,
+  .dt-stage[data-beat="idle"] .dt-verdict:not(.dt-verdict-idle),
+  .dt-stage[data-beat="deal"] .dt-verdict {
+    opacity: 0;
+  }
+
+  /* Beat 2, reveal: both backs turn at once. Simultaneous, because
+     simultaneous hidden selection is the game. */
+  .dt-stage[data-beat="reveal"] .dt-back,
+  .dt-stage[data-beat="step"] .dt-back,
+  .dt-stage[data-beat="damage"] .dt-back,
+  .dt-stage[data-beat="clash"] .dt-back,
+  .dt-stage[data-beat="verdict"] .dt-back,
+  .dt-stage[data-beat="settle"] .dt-back {
+    opacity: 0;
+  }
+  .dt-stage[data-beat="reveal"] .dt-back {
+    animation: dt-flip-out 160ms ease-in forwards;
+  }
+  .dt-stage[data-beat="reveal"] .cf {
+    animation: dt-flip-in 200ms 120ms ease-out backwards;
+  }
+
+  /* Beat 3, step: ONE effect landing, once per effect that did something. The
+     delta chip pops onto the plate it moved and the value ticks, so a number
+     that changed says WHY beside itself while the caption line names the card
+     that did it. */
+  .dt-stage[data-beat="reveal"] .dt-chip,
+  .dt-stage[data-beat="reveal"] .dt-plate-base {
+    opacity: 0;
+  }
+  .dt-stage[data-beat="step"] .dt-chip {
+    animation: dt-chip-in 260ms ease-out;
+  }
+  .dt-stage[data-beat="step"] .dt-plate-value {
+    animation: dt-tick 260ms ease-out;
+  }
+
+  /* Beat 4, clash: the two cards lean into each other and strike. */
+  .dt-stage[data-beat="clash"] .dt-slot-theirs {
+    animation: dt-lunge-down 220ms ease-in-out;
+  }
+  .dt-stage[data-beat="clash"] .dt-slot-mine {
+    animation: dt-lunge-up 220ms ease-in-out;
+  }
+  .dt-stage[data-beat="clash"] .dt-spark {
+    opacity: 1;
+    animation: dt-spark 260ms ease-out;
+  }
+
+  /* Beat 5, verdict: the winner surges and keeps a steady gold edge; the
+     loser recoils and dims. The edge is a STATIC state, so a player who has
+     collapsed every animation still sees which card won. */
+  .dt-stage[data-beat="idle"] .dt-verdict:not(.dt-verdict-idle),
+  .dt-stage[data-beat="deal"] .dt-verdict,
+  .dt-stage[data-beat="reveal"] .dt-verdict,
+  .dt-stage[data-beat="step"] .dt-verdict,
+  .dt-stage[data-beat="clash"] .dt-verdict,
+  .dt-stage[data-beat="damage"] .dt-verdict {
+    opacity: 0;
+  }
+  .dt-stage[data-beat="verdict"] .dt-verdict {
+    animation: dt-verdict-in 240ms ease-out;
+  }
+  .dt-stage[data-outcome="win"][data-beat="verdict"] .dt-slot-mine .dt-slot-card,
+  .dt-stage[data-outcome="win"][data-beat="settle"] .dt-slot-mine .dt-slot-card,
+  .dt-stage[data-outcome="lose"][data-beat="verdict"] .dt-slot-theirs .dt-slot-card,
+  .dt-stage[data-outcome="lose"][data-beat="settle"] .dt-slot-theirs .dt-slot-card {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  .dt-stage[data-outcome="win"][data-beat="verdict"] .dt-slot-theirs .dt-slot-card,
+  .dt-stage[data-outcome="win"][data-beat="settle"] .dt-slot-theirs .dt-slot-card,
+  .dt-stage[data-outcome="lose"][data-beat="verdict"] .dt-slot-mine .dt-slot-card,
+  .dt-stage[data-outcome="lose"][data-beat="settle"] .dt-slot-mine .dt-slot-card {
+    opacity: 0.55;
+  }
+
+  /* ---------- the spotlight (duel_beats_core.ts, DuelSpotlight) ----------
+
+     Which THING a beat is about, in gold, on the one card or bar it means.
+     The beats told the round in the right order and still left the commonest
+     question unanswered: a value ticked and a bar dropped, and nothing on the
+     table said which of the two cards had just been changed.
+
+     Written by the theater as data-spot on the BOARD rather than the stage,
+     because a damage beat points at a seat's health bar and the bars live in
+     the bands beside the stage.
+
+     It KEEPS FLASHING for as long as its beat is the current one, rather than
+     flashing once and then holding steady. Two reasons, both learned the hard
+     way. A single pop is over in half a second of a beat that now runs two, so
+     the eye arrives after the only thing that moved; and when two beats in a
+     row point at the same card (a step then the verdict) the animation-name
+     never changes, so CSS does not restart it and the second beat gets no
+     flash at all. A steady pulse has neither problem.
+
+     Drawn on a pseudo-element, and the glow is a STATIC box-shadow with only
+     the opacity animated, so the whole thing stays a composited fade.
+
+     The pulse is deliberately NOT gated on --fx-ambient-anim like the idle
+     loops are. It is not ambient: it runs only while a beat is pointing at
+     something and stops the moment the attribute clears, on at most two
+     elements, and it is the one mark a player needs at the LOWEST preset as
+     much as the highest. */
+  .dt-slot-card::after,
+  .dt-hp::after {
+    content: "";
+    position: absolute;
+    /* Above the card face and the health fill: this is the one mark that must
+       never end up underneath what it is pointing at. */
+    z-index: 3;
+    border: 3px solid var(--gold);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 0 12px var(--gold);
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* Outside the card, which nothing clips; INSIDE the health bar, which clips
+     its own fill and would clip a ring drawn past its edge. */
+  .dt-slot-card::after {
+    inset: -3px;
+  }
+  .dt-hp::after {
+    inset: 0;
+  }
+  .dt-board[data-spot="mine"] .dt-slot-mine .dt-slot-card::after,
+  .dt-board[data-spot="both"] .dt-slot-mine .dt-slot-card::after,
+  .dt-board[data-spot="theirs"] .dt-slot-theirs .dt-slot-card::after,
+  .dt-board[data-spot="both"] .dt-slot-theirs .dt-slot-card::after,
+  .dt-board[data-spot="mine-hp"] .dt-seat-mine .dt-hp::after,
+  .dt-board[data-spot="theirs-hp"] .dt-seat-theirs .dt-hp::after {
+    opacity: 1;
+    /* Through a VARIABLE, not a literal, because this selector is specific
+       (0,3,1) and every rule that would want to change it is not. A tier block
+       overriding the animation here would silently lose the cascade and leave
+       the sheet claiming a calm state it never produced; a custom property
+       inherits from the board and sidesteps specificity entirely. */
+    animation: var(--dt-spot-anim, dt-spot-pulse 1200ms ease-in-out infinite);
+  }
+  /* The gold ring is the ONE thing that never goes quiet: it is what answers
+     "which of these two did that", and a beat whose subject is unmarked is a
+     beat a player cannot use. Full motion pops it in and then pulses; calm
+     drops only the pop, because a scale is the part reduced motion is owed and
+     a pulsing opacity is not. */
+  .dt-board {
+    --dt-spot-anim: dt-spot-flash 420ms ease-out, dt-spot-pulse 1200ms ease-in-out 420ms infinite;
+  }
+  .dt-board[data-motion="calm"] {
+    --dt-spot-anim: dt-spot-pulse 1500ms ease-in-out infinite;
+  }
+
+  /* ---------- calm motion (duel_theater_host.ts, data-motion) ----------
+
+     What the LOWEST PRESET and REDUCED MOTION get. Not a collapsed round and
+     not a silent one: every beat still opens at its own moment, and each one
+     still has something a player can SEE happen. What goes is MOVEMENT, which
+     is the expensive half on a cheap machine and the uncomfortable half for
+     someone who asked for less of it.
+
+     So: no landing, no lunge, no spark, no chip flight, no value pop, no
+     flying cards (the flights are skipped in duel_card_motion.ts). What stays
+     is an opacity fade per beat plus the gold ring, both composited, neither
+     moving a pixel of layout. One authority to key on (`data-motion`, written
+     once per round by the theater) rather than a media query and a root
+     attribute duplicating each other. */
+  .dt-board[data-motion="calm"] .dt-slot-theirs,
+  .dt-board[data-motion="calm"] .dt-slot-mine,
+  .dt-board[data-motion="calm"] .dt-spark,
+  .dt-board[data-motion="calm"] .dt-chip,
+  .dt-board[data-motion="calm"] .dt-plate-value,
+  .dt-board[data-motion="calm"] .dt-damage,
+  .dt-board[data-motion="calm"] .dt-verdict,
+  .dt-board[data-motion="calm"] .cf,
+  .dt-board[data-motion="calm"] .dt-back {
+    animation: none;
+  }
+  /* The fades that replace them. Transitions rather than keyframes on purpose:
+     every one of these states is already a static rule the beat switches, so a
+     transition needs no second description of the same picture and cannot fall
+     out of step with it. */
+  .dt-board[data-motion="calm"] .cf,
+  .dt-board[data-motion="calm"] .dt-back,
+  .dt-board[data-motion="calm"] .dt-verdict,
+  .dt-board[data-motion="calm"] .dt-damage,
+  .dt-board[data-motion="calm"] .dt-chip,
+  .dt-board[data-motion="calm"] .dt-plate-base {
+    transition: opacity 220ms ease-out;
+  }
+  /* The spark still marks the clash, as a pulse of light with no travel: the
+     clash is the beat with the least to show otherwise (both values are
+     already up, nothing has changed yet), so it is the one that most needs
+     something to happen. */
+  .dt-board[data-motion="calm"] .dt-stage[data-beat="clash"] .dt-spark {
+    opacity: 1;
+    animation: dt-spot-shine 420ms ease-out;
+  }
+
+  /* The end of the round: both spent cards fly to the discard piles
+     (src/ui/cards/duel_card_motion.ts) and the originals clear as they go. The
+     plates, the verdict and the caption stay: the RESULT is still being read,
+     it is the cards that are done with. */
+  .dt-stage[data-swept] .dt-slot-card {
+    opacity: 0;
+  }
+
+  /* The entry pop: the ring snaps on a touch oversized and settles. Full
+     motion only; the pulse below carries the rest of the beat. */
+  @keyframes dt-spot-flash {
+    from {
+      opacity: 0;
+      transform: scale(1.16);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  /* The steady flash, and the one that does the actual work: it runs for the
+     whole beat so the mark is still flashing when the eye gets there. Opacity
+     only, so it costs the same at every level. */
+  @keyframes dt-spot-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
+  /* One-shot opacity flash, for a mark that belongs to a single moment rather
+     than a whole beat (the clash spark at calm). */
+  @keyframes dt-spot-shine {
+    from {
+      opacity: 0;
+    }
+    26% {
+      opacity: 1;
+    }
+    58% {
+      opacity: 0.45;
+    }
+  }
+  @keyframes dt-land {
+    from {
+      opacity: 0;
+      transform: translateY(-14px);
+    }
+  }
+  @keyframes dt-land-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  @keyframes dt-flip-out {
+    to {
+      opacity: 0;
+      transform: scaleX(0.02);
+    }
+  }
+  @keyframes dt-flip-in {
+    from {
+      opacity: 0;
+      transform: scaleX(0.02);
+    }
+  }
+  @keyframes dt-chip-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(1.5);
+    }
+  }
+  @keyframes dt-tick {
+    50% {
+      transform: scale(1.22);
+    }
+  }
+  @keyframes dt-lunge-down {
+    50% {
+      transform: translateY(7px);
+    }
+  }
+  @keyframes dt-lunge-up {
+    50% {
+      transform: translateY(-7px);
+    }
+  }
+  @keyframes dt-spark {
+    30% {
+      opacity: 1;
+      transform: scaleX(1.5);
+    }
+    to {
+      opacity: 0;
+      transform: scaleX(2);
+    }
+  }
+  @keyframes dt-hit-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(1.4);
+    }
+  }
+  @keyframes dt-verdict-in {
+    from {
+      opacity: 0;
+      transform: scale(0.86);
+    }
+  }
+  @keyframes dt-breathe {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @keyframes dt-pulse {
+    50% {
+      transform: scale(1.12);
+    }
+  }
+
+  /* ---------- the deck builder (src/ui/deck_builder_window.ts) ---------- */
+  /* Ten value rows, two slots each: the layout IS the rule, so a player never
+     has to be told the constraint in an error message. */
+  #deck-builder-window {
+    width: min(720px, 92%);
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .db-body {
+    padding: 8px;
+  }
+  .db-rule {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: var(--color-text-light);
+  }
+  .db-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .db-name {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .db-name input {
+    min-height: 32px;
+    padding: 4px 6px;
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-sm);
+    background: #00000055;
+    color: inherit;
+    font: inherit;
+  }
+  .db-progress {
+    flex: 1 1 auto;
+    font-size: 12px;
+    color: var(--gold);
+  }
+  .db-save,
+  .db-delete,
+  .db-saved {
+    min-height: 40px;
+    padding: 6px 10px;
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-sm);
+    background: #ffffff10;
+    color: inherit;
+    font: inherit;
+    cursor: var(--cursor-point);
+  }
+  .db-save:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .db-saved-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .db-active {
+    border-color: var(--color-stat-bonus);
+  }
+  /* The design-identity filter chips. Twenty sets is a long row, so it wraps
+     and scrolls with the panel rather than growing a scroller of its own. */
+  .db-set-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ffffff18;
+  }
+  .db-set {
+    min-height: 32px;
+    padding: 4px 8px;
+    border: 1px solid #ffffff26;
+    border-radius: 4px;
+    background: #ffffff08;
+    color: inherit;
+    font: inherit;
+    font-size: 11px;
+    cursor: var(--cursor-point);
+  }
+  .db-set-active {
+    border-color: var(--gold);
+    background: #ffffff18;
+    color: var(--gold);
+  }
+  .db-row {
+    padding: 6px 0;
+    border-top: 1px solid #ffffff18;
+  }
+  .db-row-title {
+    margin: 0 0 4px;
+    font-family: var(--title-font);
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+  .db-row-complete .db-row-title {
+    color: var(--color-stat-bonus);
+  }
+  .db-slots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .db-slot {
+    display: block;
+  }
+  .db-slot-empty {
+    width: 68px;
+    height: 96px;
+    border: 1px dashed var(--color-text-muted);
+    border-radius: 5px;
+  }
+  .db-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .db-option {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: var(--cursor-point);
+  }
+  /* Taken cards stay visible rather than disappearing: seeing which of the
+     value's cards you already chose is the point of the row. */
+  .db-chosen {
+    opacity: 0.5;
+  }
+  .db-chosen .cf-frame {
+    border-style: dashed;
+  }
+
+  /* ---------- the card face (src/ui/cards) ---------- */
+  /* One component, three sizes. Only the size variant differs; the markup and
+     the consumer are shared by the hand, the stage, and a collection cell.
+     Animation is transform/opacity only, so no frame forces layout. */
+  .cf {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: var(--cursor-point);
+  }
+  .cf-frame {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--gold);
+    border-radius: 5px;
+    background: #ffffff10;
+    overflow: hidden;
+    transition: transform 120ms ease-out;
+  }
+  .cf-playable:hover .cf-frame {
+    transform: translateY(-2px);
+  }
+  /* A playable card also says so at rest: the hover lift is a desktop-only
+     affordance and a touch player never sees it. */
+  .cf-playable .cf-frame {
+    box-shadow: 0 0 0 1px #ffffff22;
+  }
+  .cf-locked {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .cf-silenced .cf-frame {
+    border-style: dashed;
+  }
+  .cf-revealed .cf-frame {
+    box-shadow: inset 0 0 0 1px var(--mkt-name-rare);
+  }
+  .cf-art {
+    display: block;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    object-fit: cover;
+  }
+  /* The procedural face: a card with no commissioned painting still reads as a
+     card, keyed on its tribe, rather than as a blank rectangle. */
+  .cf-art-procedural {
+    background:
+      radial-gradient(circle at 50% 35%, #ffffff18, transparent 60%),
+      linear-gradient(160deg, #2a3242, #161c26);
+  }
+  .cf-art-procedural[data-tribe="Beast"] {
+    background: linear-gradient(160deg, #3b3320, #191509);
+  }
+  .cf-art-procedural[data-tribe="Undead"] {
+    background: linear-gradient(160deg, #23342b, #0d1712);
+  }
+  .cf-art-procedural[data-tribe="Spider"] {
+    background: linear-gradient(160deg, #2e2436, #140f19);
+  }
+  .cf-art-procedural[data-tribe="Human"] {
+    background: linear-gradient(160deg, #2c3242, #12161f);
+  }
+  .cf-art-procedural[data-tribe="Dragon"] {
+    background: linear-gradient(160deg, #3d2620, #170c09);
+  }
+  .cf-corner {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+  }
+  .cf-value {
+    font-family: var(--title-font);
+    font-size: 17px;
+    color: var(--gold);
+    text-shadow: 0 1px 2px #000;
+  }
+  .cf-base {
+    font-size: 10px;
+    color: var(--color-text-light);
+    text-decoration: line-through;
+    text-shadow: 0 1px 2px #000;
+  }
+  /* The modifier strip: what the effects did, right now. Never tiered, never
+     hover-gated, never animated into existence. */
+  .cf-delta {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    font-family: var(--title-font);
+    font-size: 12px;
+    text-shadow: 0 1px 2px #000;
+  }
+  .cf-delta-up {
+    color: var(--color-stat-bonus);
+  }
+  .cf-delta-down {
+    color: var(--mkt-name-legendary);
+  }
+  .cf-plate {
+    padding: 2px 4px;
+    background: #00000055;
+  }
+  .cf-name {
+    font-family: var(--title-font);
+    font-size: 10px;
+    color: var(--color-text-light);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cf-tribes {
+    font-size: 9px;
+    color: var(--color-text-muted);
+  }
+  .cf-tribe-sep {
+    padding: 0 2px;
+  }
+  .cf-rules {
+    display: none;
+    padding: 3px 4px;
+    font-size: 10px;
+    line-height: 1.3;
+    color: var(--color-text-light);
+    background: #00000066;
+  }
+  /* Rarity frames reuse the shipped quality colors rather than minting a
+     second color vocabulary for cards. */
+  .cf-rarity-common .cf-frame {
+    border-color: var(--gold);
+  }
+  .cf-rarity-uncommon .cf-frame {
+    border-color: var(--mkt-name-uncommon);
+  }
+  .cf-rarity-rare .cf-frame {
+    border-color: var(--mkt-name-rare);
+  }
+  .cf-rarity-epic .cf-frame {
+    border-color: var(--mkt-name-epic);
+  }
+  .cf-rarity-legendary .cf-frame {
+    border-color: var(--mkt-name-legendary);
+  }
+
+  .cf-size-hand {
+    width: 68px;
+    height: 96px;
+  }
+  .cf-size-stage {
+    width: 108px;
+    height: 152px;
+  }
+  .cf-size-stage .cf-value {
+    font-size: 22px;
+  }
+  .cf-size-stage .cf-rules,
+  .cf-size-cell .cf-rules {
+    display: block;
+  }
+  .cf-size-cell {
+    width: 132px;
+    height: 196px;
+  }
+  /* The inspect size: the whole card, big enough to read the art and the rules
+     sentence without leaning in. Only the inspector paints at this size. */
+  .cf-size-inspect {
+    width: 208px;
+    height: 300px;
+  }
+  .cf-size-inspect .cf-rules {
+    display: block;
+    padding: 5px 7px;
+    font-size: 12px;
+  }
+  .cf-size-inspect .cf-value {
+    font-size: 30px;
+  }
+  .cf-size-inspect .cf-base {
+    font-size: 15px;
+  }
+  .cf-size-inspect .cf-delta {
+    font-size: 18px;
+  }
+  .cf-size-inspect .cf-corner {
+    top: 4px;
+    left: 6px;
+  }
+  .cf-size-inspect .cf-plate {
+    padding: 4px 7px;
+  }
+  .cf-size-inspect .cf-name {
+    font-size: 14px;
+  }
+  .cf-size-inspect .cf-tribes {
+    font-size: 11px;
+  }
+
+  /* ---------- the end of a match (src/ui/cards/duel_summary_view.ts) ------- */
+  /* A match used to simply stop: the projection's match went null and the
+     window flipped to the Join screen mid-thought. The summary lands in the
+     window instead, over the table it replaces, and holds it until the player
+     leaves or sits down again.
+
+     Rows arrive one at a time, each carrying its own delay as a custom
+     property, so the panel reads in the order it is meant to be read without a
+     timer per row. Dropping the animation (the tier block at the bottom) leaves
+     every row in place and readable, which is the same bargain the round
+     theater makes. */
+  .dt-sum {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 8px;
+  }
+  .dt-sum-title {
+    font-family: var(--title-font);
+    font-size: 20px;
+    text-align: center;
+    color: var(--gold);
+  }
+  .dt-sum[data-outcome="win"] .dt-sum-title {
+    color: var(--color-stat-bonus);
+  }
+  .dt-sum[data-outcome="loss"] .dt-sum-title {
+    color: var(--mkt-name-legendary);
+  }
+  .dt-sum-who {
+    margin-top: -4px;
+    font-size: 11px;
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+  .dt-sum-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 4px 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dt-sum-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 3px 6px;
+    border-radius: var(--radius-sm);
+    background: #ffffff08;
+    animation: dt-sum-row-in 220ms ease-out backwards;
+    animation-delay: var(--dt-sum-delay, 0ms);
+  }
+  .dt-sum-label {
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+  .dt-sum-value {
+    font-family: var(--title-font);
+    font-size: 13px;
+    color: var(--color-text-light);
+  }
+  .dt-sum-row[data-kind="bestHit"] .dt-sum-value {
+    color: var(--gold);
+  }
+  @keyframes dt-sum-row-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  /* ---------- the card flight (src/ui/cards/card_flight.ts) ---------- */
+  /* A card physically leaving the hand and landing on the table. Fixed to the
+     viewport and mounted on <body>, because it crosses the duel window's own
+     scrollport on the way; pointer-events off, because it is a picture of a
+     move that has already happened as far as the rules are concerned. Only
+     transform and opacity animate, so the whole move stays on the compositor. */
+  .cf-flight {
+    position: fixed;
+    z-index: 101;
+    pointer-events: none;
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  /* ---------- the card inspector (src/ui/cards/card_inspect.ts) ---------- */
+  /* The enlarged copy of the card under the pointer, the keyboard focus, or a
+     press-and-hold. Fixed-position and mounted on <body>, because the duel
+     window scrolls inside itself and anything absolutely positioned within it
+     would be clipped by the first card near an edge.
+
+     Not tiered and not animated: it is the only place a player can read what a
+     hand card DOES, so it appears at every graphics preset, on every device,
+     the instant it is asked for. `pointer-events: none` keeps it from ever
+     eating the click that plays the card underneath. */
+  .cf-inspect {
+    position: fixed;
+    /* The shared HUD tooltip's layer: this is the same kind of thing (a
+       transient readout over whatever window asked for it), so it sits with
+       it rather than inventing a level of its own. */
+    z-index: 100;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 14px #000000cc);
+  }
+  .cf-inspect .cf-frame {
+    background: var(--panel-base, #15151f);
+  }
+
+  /* ---------- card duel touch layout ---------- */
+  /* Authored here rather than in hud.mobile.css because the standalone /cards
+     playtest slice loads this sheet and none of the HUD ones, and a table that
+     only worked on a phone in the shipped client would be a table playtesters
+     could not check on a phone. The window PLACEMENT on mobile stays in
+     hud.mobile.css with every other window.
+
+     THREE triggers, and the third is the load-bearing one: a phone running the
+     game client is in LANDSCAPE (the client's own orientation gate refuses
+     portrait), so it is not narrow, it is SHORT. A short viewport is exactly
+     when a stacked stage stops fitting, so it gets the side-by-side one. */
+  @media (pointer: coarse), (max-width: 30rem), (max-height: 32rem) {
+    /* The stage goes side by side: vertical space is the scarce thing on a
+       phone, and the two seat bands still carry the top/bottom ownership. */
+    .dt-stage {
+      /* Two cards wide rather than one, but still bounded: a full-width stage
+         on a landscape phone parks the two cards being compared at opposite
+         ends of the screen. */
+      max-width: 300px;
+      margin: 0 auto;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+    .dt-oppo-back {
+      width: 26px;
+      height: 36px;
+    }
+    .dt-oppo-row .cf-size-hand {
+      width: 36px;
+      height: 50px;
+    }
+    /* Your card on the LEFT, theirs on the right. A player reads their own
+       side first, so the seat they act from is the one the eye lands on; the
+       BANDS still carry ownership top to bottom (them above, you below), which
+       is the axis that says whose health is whose. */
+    .dt-slot-mine {
+      order: 1;
+    }
+    .dt-slot-theirs {
+      order: 2;
+    }
+    .dt-clash {
+      grid-column: 1 / -1;
+      order: 0;
+      height: 0;
+    }
+    .dt-verdict {
+      grid-column: 1 / -1;
+      order: 3;
+    }
+    .dt-note {
+      grid-column: 1 / -1;
+      order: 4;
+    }
+    /* The last two rows of the side-by-side stage, in the order they are read:
+       the hit, then the line saying what just happened. Without an explicit
+       order they land wherever the source put them, which on this layout was
+       above the two cards they are about. */
+    .dt-damage {
+      order: 5;
+    }
+    .dt-beats {
+      order: 6;
+    }
+    /* Each card leans INTO the other, so the directions follow the swap
+       above: yours sits on the left and strikes right, theirs strikes left. */
+    .dt-stage[data-beat="clash"] .dt-slot-mine {
+      animation-name: dt-lunge-right;
+    }
+    .dt-stage[data-beat="clash"] .dt-slot-theirs {
+      animation-name: dt-lunge-left;
+    }
+    /* A landscape phone is about 430px tall, and the HAND is the part a player
+       has to reach. The stage keeps both faces (which cards clashed is the
+       story) but sheds its rules sentences and a third of its height: the
+       rules of a card that has already been played are the least actionable
+       text on the table, and the same sentence is on the hand card below for
+       anything still playable. */
+    .dt-slot-card,
+    .dt-slot-card .cf-size-stage {
+      width: 74px;
+      height: 106px;
+    }
+    .dt-slot-card .cf-size-stage .cf-rules {
+      display: none;
+    }
+    .dt-slot-card .cf-size-stage .cf-value {
+      font-size: 16px;
+    }
+    /* The hand becomes one rail that scrolls rather than a block that wraps to
+       three rows and pushes the table off the screen. */
+    .dt-hand {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+    }
+    .dt-hand .cf {
+      flex: 0 0 auto;
+      scroll-snap-align: center;
+    }
+    /* The touch TARGET size is hud.mobile.css's (a later @layer, so it wins
+       here whatever this sheet says): `body.mobile-touch .cf-size-hand` gives
+       the hand card its 84x122 tap box. Nothing about the hand's size belongs
+       in this block. */
+  }
+  /* ---------- card duel short-viewport layout ---------- */
+  /* A phone running the game client is in LANDSCAPE (its own orientation gate
+     refuses portrait), so the scarce axis is HEIGHT, not width. A stacked
+     table runs off the bottom there and buries the hand, which is the one row
+     a player has to reach.
+
+     Two columns: the board (both seats, their hand, the stage) on the left,
+     the readouts (clock, whose turn, what is still in play) on the right, and
+     your hand across the full width beneath both, where a thumb is. Ownership
+     still reads top-to-bottom INSIDE the board column, so the grammar holds. */
+  @media (max-height: 32rem) and (min-width: 34rem) {
+    /* The HAND is pinned, and the BOARD scrolls behind it.
+       On a phone the one row a player must always be able to reach is their
+       own hand, so it sticks to the bottom of the window's scrollport while
+       the board scrolls underneath. Sticky rather than a height budget on
+       purpose: the window sets its own `display` inline when it opens, so a
+       flex column cannot be imposed from CSS, and any arithmetic over "how
+       tall is the board today" would be wrong the first time a counter row or
+       an effects chip wrapped. */
+    #card-duel-window {
+      max-height: calc(var(--app-vh, 100vh) - 20px);
+    }
+    .dt-hand-wrap,
+    .dt-forfeit {
+      position: sticky;
+      bottom: 0;
+      z-index: 1;
+      padding-top: 4px;
+      background: var(--panel-base, #15151f);
+    }
+    .dt {
+      display: grid;
+      gap: 4px;
+      grid-template-columns: minmax(0, 1fr) minmax(9rem, 0.45fr);
+      grid-template-areas:
+        "board side"
+        "hand  forfeit";
+      align-items: start;
+      column-gap: 10px;
+    }
+    .dt-board {
+      grid-area: board;
+    }
+    .dt-side {
+      grid-area: side;
+    }
+    .dt-hand-wrap {
+      grid-area: hand;
+      min-width: 0;
+    }
+    .dt-forfeit {
+      grid-area: forfeit;
+      align-self: end;
+    }
+    /* The stage sheds its own margin here: it is already centred by the column
+       it sits in, and a second centring pushed it off the board's axis. */
+    .dt-stage {
+      margin: 0;
+      max-width: none;
+    }
+    /* The seat bands lose their piles and counters to wrapping in a narrower
+       column, so let the row breathe rather than clipping the score. */
+    .dt-seat {
+      row-gap: 2px;
+    }
+    /* Everything below is height, bought back so the whole table fits without
+       a scroll: the two stage cards sit shoulder to shoulder instead of at
+       opposite ends of the column, the opponent hand drops the caption its
+       accessible name already carries, and both card sizes step down. */
+    .dt-stage {
+      grid-template-columns: auto auto;
+      justify-content: center;
+      column-gap: 20px;
+      padding: 4px;
+    }
+    .dt-slot-card,
+    .dt-slot-card .cf-size-stage {
+      width: 56px;
+      height: 80px;
+    }
+    .dt-oppo-note {
+      display: none;
+    }
+    .dt-oppo-back {
+      width: 22px;
+      height: 30px;
+    }
+    .dt-oppo-row .cf-size-hand {
+      width: 30px;
+      height: 42px;
+    }
+    .dt-verdict {
+      font-size: 12px;
+    }
+    /* The hand keeps its full touch height, so the BOARD takes the squeeze:
+       it is bounded to whatever is left over and scrolls inside itself, rather
+       than growing under the pinned hand where half of it cannot be seen. The
+       16rem is the pinned furniture around it, MEASURED on a 844x430 landscape
+       phone rather than estimated: the window title, the body padding, the
+       hand's 122px tap box, and the sticky Forfeit row beside it. It was 13rem,
+       which left the bottom of the board underneath the hand rather than above
+       it, and what sat there was the player's own health bar. */
+    .dt-board,
+    .dt-side {
+      max-height: calc(var(--app-vh, 100vh) - 16rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    /* Both HEALTH bars stay in view while the middle of the board scrolls.
+       Health decides the match, and a landscape phone is short enough that the
+       player's own band was scrolling off the bottom of that column: the one
+       number the whole game is about was the first thing to leave the screen.
+       Sticky rather than moved out of the column, because position is ownership
+       here (opponent above, you below) and reordering the board to save space
+       would trade one confusion for another. They need an opaque background of
+       their own, since the stage now scrolls under them. */
+    /* The WRAPPERS are what stick, not the bands inside them: a sticky element
+       can only travel inside its own parent's box, and each band's wrapper hugs
+       it exactly, so sticking the band itself moves nothing at all. */
+    .dt-board > [data-cd-seats-them],
+    .dt-board > [data-cd-seats-mine] {
+      position: sticky;
+      z-index: 1;
+      background: var(--panel-base, #15151f);
+    }
+    .dt-board > [data-cd-seats-them] {
+      top: 0;
+    }
+    .dt-board > [data-cd-seats-mine] {
+      bottom: 0;
+    }
+  }
+
+  @keyframes dt-lunge-right {
+    50% {
+      transform: translateX(7px);
+    }
+  }
+  @keyframes dt-lunge-left {
+    50% {
+      transform: translateX(-7px);
+    }
+  }
+
+  /* ---------- card duel desktop table ---------- */
+  /* Every layout above this point fits a phone. A desktop viewport got that
+     same 380px column with a field of empty screen around it, so the surface a
+     player stares at for a whole match was the smallest thing on the monitor.
+
+     TWO queries, and the split is the load-bearing part. The MEDIA query
+     decides the window is ALLOWED to be big (a desktop viewport, a mouse). The
+     CONTAINER query decides what the table does with the width it actually
+     got. This window carries a resize grip (it is not in window_resize.ts's
+     NON_RESIZABLE_WINDOW_IDS), so a player can drag it back down to a column,
+     and a viewport-keyed reflow would go on painting a two-column board inside
+     a 400px box. Keying the reflow on the body's own measurement is correct
+     under that drag and under the #ui zoom, neither of which the viewport can
+     see.
+
+     Nothing here is new information, and no beat, duration or cue is touched:
+     the round theater is the fairness contract in src/ui/cards/CLAUDE.md, and
+     this block only gives it a bigger room to play in. The one thing a desktop
+     player GAINS is the rules sentence on the hand card, which is additive.
+     The button's own accessible name and the inspector still carry that
+     sentence at every size, on every device, exactly as before. */
+  @media (min-width: 60rem) and (min-height: 45rem) and (hover: hover) and (pointer: fine) {
+    #card-duel-window {
+      /* The board and its rail side by side, bounded by the same app-viewport
+         clamp every window uses rather than a raw vw. */
+      width: min(1040px, calc(var(--app-vw, 100vw) / var(--window-scale, 1) - 64px));
+      top: 5vh;
+      max-height: calc(var(--app-vh, 100vh) * 0.9 / var(--window-scale, 1) - 24px);
+    }
+    .cd-body {
+      padding: 10px 14px 14px;
+      /* The measurement the reflow below is keyed on. */
+      container-name: cd-table;
+      container-type: inline-size;
+    }
+  }
+
+  /* The reflow. 52rem is where the board and a 15rem rail stop crowding each
+     other; under it the stacked phone table is still the better answer, so a
+     narrowed window simply falls back to it. */
+  @container cd-table (min-width: 52rem) {
+    /* The pre-match screens (sit down, queue) and the match summary are
+       READING width, not board width. Without this they stretch to a metre of
+       button, which is a regression the widened window would have caused. */
+    .cd-regulars,
+    .cd-body > .cd-status,
+    .cd-body > .cd-action-btn,
+    .dt-sum {
+      max-width: 34rem;
+      margin-inline: auto;
+    }
+
+    .dt {
+      display: grid;
+      align-items: start;
+      gap: 10px 18px;
+      grid-template-columns: minmax(0, 1fr) minmax(14rem, 16rem);
+      /* The same two-column grammar the short-viewport block already uses, so
+         there is ONE wide layout to reason about rather than two: the board
+         and its readouts side by side, the hand across the bottom under the
+         board it is played onto. */
+      grid-template-areas:
+        "board side"
+        "hand  forfeit";
+    }
+    .dt-board {
+      grid-area: board;
+      gap: 10px;
+    }
+    /* The same squeeze the short-viewport layout takes, and the same answer,
+       because a 1366x768 laptop is short for this table too: the HAND and the
+       Forfeit beside it are pinned to the bottom of the window, and the BOARD
+       is bounded to whatever is left and scrolls inside itself rather than
+       growing under the hand where half of it cannot be seen.
+
+       The bound is written against the WINDOW's own clamp, not the raw
+       viewport, and 20rem is the pinned furniture inside it, MEASURED on a
+       1366x768 laptop rather than estimated: the window title, the body
+       padding, the hand's desktop card box, the Forfeit row beside it, and the
+       grid gaps. It has to be exact in one direction: if the WINDOW is the
+       thing that scrolls, the board scrolls out of view and takes its sticky
+       health bars with it, which is the bug this replaced. */
+    .dt-board,
+    .dt-side {
+      max-height: calc(var(--app-vh, 100vh) * 0.9 / var(--window-scale, 1) - 20rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    /* Both HEALTH bars stay in view while the middle of the board scrolls.
+       Health is what the match is decided on, and the player's own band is the
+       one that leaves first. Sticky rather than moved, because position is
+       ownership here (opponent above, you below). The WRAPPERS are what stick,
+       not the bands: a sticky element only travels inside its own parent's
+       box, and each band's wrapper hugs it exactly. */
+    .dt-board > [data-cd-seats-them],
+    .dt-board > [data-cd-seats-mine] {
+      position: sticky;
+      z-index: 1;
+      background: var(--panel-base, #15151f);
+    }
+    .dt-board > [data-cd-seats-them] {
+      top: 0;
+    }
+    .dt-board > [data-cd-seats-mine] {
+      bottom: 0;
+    }
+    .dt-hand-wrap,
+    .dt-forfeit {
+      position: sticky;
+      bottom: 0;
+      z-index: 1;
+      background: var(--panel-base, #15151f);
+    }
+    .dt-hand-wrap {
+      grid-area: hand;
+      min-width: 0;
+      padding-bottom: 4px;
+      border-top: 1px solid #ffffff14;
+    }
+    .dt-forfeit {
+      grid-area: forfeit;
+      align-self: end;
+    }
+
+    /* The readouts become a rail: one panel holding the clock, whose commit
+       the round waits on, and what is still parked on the table. It takes the
+       standing panel edge rather than a new one, so it reads as part of the
+       same window. */
+    .dt-side {
+      grid-area: side;
+      /* Stretched to the board's height rather than hugging its contents: a
+         short panel floating beside a tall board reads as an unfinished
+         corner, and the rail is a SIDE of the table. */
+      align-self: stretch;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius-md);
+      background: #ffffff08;
+    }
+    .dt-clock {
+      gap: 10px;
+    }
+    .dt-clock-ring {
+      width: 40px;
+      height: 40px;
+      mask: radial-gradient(circle, transparent 58%, #000 60%);
+    }
+    /* Sized for the words, not for the digits: this readout says "Time is up"
+       and "Resolving the round" as well as a number, and at 20px display type
+       those wrapped into a headline in a 15rem rail. */
+    .dt-clock-num {
+      font-size: 19px;
+      line-height: 1.2;
+    }
+    .dt-waiting {
+      min-height: 20px;
+      font-size: 15px;
+    }
+    .dt-effects-title {
+      font-size: 13px;
+    }
+    /* A column of chips rather than a wrapping row: the rail is narrow and
+       tall, which is the shape a list of parked effects wanted all along. */
+    .dt-effects-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 5px;
+      margin-top: 6px;
+    }
+    .dt-fx {
+      justify-content: space-between;
+      padding: 5px 9px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+    }
+    .dt-fx-name,
+    .dt-fx-amount {
+      font-size: 13px;
+    }
+
+    /* The seat bands stop wrapping to three lines: name, commit lamp, health,
+       round score, counters and piles are one glance again. */
+    .dt-seat {
+      gap: 6px 10px;
+      padding: 7px 10px;
+      border-radius: var(--radius-md);
+    }
+    .dt-seat-mine,
+    .dt-seat-theirs {
+      border-left-width: 4px;
+    }
+    .dt-seat-name {
+      font-size: 15px;
+    }
+    .dt-hp {
+      flex: 1 1 220px;
+      height: 20px;
+    }
+    .dt-hp-num {
+      font-size: 13px;
+      line-height: 20px;
+    }
+    .dt-rounds,
+    .dt-commit {
+      font-size: 12px;
+    }
+    .dt-token,
+    .dt-token-count {
+      font-size: 12px;
+    }
+    .dt-pile-stack {
+      width: 16px;
+      height: 22px;
+    }
+    .dt-pile-count {
+      font-size: 13px;
+    }
+    .dt-oppo-back {
+      width: 38px;
+      height: 53px;
+    }
+    .dt-oppo-row .cf-size-hand {
+      width: 53px;
+      height: 75px;
+    }
+    .dt-oppo-row .cf-name,
+    .dt-oppo-row .cf-tribes {
+      font-size: 11px;
+    }
+
+    /* The stage becomes the table it has been describing all along: an inset
+       felt field with a gold hairline down the middle where the two cards
+       meet. Every ingredient is already in this sheet (the panel gradient the
+       card backs use, --gold-dim, the same fade gradient as the clash spark),
+       so this is the existing object at a bigger size and not a second visual
+       language. The vignette rides --fx-shadow, so the low preset sheds it and
+       loses nothing that is a number. */
+    .dt-stage {
+      max-width: none;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      justify-items: center;
+      gap: 4px 0;
+      padding: 8px 18px;
+      border: 1px solid var(--gold-dim);
+      background:
+        radial-gradient(ellipse at 50% 45%, #ffffff12, transparent 62%),
+        linear-gradient(160deg, var(--panel-base, #17242c), #0a1116);
+      box-shadow: inset 0 0 calc(38px * var(--fx-shadow, 1)) #00000080;
+    }
+    /* Your card, the gutter, their card. The seat a player acts from is on
+       the left, which is where the eye starts, and it is the same hand-to-
+       stage direction the hand below reads in. Ownership still reads top to
+       bottom across the BANDS, exactly as it does on the short-viewport
+       layout, and each slot keeps its own label. */
+    .dt-slot-mine {
+      order: 1;
+    }
+    .dt-clash {
+      order: 2;
+      align-self: stretch;
+      width: 88px;
+      height: auto;
+    }
+    .dt-slot-theirs {
+      order: 3;
+    }
+    /* Side by side, the clash is a HORIZONTAL meeting: the base rule leans the
+       cards down and up, which on this layout has them lunging past each other
+       instead of into each other. Same 220ms, same easing, same beat. */
+    .dt-stage[data-beat="clash"] .dt-slot-mine {
+      animation-name: dt-lunge-right;
+    }
+    .dt-stage[data-beat="clash"] .dt-slot-theirs {
+      animation-name: dt-lunge-left;
+    }
+    .dt-clash::before {
+      content: "";
+      position: absolute;
+      inset: 10% auto 10% 50%;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, var(--gold-dim), transparent);
+    }
+    .dt-spark {
+      width: 88px;
+      margin-left: -44px;
+    }
+    .dt-verdict {
+      order: 4;
+      grid-column: 1 / -1;
+      font-size: 20px;
+    }
+    .dt-note {
+      order: 5;
+      grid-column: 1 / -1;
+    }
+    .dt-damage {
+      order: 6;
+      min-height: 22px;
+    }
+    .dt-damage-num {
+      font-size: 22px;
+    }
+    /* The caption line is what a player READS while the round plays, and at
+       13px on a 1040px board it was the smallest type on the widest surface.
+       It gets display weight and room for two lines: the min-height is set
+       against the wrapped case so a long step caption cannot reflow the stage
+       under it mid-beat, which would move the cards it is describing. */
+    .dt-beats {
+      order: 7;
+      min-height: 42px;
+      font-family: var(--title-font);
+      font-size: 16px;
+      line-height: 1.3;
+      color: var(--color-text);
+    }
+    /* The reshuffle note sits with the caption and was never resized for this
+       board, so it stayed at the phone's 10px. */
+    .dt-note {
+      font-size: 13px;
+    }
+    .dt-slot {
+      gap: 6px;
+    }
+    .dt-slot-label {
+      font-size: 14px;
+    }
+    .dt-slot-card,
+    .dt-slot-card .cf-size-stage {
+      width: 128px;
+      height: 180px;
+    }
+    .dt-slot-card .cf-size-stage .cf-value {
+      font-size: 23px;
+    }
+    .dt-slot-card .cf-size-stage .cf-rules {
+      padding: 5px 7px;
+      font-size: 12px;
+    }
+    .dt-plate-value {
+      font-size: 24px;
+    }
+    .dt-plate-base {
+      font-size: 13px;
+    }
+    .dt-chip {
+      font-size: 14px;
+    }
+
+    /* The hand, at a size that carries its own rules sentence. This is the
+       same face at the same proportions the collection cell paints, so a card
+       does not read differently depending on where it is; the sentence simply
+       fits now. */
+    .dt-hand {
+      flex-wrap: nowrap;
+      justify-content: center;
+      gap: 16px;
+      margin: 0;
+      padding: 8px 0 4px;
+    }
+    .dt-hand .cf {
+      flex: 0 0 auto;
+    }
+    .dt-hand .cf-size-hand {
+      width: 120px;
+      height: 172px;
+    }
+    .dt-hand .cf-size-hand .cf-rules {
+      display: block;
+    }
+    .dt-hand .cf-size-hand .cf-value {
+      font-size: 22px;
+    }
+    .dt-hand .cf-size-hand .cf-base {
+      font-size: 12px;
+    }
+    .dt-hand .cf-size-hand .cf-delta {
+      font-size: 15px;
+    }
+    .dt-hand .cf-size-hand .cf-name {
+      font-size: 12px;
+    }
+    .dt-hand .cf-size-hand .cf-tribes {
+      font-size: 10px;
+    }
+    /* A hand a player HOLDS. Four cards is the whole hand (HAND_SIZE in
+       src/sim/minigames/card_duel/deck.ts), so the fan is four exact rules and
+       not a pattern that has to guess. It is a STATIC transform on the button,
+       not an animation and not on the frame: the frame's own hover lift and
+       both tier blocks keep working untouched, and the card under the pointer
+       squares up so its sentence is read flat. Small angles on purpose, since
+       the card flights and the inspector both measure this element's box. */
+    .dt-hand .cf {
+      transform-origin: 50% 115%;
+      transition: transform 140ms ease-out;
+    }
+    .dt-hand .cf:nth-child(1) {
+      transform: rotate(-4deg);
+    }
+    .dt-hand .cf:nth-child(2) {
+      transform: rotate(-1.4deg);
+    }
+    .dt-hand .cf:nth-child(3) {
+      transform: rotate(1.4deg);
+    }
+    .dt-hand .cf:nth-child(4) {
+      transform: rotate(4deg);
+    }
+    .dt-hand .cf-playable:hover,
+    .dt-hand .cf:focus-visible {
+      transform: rotate(0deg);
+    }
+  }
+
+  /* ---------- card duel ending (src/ui/cards/duel_outro_core.ts) ---------- */
+  /* The match ENDING, played over the finished stage after the last round has
+     been told in full.
+
+     It used to not exist: the match-end event arrives in the same tick as the
+     final round's resolution, so the window stopped the theater and swapped in
+     the summary, and the one round that decided the match was the one round
+     nobody ever saw. These three beats are the pause that was missing.
+
+     Every rule here is opacity, transform or color on an element the stage
+     already owns, keyed on the same `data-beat` the round beats use, plus one
+     `data-ending` on the board saying which way it went. No new element, no
+     layout read, and nothing that gates a number: by the time any of this
+     plays, the match is over and every value in the summary is already true on
+     the table underneath. */
+
+  /* Beat 1, finish: the blow that ended it. The spotlight attribute is doing
+     the pointing (data-spot is mine-hp or theirs-hp on this beat, the same
+     mechanism a damage beat uses), so all this owes is a held, quiet stage. */
+  .dt-stage[data-beat="finish"] .dt-slot,
+  .dt-stage[data-beat="glory"] .dt-slot,
+  .dt-stage[data-beat="curtain"] .dt-slot {
+    opacity: 0.72;
+    transition: opacity 400ms ease-out;
+  }
+
+  /* Beat 2, glory: the winning side lifts. The seat band is the element that
+     carries ownership, so it is the element that celebrates; the loser's band
+     recedes rather than being hidden, because its numbers are still readable
+     and a player is entitled to read them. */
+  /* Keyed on the BOARD's own `data-ending` rather than on the stage's beat:
+     the seat bands are SIBLINGS of the stage under the board, so no selector
+     rooted at [data-beat] can reach backwards to the band above it. The
+     attribute is written once when the outro starts and the transition is what
+     makes it arrive, which is the same answer for one beat or three. */
+  .dt-board[data-ending] .dt-seat {
+    transition:
+      border-color 500ms ease-out,
+      opacity 500ms ease-out;
+  }
+  .dt-board[data-ending="win"] .dt-seat-mine,
+  .dt-board[data-ending="lose"] .dt-seat-theirs {
+    border-color: var(--gold);
+  }
+  /* The losing band RECEDES, it does not hide: its health, score and counters
+     are still readable, and a player is entitled to read the board that just
+     beat them. */
+  .dt-board[data-ending="win"] .dt-seat-theirs,
+  .dt-board[data-ending="lose"] .dt-seat-mine {
+    opacity: 0.8;
+  }
+  .dt-stage[data-beat="glory"] .dt-verdict {
+    animation: dt-glory 1200ms ease-out;
+  }
+  .dt-board[data-ending="win"] .dt-stage[data-beat="glory"] .dt-verdict {
+    color: var(--color-stat-bonus);
+  }
+  .dt-board[data-ending="lose"] .dt-stage[data-beat="glory"] .dt-verdict {
+    color: var(--mkt-name-legendary);
+  }
+  /* The caption strip carries the ending's own line ("The duel is yours"), so
+     it is the one piece of type that grows for the occasion. */
+  .dt-stage[data-beat="glory"] .dt-beats,
+  .dt-stage[data-beat="curtain"] .dt-beats {
+    color: var(--gold);
+    transform: scale(1.06);
+    transition:
+      color 300ms ease-out,
+      transform 300ms ease-out;
+  }
+
+  /* Beat 3, curtain: the table steps back and hands the window over. The
+     summary arrives on top of this, so the two read as one movement rather
+     than as a cut. */
+  .dt-stage[data-beat="curtain"] {
+    opacity: 0.55;
+    transform: scale(0.985);
+    transition:
+      opacity 600ms ease-out,
+      transform 600ms ease-out;
+  }
+  @keyframes dt-glory {
+    0% {
+      transform: scale(1);
+    }
+    35% {
+      transform: scale(1.14);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  /* The summary's own entrance, so the hand-off the curtain beat set up is
+     completed rather than interrupted. The rows keep their existing staggered
+     delays on top of this. */
+  .dt-sum {
+    animation: dt-sum-in 320ms ease-out;
+  }
+  @keyframes dt-sum-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  /* Calm motion and the lowest preset: every beat still happens, at the same
+     times, with the MOVEMENT dropped. The opacity channel and the colour are
+     kept, which is what makes each ending beat tellable apart from the one
+     before it without anything translating or scaling. */
+  .dt-board[data-motion="calm"] .dt-stage[data-beat="curtain"],
+  .dt-board[data-motion="calm"] .dt-stage[data-beat="glory"] .dt-beats,
+  .dt-board[data-motion="calm"] .dt-stage[data-beat="curtain"] .dt-beats {
+    transform: none;
+  }
+  .dt-board[data-motion="calm"] .dt-stage[data-beat="glory"] .dt-verdict {
+    animation: none;
+  }
+
+  /* ---------- card duel motion tiers ---------- */
+  /* Reduced motion and the lowest graphics preset each drop the motion, and
+     ONLY the motion. Nothing below hides, delays, or dims a number.
+
+     The two are not the same thing, and duel_theater_host.ts is the other half
+     of the distinction. REDUCED MOTION means the player asked for no staged
+     sequence: the beats collapse in JavaScript as well, so the table lands on
+     the settled picture at once. The LOW PRESET keeps every beat and only sheds
+     the animation between them, so the round still plays out, as hard cuts. It
+     used to collapse too, which meant the machine with the least frame budget
+     was the only one that never got to watch a round happen; a preset may shed
+     richness, never legibility. Every beat therefore has a STATIC state to cut
+     to (the face-down back, the revealed face, the delta chip, the spark, the
+     winner's gold edge) plus its caption line. */
+  @media (prefers-reduced-motion: reduce) {
+    /* .dt-hand .cf is the desktop fan's element: the FAN itself is a static
+       transform and stays (it is the shape of a held hand, not motion), but the
+       squaring-up it does under the pointer must arrive as a cut, not a glide. */
+    .cf-frame,
+    .dt-hand .cf,
+    .dt-hp-fill {
+      transition: none;
+    }
+    .cf-playable:hover .cf-frame {
+      transform: none;
+    }
+    /* The stage's MOVEMENT only. The round still plays out beat by beat here
+       (the theater resolves to `calm`, not to a collapse) and the calm block
+       above puts back the fades and the ring, both of which are opacity and
+       neither of which is the motion this query is protecting anyone from. */
+    .dt-stage *,
+    .dt-lamp,
+    .dt-clock-ring,
+    .dt-sum-row {
+      animation: none;
+    }
+  }
+
+  :root[data-fx-level="low"] .cf-frame,
+  :root[data-fx-level="low"] .dt-hand .cf,
+  :root[data-fx-level="low"] .dt-hp-fill {
+    transition: none;
+  }
+  :root[data-fx-level="low"] .cf-playable:hover .cf-frame {
+    transform: none;
+  }
+  /* Same shape as the reduced-motion block above: the preset sheds the stage's
+     MOVEMENT, and the calm block keeps the beats, the fades and the ring. The
+     rings are deliberately NOT named here; they shine at every preset, because
+     the gold ring is what says which card or bar a beat is about. */
+  :root[data-fx-level="low"] .dt-stage *,
+  :root[data-fx-level="low"] .dt-lamp,
+  :root[data-fx-level="low"] .dt-clock-ring,
+  :root[data-fx-level="low"] .dt-sum-row {
+    animation: none;
+  }
+}

@@ -7,6 +7,7 @@ import { ITEM_SETS } from '../../sim/data';
 import { worldEntityText as worldNames } from '../world_entity_i18n';
 import { abilityStrings, classAbilityNames } from './abilities';
 import { apiErrorStrings } from './api_error';
+import { cardsStrings } from './cards';
 import { editorStrings } from './editor';
 import { gameStrings } from './game';
 import { guideStrings } from './guide';
@@ -19,6 +20,7 @@ import { shellStrings } from './shell';
 
 export { abilityStrings, classAbilityNames } from './abilities';
 export { apiErrorStrings } from './api_error';
+export { cardsStrings } from './cards';
 export { editorStrings } from './editor';
 export {
   gameStrings,
@@ -226,6 +228,7 @@ export const en = {
   apiError: apiErrorStrings,
   guide: guideStrings,
   editor: editorStrings,
+  cards: cardsStrings,
   // Cosmetic skin-select event overlay. Rarity names reuse itemUi.quality.*.
   skinEvent: {
     title: 'Cosmetic Cache',
@@ -1158,25 +1161,183 @@ export const en = {
     buyConfirmAccept: 'Redeem',
     buyConfirmCancel: 'Cancel',
   },
-  // The Card Master window (Card Duel minigame): queue join/leave affordance
+  // The Card Master window (ClaudeStone minigame): queue join/leave affordance
   // plus the in-match hand strip + round-score panel.
   cardDuel: {
-    title: 'Card Duel',
+    title: 'ClaudeStone',
     close: 'Close',
     join: 'Join Queue',
-    joinAria: 'Join the Card Duel queue',
+    joinAria: 'Join the ClaudeStone queue',
     leave: 'Leave Queue',
-    leaveAria: 'Leave the Card Duel queue',
+    leaveAria: 'Leave the ClaudeStone queue',
     forfeit: 'Forfeit',
-    forfeitAria: 'Forfeit the Card Duel',
+    forfeitAria: 'Forfeit the ClaudeStone match',
     queued: 'Waiting for an opponent...',
-    unavailable: 'Card Duel requires another player online.',
+    unavailable: 'ClaudeStone requires another player online.',
     vsOpponent: 'vs {name}',
     round: 'Round score: {mine} - {theirs}',
     counts: 'Deck: {deck} · Discard: {discard}',
     playCardAria: 'Play the {value} card',
     waitingOnOpponent: "Waiting on your opponent's card...",
     yourTurn: 'Play a card',
+    // The round clock. Actionable information, so it renders at every graphics
+    // tier and on every device, driven from the snapshot deadline.
+    clock: '{seconds}s left',
+    clockAria: 'Seconds left in this round: {seconds}',
+    clockOut: 'Time is up',
+    // The round clock while the last round is being told: the sim really has
+    // stopped it, so the clock says so instead of freezing silently.
+    clockHeld: 'Resolving the round',
+    // The reveal stage, shown from the round-resolved event.
+    revealMine: 'You played',
+    revealTheirs: 'Opponent played',
+    revealWin: 'You win the round',
+    revealLose: 'You lose the round',
+    revealPush: 'The round is a push',
+    revealReshuffled: 'Your discard pile was shuffled back into your deck.',
+    // The table: state as shapes rather than sentences (src/ui/cards/
+    // duel_table_markup.ts). Each of these labels a shape that already carries
+    // the meaning, and is the exact reading for anyone who wants figures.
+    youSeat: 'You',
+    commitLocked: 'Locked in',
+    commitChoosing: 'Choosing',
+    // Whose card the round is waiting on: the one thing a pause owes the
+    // player, so it is said in words as well as shown on the two lamps.
+    waitingBoth: 'Both players are choosing',
+    waitingThem: 'Waiting on your opponent',
+    waitingMe: 'Your opponent is ready',
+    waitingReveal: 'Revealing the round',
+    // The health bar replaced the score pips when health replaced best-of-3.
+    healthAria: '{name}: {hp} of {max} health',
+    roundsWon: 'Rounds won: {count}',
+    counterAria: '{name}: {count}',
+    // The opponent's hand: a face-down place per card they hold, with any a
+    // reveal effect exposed turned face up among them.
+    oppoHandHidden: 'Their hand: {count}',
+    oppoHandSeen: 'Their hand: {count}, {seen} seen',
+    // The effects row. Each chip names the card that parked the effect and
+    // carries that card's own rules sentence, so there is no second copy of
+    // the wording to keep in step.
+    effectsHeading: 'Still in play',
+    effectAria: '{name}: {rules} ({duration})',
+    durationNextRound: 'next round',
+    durationUntilTriggered: 'until it triggers',
+    durationMatchEnd: 'rest of the match',
+    pileDeck: 'Deck: {count}',
+    pileDiscard: 'Discard: {count}',
+    // The opponent's discard: a PLACE with no figure. Their count is not on
+    // the wire, and the pile is here so their spent cards have somewhere to go
+    // at the end of a round rather than vanishing off the table.
+    pileDiscardTheirs: "Opponent's discard pile",
+    stageIdle: 'The table is empty',
+    // The hit plate on the stage: the health a round took, and off whom.
+    damageMine: 'You take {amount}',
+    damageTheirs: 'Your opponent takes {amount}',
+    // The round theater caption strip (src/ui/cards/duel_table_markup.ts):
+    // one line per beat, saying what the stage is doing right now. It is the
+    // half of the narration that survives every animation being switched off,
+    // so it renders at every graphics tier.
+    beat: {
+      deal: 'Cards down',
+      reveal: 'Cards turn',
+      clash: 'The cards clash',
+      // One line per effect that landed, naming the card that did it: a number
+      // that changes with no author is the thing this whole strip exists for.
+      effectValue: '{card}: {amount} to {target}',
+      effectSilence: '{card} silences the other card',
+      effectReveal: '{card} reveals a card',
+      effectDraw: '{card} draws a card',
+      effectSwap: '{card} swaps the two values',
+      effectOther: '{card} resolves',
+      yourCard: 'your card',
+      theirCard: 'their card',
+      damage: '{target} takes {amount}',
+      // The match ENDING (src/ui/cards/duel_outro_core.ts), one line per outro
+      // beat. Written about the match rather than the round: by the time these
+      // play, the last round has already been told in full.
+      finish: 'The last blow lands',
+      gloryWin: 'The duel is yours',
+      gloryLose: 'The duel is lost',
+      gloryDraw: 'The duel ends level',
+      you: 'You',
+      them: 'Your opponent',
+    },
+    // The end of a match. It lands IN the window, over the table it replaces:
+    // the numbers only mean anything next to the board they came from, and a
+    // match that simply stopped was the complaint.
+    summary: {
+      win: 'You win the duel',
+      loss: 'You lose the duel',
+      draw: 'The duel ends level',
+      against: 'against {name}',
+      health: 'Health left',
+      rounds: 'Rounds played',
+      dealt: 'Damage dealt',
+      taken: 'Damage taken',
+      bestHit: 'Biggest hit',
+      bestHitValue: '{amount} with {card}, round {round}',
+      rematch: 'Play again',
+      done: 'Leave the table',
+    },
+    // The screen-reader line for a resolved round: the stage tells the story
+    // in pictures, and this says the same thing in one sentence.
+    announce: 'You played {mine}, your opponent played {theirs}. {outcome}',
+  },
+  // The deck builder (src/ui/deck_builder_window.ts). The layout is what
+  // explains the deck rule; `rule` states it once in words for a screen
+  // reader and for anyone who wants it said plainly.
+  cardDeck: {
+    title: 'Deck Builder',
+    close: 'Close',
+    defaultName: 'New Deck',
+    rule: 'A deck is twenty cards: two at every value from one to ten, and no card twice.',
+    nameLabel: 'Deck name',
+    progress: '{filled} of {required} slots filled',
+    rowTitle: 'Value {value}',
+    emptySlot: 'Empty value {value} slot',
+    save: 'Save deck',
+    delete: 'Discard deck',
+    open: 'Decks',
+    openAria: 'Open the deck builder',
+    // The design-identity filter. Twenty cards at every value is past the point
+    // where a row reads at a glance, and an identity is the unit a player thinks
+    // in, so the pools narrow by set rather than by a generic search.
+    setFilterLabel: 'Filter by set',
+    allSets: 'All sets',
+    set: {
+      ashen_flight: 'Ashen Flight',
+      boneflame_host: 'Boneflame Host',
+      briarpack: 'Briarpack',
+      crownless_legends: 'Crownless Legends',
+      cryptfire_covenant: 'Cryptfire Covenant',
+      eastbrook_company: 'Eastbrook Company',
+      emberwatch_compact: 'Emberwatch Compact',
+      fenward_hunters: 'Fenward Hunters',
+      gravebound_court: 'Gravebound Court',
+      greenwake_circle: 'Greenwake Circle',
+      ironward_assembly: 'Ironward Assembly',
+      mirefen_tide: 'Mirefen Tide',
+      mirrorveil_chorus: 'Mirrorveil Chorus',
+      questbound_caravan: 'Questbound Caravan',
+      relicguard_order: 'Relicguard Order',
+      roadknife_guild: 'Roadknife Guild',
+      sableweb_brood: 'Sableweb Brood',
+      stormheart_conclave: 'Stormheart Conclave',
+      tableborn_circle: 'Tableborn Circle',
+      tunnel_crown: 'Tunnel Crown',
+      basics: 'Basics',
+    },
+  },
+  // The Card Master's regulars: the sit-down list on the ClaudeStone window.
+  cardOpponents: {
+    heading: 'Play a regular',
+    sitDown: 'Sit down against {name}',
+    tier: {
+      novice: 'Novice',
+      steady: 'Steady',
+      sharp: 'Sharp',
+      master: 'Master',
+    },
   },
   delveUi: {
     board: {

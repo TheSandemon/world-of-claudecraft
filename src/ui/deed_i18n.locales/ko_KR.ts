@@ -157,7 +157,7 @@ export const table: DeedLocaleTable = {
   },
   pvp_card_duel_first_win: {
     name: '패를 보여줘',
-    desc: '카드 마스터에게서 카드 대결에 승리하십시오.',
+    desc: '카드 마스터에게서 ClaudeStone에 승리하십시오.',
   },
   prog_first_steps: {
     name: '첫걸음',

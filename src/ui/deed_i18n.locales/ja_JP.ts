@@ -157,7 +157,7 @@ export const table: DeedLocaleTable = {
   },
   pvp_card_duel_first_win: {
     name: '我が流儀',
-    desc: 'カードマスターのもとでカードデュエルに勝利する。',
+    desc: 'カードマスターのもとでClaudeStoneに勝利する。',
   },
   prog_first_steps: {
     name: 'はじめの一歩',

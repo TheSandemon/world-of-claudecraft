@@ -156,6 +156,7 @@ import { ensureWarriorStance } from './combat/warrior_stances';
 // moved to social/fiesta.ts with that logic; sim.ts keeps only the type used by
 // the PlayerMeta interface + the power-up catalog the fiestaMatchInfo accessor reads.
 import { type AugmentSpecial, type AugmentTier, POWERUPS_BY_ID } from './content/augments';
+import { CARD_CATALOG } from './content/cards';
 import { applyTalentMods } from './content/classes';
 import { DEFAULT_MOUNT, type MountKey } from './content/mounts';
 import { GATHERING_PROFESSION_IDS, type GatheringProfessionId } from './content/professions';
@@ -679,14 +680,23 @@ import type { RiftEvent, RiftInstance } from './rift/types';
 // (online.ts) stays byte-identical.
 export { computeQuestState } from './quests/quest_commands';
 
+import {
+  type CardDeckState,
+  emptyCardDeckState,
+  type SavedCardDecks,
+  sanitizeCardDeckState,
+  serializeCardDeckState,
+} from './minigames/card_duel';
 import { completeCurrentQuestsForDev, completeQuestForDev } from './quests/dev_quest_commands';
 import * as arenaMod from './social/arena';
 import { clearAfkOnMove } from './social/away';
 import * as bgMod from './social/battleground';
 import * as bgOutcomesMod from './social/battleground_outcomes';
 import * as bgProposalMod from './social/battleground_proposal';
+import * as cardDeckCmd from './social/card_deck_commands';
 import type { CardDuelMatch } from './social/card_duel';
 import * as cardDuelMod from './social/card_duel';
+import * as cardDuelBots from './social/card_duel_bots';
 import * as duelMod from './social/duel';
 // A4: Protect Yumi (formats yumi3/yumi5); match logic in social/yumi.ts, reached
 // via ctx callbacks + the two hostility arms in isHostileTo/isFriendlyTo.
@@ -1685,6 +1695,10 @@ export interface PlayerMeta {
   // marks, capped recent. Item ownership stays on deedStats.itemsDiscovered;
   // this field is omit-empty on serialize and never a second full discovery set.
   reliquary: ReliquaryState;
+  // Saved ClaudeStone decks (src/sim/minigames/card_duel/deck_storage.ts).
+  // Omit-empty on serialize, so a character who never opened the deck builder
+  // stays byte-equal to before the system existed.
+  cards: CardDeckState;
 }
 
 // Away-from-keyboard / do-not-disturb presence. `afk` still delivers whispers
@@ -1837,7 +1851,7 @@ export class Sim {
   tradeInvites = new Map<number, { fromPid: number; expires: number }>();
   duels = new Map<number, DuelState>(); // pid -> shared duel (both pids)
   duelInvites = new Map<number, { fromPid: number; expires: number }>();
-  // Card Duel minigame (src/sim/social/card_duel.ts): its own FIFO queue and
+  // ClaudeStone minigame (src/sim/social/card_duel.ts): its own FIFO queue and
   // live-match map, independent of the HP-based duels above.
   cardDuelQueue: number[] = [];
   cardDuels = new Map<number, CardDuelMatch>(); // pid -> shared match (both pids)
@@ -2812,6 +2826,7 @@ export class Sim {
       activeBorder: null,
       renown: 0,
       reliquary: freshReliquaryState(),
+      cards: emptyCardDeckState(),
     };
     // A fresh character sets out provisioned (class-defined starter rations);
     // a saved character loads its own bags from savedState below.
@@ -3249,6 +3264,9 @@ export class Sim {
       }
       meta.deedStats = restoreDeedStats(s.deedStats);
       meta.reliquary = restoreReliquaryState(s.reliquary);
+      // The ONE ClaudeStone deck load path: a deck that stopped being legal as
+      // the catalog changed is dropped here rather than reaching a match.
+      meta.cards = sanitizeCardDeckState(s.cards, CARD_CATALOG);
       deedsMod.unionLegacyMilestones(meta);
       deedsMod.recomputeRenown(meta);
       // The saved title re-applies through the same validator the setter
@@ -3662,7 +3680,7 @@ export class Sim {
     bgProposalMod.bgProposalDisconnect(this.ctx, pid);
     bgMod.bgDequeue(this.ctx, pid);
     bgMod.bgResolveDesertion(this.ctx, pid);
-    // Card Duel: leaving the queue is free; a live match is forfeited to the
+    // ClaudeStone: leaving the queue is free; a live match is forfeited to the
     // opponent (mirrors the disconnect/jail paths in server/game.ts, and keeps
     // the offline Sim / headless env from leaking cardDuels/cardDuelQueue
     // entries for a departed pid).
@@ -4062,6 +4080,12 @@ export class Sim {
       ...(() => {
         const reliquary = serializeReliquaryState(meta.reliquary);
         return reliquary ? { reliquary } : {};
+      })(),
+      // Saved decks: absent while the player has built none, so a character
+      // who never opened the builder stays byte-equal to a pre-system save.
+      ...(() => {
+        const cards = serializeCardDeckState(meta.cards);
+        return cards ? { cards } : {};
       })(),
     };
     return sanitizeRemovedZone1Content(state).state;
@@ -6048,6 +6072,7 @@ export class Sim {
     this.updateDuels();
     lap?.('duels');
     this.updateCardDuelQueue();
+    this.updateCardDuelBots();
     this.updateCardDuelDeadlines();
     lap?.('cardDuel');
     this.updateArena();
@@ -10328,10 +10353,14 @@ export class Sim {
   }
 
   // -------------------------------------------------------------------------
-  // Card Duel minigame (src/sim/social/card_duel.ts): thin delegates for the
+  // ClaudeStone minigame (src/sim/social/card_duel.ts): thin delegates for the
   // IWorld card_minigame facet.
   private updateCardDuelQueue(): void {
     cardDuelMod.updateCardDuelQueue(this.ctx);
+  }
+
+  private updateCardDuelBots(): void {
+    cardDuelBots.updateCardDuelBots(this.ctx);
   }
 
   private updateCardDuelDeadlines(): void {
@@ -10350,12 +10379,28 @@ export class Sim {
     return cardDuelMod.isQueuedForCardMinigame(this.ctx, pid);
   }
 
+  startCardDuelAgainstOpponent(opponentId: string, pid?: number): void {
+    cardDuelBots.startCardDuelAgainstOpponent(this.ctx, opponentId, pid);
+  }
+
+  saveCardDeck(name: string, cardIds: readonly string[], pid?: number): void {
+    cardDeckCmd.saveCardDeck(this.ctx, name, cardIds, pid);
+  }
+
+  selectCardDeck(name: string, pid?: number): void {
+    cardDeckCmd.selectCardDeck(this.ctx, name, pid);
+  }
+
+  deleteCardDeck(name: string, pid?: number): void {
+    cardDeckCmd.deleteCardDeck(this.ctx, name, pid);
+  }
+
   cardDuelMatchFor(pid: number): CardDuelMatch | null {
     return cardDuelMod.cardDuelMatchFor(this.ctx, pid);
   }
 
-  playCardInDuel(cardValue: number, pid?: number): void {
-    cardDuelMod.playCardInDuel(this.ctx, cardValue, pid);
+  playCardInDuel(cardIid: number, pid?: number): void {
+    cardDuelMod.playCardInDuel(this.ctx, cardIid, pid);
   }
 
   // Player-issuable forfeit of a LIVE match (distinct from leaveCardDuelQueue,

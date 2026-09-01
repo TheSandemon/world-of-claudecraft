@@ -18,7 +18,7 @@ that order. Modules, in cascade order:
 | `tokens` | `tokens.css` | `:root` design tokens + `--color-*` / `--fx-*` defaults |
 | `base` | `base.css` | element + reset + base-tier glyph styling + the a11y skip/forced-colors/print sections |
 | `layout` | `layout.css` | the generic `.window` centering/shell |
-| `components` | `hud.css`, `components.css` | in-world HUD chrome; feature-window bodies (BOTH target `@layer components`; `components.css` is imported last so its window bodies win same-layer ties) |
+| `components` | `hud.css`, `components.css`, `cards.css` | in-world HUD chrome; feature-window bodies; the ClaudeStone sheet (ALL target `@layer components`; `components.css` is imported after `hud.css` so its window bodies win same-layer ties, and `cards.css` last) |
 | `hud` | (reserved, empty) | declared in the order but unused; `hud.css` targets `@layer components`, not this slot |
 | `shell` | `shell.css` | desktop pre-game shell + char-select |
 | `hud-mobile` | `hud.mobile.css` | the in-game mobile-touch block, ordered AFTER `shell` so in-game mobile overrides of pre-game shell elements win |
@@ -52,6 +52,15 @@ the throw (#2499, #2502).
   (inside `@layer components`); in-world HUD chrome in `hud.css`; pre-game shell in
   `shell.css`; mobile-touch overrides in `hud.mobile.css`. Never grow the `.extra` files
   with shared styling (they are per-entry).
+- **`cards.css` is the ClaudeStone sheet**, its own module rather than a section of
+  `components.css` because the minigame is a whole self-contained visual grammar (the duel
+  window, the table, the round theater, the deck builder, and the card face at its three
+  sizes) and `components.css` is a named extraction target that must not grow. ClaudeStone
+  rules go here; it is not a general overflow for `components.css`. It also carries the
+  ClaudeStone TOUCH and SHORT-VIEWPORT layout, because those rules are about the TABLE
+  reflowing (the stage goes side by side, the hand becomes a rail), not about where the
+  window sits; window PLACEMENT on mobile stays in `hud.mobile.css` with every other
+  window.
 - **Every new `.window` id needs a deliberate mobile decision:** a real `body.mobile-touch`
   pin/size rule (join the `mobile sheet base` section in `hud.mobile.css`) or a reasoned
   entry in `MOBILE_WINDOW_EXCEPTIONS` in `tests/mobile_window_coverage.test.ts`, which

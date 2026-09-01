@@ -1,23 +1,51 @@
-// The Card Duel minigame: a class-agnostic 1v1 push-your-luck card game,
-// hosted by the Card Master NPC (src/sim/content/card_master.ts). Deliberately
-// NOT built on top of src/sim/social/duel.ts's HP-based DuelState: that system
-// is combat-coupled (forfeit-by-death, HP dueling range, ccDr clearing) and
-// growing it for a non-combat minigame would be the wrong seam. This module
-// owns its own live match state on SimContext, following the same "own module
-// behind the seam" shape as arena.ts / duel.ts.
+// The ClaudeStone minigame: a class-agnostic 1v1 card game, hosted by the Card
+// Master NPC (src/sim/content/card_master.ts). Deliberately NOT built on top of
+// src/sim/social/duel.ts's HP-based DuelState: that system is combat-coupled
+// (forfeit-by-death, HP dueling range, ccDr clearing) and growing it for a
+// non-combat minigame would be the wrong seam. This module owns its own live
+// match state on SimContext, following the same "own module behind the seam"
+// shape as arena.ts / duel.ts.
+//
+// The RULES live in src/sim/minigames/card_duel/ and this module orchestrates
+// them: it owns the queue, the seats, the clock, the emits, and the deed
+// credit, and it calls resolveCardRound for everything that decides a round.
 //
 // Determinism: every card draw goes through ctx.rng (never Math.random).
 // Server-authoritative: rounds resolve here once both sides have played, never
-// client-side.
+// client-side, and no effect is ever computed by a client.
 
+import {
+  buildOpponentDeck,
+  CARD_CATALOG,
+  type CardOpponentDef,
+  DEFAULT_DECK_LIST,
+} from '../content/cards';
 import { cardMasterInRange } from '../instances/card_master';
 import {
-  type CardHandState,
+  activeCardEffects,
+  activeDeckEntries,
+  botCommitDelayTicks,
+  buildBoard,
+  CARD_DUEL_MAX_ROUNDS,
+  CARD_DUEL_ROUND_DEADLINE_S,
+  CARD_DUEL_START_HP,
+  type CardBotTier,
+  type CardDeckEntry,
+  type CardInstance,
+  type CardMatchState,
+  type CardParkedDuration,
+  type CardSeat,
+  cardNarrationSeconds,
   createCardHand,
-  drawOne,
-  playCard as playCardFromHand,
-} from '../minigames/card_hand';
+  createMatchState,
+  playCardByInstance,
+  projectCardValue,
+  resolveCardRound,
+  resolveCardTextValues,
+  validateDeck,
+} from '../minigames/card_duel';
 import type { SimContext } from '../sim_context';
+import { type CardDuelSummaryEvent, TICK_RATE } from '../types';
 import {
   type CardDuelQueue,
   isQueuedForCardDuel,
@@ -26,31 +54,118 @@ import {
   tryPairCardDuel,
 } from './card_duel_queue';
 
-// Best-of-3 rounds; first to 2 round wins takes the match.
-export const CARD_DUEL_ROUNDS_TO_WIN = 2;
-
-// A player who never plays a card (opponent gone idle / linkdead-but-not-yet-
-// dropped) forfeits the current round, and the match, once this much sim time
-// has passed since the round started. Keeps a live match from deadlocking the
-// other side forever (see leaveCardMinigameEntirely / forfeitCardDuelMatch for
-// the player-issued escape).
-export const CARD_DUEL_ROUND_DEADLINE_S = 90;
+// The match-shape constants now live in the engine (minigames/card_duel/rules.ts),
+// so the standalone slice and the bot read the same numbers this orchestrator
+// does. Re-exported here because this module is where every caller and every
+// pinned test resolves them.
+export {
+  CARD_DUEL_MAX_ROUNDS,
+  CARD_DUEL_ROUND_DEADLINE_S,
+  CARD_DUEL_START_HP,
+} from '../minigames/card_duel';
 
 export interface CardDuelMatch {
   a: number;
   b: number;
-  handA: CardHandState;
-  handB: CardHandState;
-  playedA: number | null;
-  playedB: number | null;
-  roundsA: number;
-  roundsB: number;
+  /** The engine's live match: both seats' zones, modifiers, counters, history. */
+  state: CardMatchState;
   roundDeadline: number; // ctx.time this round's AFK deadline expires
+  /**
+   * ctx.time the last round finishes being TOLD, and the next round opens.
+   *
+   * The round clock is stopped for this window (roundDeadline starts counting
+   * from it), so no think time is spent watching the round a player has already
+   * finished playing. It is also the INPUT LOCK: a card played inside the
+   * window is refused (see playCardInDuel), so the round being told cannot be
+   * interrupted by the next one. The two go together, which is why they are
+   * one number: play is closed for exactly as long as the clock is held, and
+   * the hand unlocks the instant the clock starts counting again.
+   * Zero before the first round resolves.
+   */
+  resolvingUntil: number;
+  /**
+   * Whether ANY card has been played this match. The discriminator between a
+   * recorded DRAW (both clocks expired, cards were played) and an unrecorded
+   * void (both clocks expired, nothing was ever played). Deliberately NOT the
+   * same test as the manual-forfeit void, which turns on whether a round has
+   * been WON; conflating the two is the likely bug here.
+   */
+  anyCardPlayed: boolean;
+  /**
+   * The computer opponent sitting in seat B, when this is a bot match. A bot
+   * match runs the SHIPPING code (same startCardDuelMatch, same resolve.ts);
+   * only the pairing step is bypassed.
+   */
+  bot: {
+    opponentId: string;
+    tier: CardBotTier;
+    /** ctx.tickCount at which the bot commits this round. Counted in TICKS,
+     *  never wall clock, so the offline Sim, the server, and the headless env
+     *  agree. */
+    commitAt: number;
+  } | null;
+}
+
+/** One card as the owning player's client sees it. */
+export interface CardMinigameCard {
+  iid: number;
+  cardId: string;
+  value: number;
+  /**
+   * The value change this card would carry into the comparison if it were
+   * played this round, signed, and absent when it is zero. This is the
+   * PROJECTION (`projectCardValue`), not the parked-modifier badge: it also
+   * runs the card's own pre-comparison effects, their conditions, clamps and
+   * spent trigger limits, which is what makes a "gets +21 if you have at least
+   * 1 Pack" card read as what it is worth rather than as its printed 2.
+   *
+   * It is the same number the bots choose on (`projectHand`), which is the
+   * reason it moved: the opponent was picking against the projected value
+   * while the player was shown the printed one.
+   *
+   * Still a PREVIEW, never a promise. The projection is computed against a
+   * board whose other seat is EMPTY, because the opponent's card is genuinely
+   * unknown at selection time, and effects aimed at `opponentCard` are left
+   * out of it, so this leaks nothing hidden. Sent for the viewer's OWN hand
+   * only.
+   */
+  projectedDelta?: number;
+  /**
+   * The numbers this card's rules sentence needs, resolved against the LIVE
+   * match. Sent for the viewer's own hand so a scaling card ("+1 for every two
+   * Beasts you have played") states what it would actually apply right now,
+   * rather than the client re-deriving it from match state it deliberately
+   * does not have. Absent for a card with no placeholders to fill.
+   */
+  textValues?: Record<string, number>;
 }
 
 // The IWorldCardMinigame read-surface shape (src/world_api/card_minigame.ts
 // imports this rather than sim depending on world_api, per the IWorld seam
 // direction: world_api reads sim types, never the reverse).
+/** The viewer's saved decks, for the builder. Names only: a deck's twenty
+ *  cards are sent when the builder asks to edit that deck, not on every
+ *  snapshot. */
+export interface CardMinigameDecks {
+  names: string[];
+  active: string;
+  /** The active deck's cards, so the builder opens on something real without
+   *  a second round trip. */
+  activeCards: string[];
+}
+
+/** One parked modifier still in play, for the table's effects row. The client
+ *  reads the SOURCE CARD's name and rules sentence as the explanation, so no
+ *  second copy of the wording rides the wire. */
+export interface CardMinigameEffect {
+  /** True when it rides the viewer's own cards. */
+  mine: boolean;
+  cardId: string;
+  /** The signed constant it carries, or null for a flag effect. */
+  amount: number | null;
+  duration: CardParkedDuration;
+}
+
 export interface CardMinigameInfo {
   queued: boolean;
   // false when there is no other player in the world to ever pair against
@@ -58,14 +173,72 @@ export interface CardMinigameInfo {
   // hidden/disabled rather than let the player queue forever with no
   // feedback (finding: offline queue never resolves).
   available: boolean;
+  decks: CardMinigameDecks;
   match: {
-    opponent: { pid: number; name: string };
-    hand: number[];
+    /**
+     * `name` is a PLAYER name and is empty for one of the Card Master's
+     * regulars, which has no player meta at all. `opponentId` is the content
+     * id of that regular, present only for a bot match: the sim stays
+     * language-agnostic, so the client resolves the display name from the id
+     * (src/ui/card_i18n.ts) rather than receiving English on the wire.
+     */
+    opponent: { pid: number; name: string; opponentId?: string };
+    hand: CardMinigameCard[];
     deckCount: number;
     discardCount: number;
     myRounds: number;
     opponentRounds: number;
+    /** Health, the thing that decides the match. Round wins above are a
+     *  readout: cards read them, nothing ends on them. */
+    myHp: number;
+    opponentHp: number;
+    maxHp: number;
+    round: number;
     waitingOnOpponent: boolean;
+    /** Seconds left on this round's clock, floored at zero. */
+    secondsLeft: number;
+    /**
+     * The card this viewer has locked in for this round, or null before they
+     * commit. Their OWN card, so revealing it to them leaks nothing: it is what
+     * puts a played card on the table between the commit and the reveal, which
+     * is where a card physically goes when it leaves the hand.
+     */
+    myPlayedCard: CardMinigameCard | null;
+    /**
+     * True while the last round is still being TOLD. The round clock is stopped
+     * for this window, so a client shows the clock as held rather than counting
+     * (a number that had frozen with no explanation would read as a stall).
+     */
+    resolving: boolean;
+    /** Seconds left of that telling, floored at zero. */
+    resolveSecondsLeft: number;
+    /**
+     * True once the opponent has locked a card in for this round. The card
+     * itself stays hidden (simultaneous hidden selection is the game), but
+     * WHOSE commit the round is waiting on is public: without it the pause
+     * before a reveal is indistinguishable from a stalled client.
+     */
+    opponentCommitted: boolean;
+    /**
+     * How many cards the opponent is holding. Public by the rules (a hand
+     * refills to four and a commit takes one), and the thing the revealed set
+     * below hangs off: without it there is no opponent hand on the table for a
+     * revealed card to be revealed IN.
+     */
+    opponentHandCount: number;
+    /** Parked modifiers still in play, both sides, in creation order. */
+    activeEffects: CardMinigameEffect[];
+    myCounters: Record<string, number>;
+    opponentCounters: Record<string, number>;
+    /**
+     * Opponent cards this viewer is ENTITLED to see, because a reveal effect
+     * fired. Everything else about the opponent's hand, deck, and draws is
+     * absent from this projection rather than hidden client-side, so no
+     * tampering or packet inspection can recover it.
+     */
+    opponentRevealed: CardMinigameCard[];
+    /** Face values the opponent has played this match, public by the rules. */
+    opponentPlayedValues: number[];
   } | null;
 }
 
@@ -75,6 +248,15 @@ export function inCardDuel(ctx: SimContext, pid: number): boolean {
 
 export function cardDuelMatchFor(ctx: SimContext, pid: number): CardDuelMatch | null {
   return ctx.cardDuels.get(pid) ?? null;
+}
+
+/** Which seat a pid holds in a match. */
+export function seatOf(match: CardDuelMatch, pid: number): CardSeat {
+  return pid === match.a ? 'a' : 'b';
+}
+
+function sideFor(match: CardDuelMatch, pid: number) {
+  return pid === match.a ? match.state.a : match.state.b;
 }
 
 // At least one other QUEUEABLE HUMAN must be present to ever pair off the
@@ -100,11 +282,11 @@ export function joinCardMinigameQueue(ctx: SimContext, pid?: number): void {
     return;
   }
   if (!cardMasterInRange(ctx, r.e)) {
-    ctx.error(r.meta.entityId, 'You must be at the Card Master to queue for a Card Duel.');
+    ctx.error(r.meta.entityId, 'You must be at the Card Master to queue for a ClaudeStone match.');
     return;
   }
   if (!cardMinigameAvailable(ctx, r.meta.entityId)) {
-    ctx.error(r.meta.entityId, 'Card Duel requires another player online.');
+    ctx.error(r.meta.entityId, 'ClaudeStone requires another player online.');
     return;
   }
   const result = joinCardDuelQueue(
@@ -117,15 +299,15 @@ export function joinCardMinigameQueue(ctx: SimContext, pid?: number): void {
     // call) so the localization_fixes S3 guard's literal-argument scraper
     // actually sees both strings.
     if (result.reason === 'already_in_duel') {
-      ctx.error(r.meta.entityId, 'You are already in a Card Duel.');
+      ctx.error(r.meta.entityId, 'You are already in a ClaudeStone match.');
     } else {
-      ctx.error(r.meta.entityId, 'You are already queued for a Card Duel.');
+      ctx.error(r.meta.entityId, 'You are already queued for a ClaudeStone match.');
     }
     return;
   }
   ctx.emit({
     type: 'log',
-    text: 'You queue for a Card Duel.',
+    text: 'You queue for a ClaudeStone match.',
     color: '#fa6',
     pid: r.meta.entityId,
   });
@@ -137,7 +319,7 @@ export function leaveCardMinigameQueue(ctx: SimContext, pid?: number): void {
   if (leaveCardDuelQueue(ctx.cardDuelQueue, r.meta.entityId)) {
     ctx.emit({
       type: 'log',
-      text: 'You leave the Card Duel queue.',
+      text: 'You leave the ClaudeStone queue.',
       color: '#fa6',
       pid: r.meta.entityId,
     });
@@ -148,17 +330,53 @@ export function isQueuedForCardMinigame(ctx: SimContext, pid: number): boolean {
   return isQueuedForCardDuel(ctx.cardDuelQueue, pid);
 }
 
-function startCardDuelMatch(ctx: SimContext, a: number, b: number): void {
+/**
+ * The deck a seat brings to a match, validated HERE rather than trusted from
+ * wherever it was stored: a deck that was legal when saved can become illegal
+ * as the catalog changes. An illegal deck is replaced with the default and the
+ * mismatch logged to the dev channel; the match still starts.
+ */
+export function deckForPlayer(
+  deck: readonly CardDeckEntry[] | undefined,
+): readonly CardDeckEntry[] {
+  if (!deck) return DEFAULT_DECK_LIST;
+  const verdict = validateDeck(deck, CARD_CATALOG);
+  if (verdict.ok) return deck;
+  console.warn(
+    `[card duel] illegal saved deck (${verdict.reason} ${verdict.detail}); using default`,
+  );
+  return DEFAULT_DECK_LIST;
+}
+
+/** Seats a match. Exported for the bots sibling, which starts one directly
+ *  against a named regular rather than off the queue. */
+export function startCardDuelMatch(
+  ctx: SimContext,
+  a: number,
+  b: number,
+  opponent?: CardOpponentDef,
+): void {
+  const deckA = deckForPlayer(activeDeckEntries(ctx.players.get(a)?.cards, CARD_CATALOG));
+  const deckB = opponent
+    ? deckForPlayer(buildOpponentDeck(opponent.favours))
+    : deckForPlayer(activeDeckEntries(ctx.players.get(b)?.cards, CARD_CATALOG));
   const match: CardDuelMatch = {
     a,
     b,
-    handA: createCardHand(ctx.rng),
-    handB: createCardHand(ctx.rng),
-    playedA: null,
-    playedB: null,
-    roundsA: 0,
-    roundsB: 0,
+    state: createMatchState(
+      createCardHand(ctx.rng, 'a', deckA),
+      createCardHand(ctx.rng, 'b', deckB),
+    ),
     roundDeadline: ctx.time + CARD_DUEL_ROUND_DEADLINE_S,
+    resolvingUntil: 0,
+    anyCardPlayed: false,
+    bot: opponent
+      ? {
+          opponentId: opponent.id,
+          tier: opponent.difficulty,
+          commitAt: ctx.tickCount + botCommitDelayTicks(opponent.difficulty, ctx.rng),
+        }
+      : null,
   };
   ctx.cardDuels.set(a, match);
   ctx.cardDuels.set(b, match);
@@ -177,7 +395,9 @@ function startCardDuelMatch(ctx: SimContext, a: number, b: number): void {
     // unreachable, so it stays handled rather than asserted away.
     ctx.emit({
       type: 'log',
-      text: opponent ? `Your Card Duel against ${opponent.name} begins!` : 'Your Card Duel begins!',
+      text: opponent
+        ? `Your ClaudeStone match against ${opponent.name} begins!`
+        : 'Your ClaudeStone match begins!',
       color: '#fa6',
       pid,
     });
@@ -213,11 +433,11 @@ export function updateCardDuelQueue(ctx: SimContext): void {
   }
 }
 
-// Sweeps every live match for an expired per-round AFK deadline and forfeits
-// the side that never played (or, if neither played, side A deterministically),
-// so an idle opponent cannot deadlock the other side forever. Called every
-// tick from Sim, under its own profiler lap marker (distinct from the queue
-// pairing phase, since it walks every live match).
+// Sweeps every live match for an expired per-round clock. ONE clock governs
+// everything: thinking time and a dropped connection alike, for both sides at
+// once (selection is simultaneous, so "your turn" means the round window).
+// Called every tick from Sim, under its own profiler lap marker (distinct from
+// the queue pairing phase, since it walks every live match).
 export function updateCardDuelDeadlines(ctx: SimContext): void {
   const seen = new Set<number>();
   for (const match of ctx.cardDuels.values()) {
@@ -225,14 +445,14 @@ export function updateCardDuelDeadlines(ctx: SimContext): void {
     seen.add(match.a);
     seen.add(match.b);
     if (ctx.time < match.roundDeadline) continue;
-    const aPlayed = match.playedA !== null;
-    const bPlayed = match.playedB !== null;
+    const aPlayed = match.state.a.playedThisRound !== null;
+    const bPlayed = match.state.b.playedThisRound !== null;
     if (!aPlayed && !bPlayed) {
-      // Both sides idle: nobody earned a win, so void the match rather than
-      // handing side A a free deed credit (finding: both-idle AFK sweep
-      // handed out a win and the deed for a match where zero cards were
-      // played; farmable by two accounts queueing and going AFK together).
-      voidMatch(ctx, match);
+      // Both clocks expired. If cards were played earlier in the match it is a
+      // recorded DRAW; if nothing was ever played it is unrecorded, so nobody
+      // can farm a result out of two accounts queueing and going AFK together.
+      if (match.anyCardPlayed) drawMatch(ctx, match);
+      else voidMatch(ctx, match);
       continue;
     }
     // Whichever side has not played this round forfeits.
@@ -241,63 +461,94 @@ export function updateCardDuelDeadlines(ctx: SimContext): void {
   }
 }
 
-function handFor(match: CardDuelMatch, pid: number): CardHandState {
-  return pid === match.a ? match.handA : match.handB;
-}
-
-export function playCardInDuel(ctx: SimContext, cardValue: number, pid?: number): void {
+export function playCardInDuel(ctx: SimContext, cardIid: number, pid?: number): void {
   const r = ctx.resolve(pid);
   if (!r) return;
   const match = ctx.cardDuels.get(r.meta.entityId);
   if (!match) {
-    ctx.error(r.meta.entityId, 'You are not in a Card Duel.');
+    ctx.error(r.meta.entityId, 'You are not in a ClaudeStone match.');
     return;
   }
   // Mirrors joinCardMinigameQueue's join-time gate: a player who dies mid-match
-  // (Card Duel needs no proximity to play, so death is the only way the sim can
+  // (ClaudeStone needs no proximity to play, so death is the only way the sim can
   // catch this) cannot keep playing as a ghost. The other side is not left
-  // hanging: the existing per-round AFK deadline forfeits the dead side exactly
-  // like any other unresponsive opponent, so no separate death-triggers-forfeit
-  // path is needed here.
+  // hanging: the existing per-round clock forfeits the dead side exactly like
+  // any other unresponsive opponent, so no separate death-triggers-forfeit path
+  // is needed here.
   if (r.e.dead) {
     ctx.error(r.meta.entityId, "You can't do that while dead.");
     return;
   }
-  const isA = r.meta.entityId === match.a;
-  if ((isA && match.playedA !== null) || (!isA && match.playedB !== null)) {
+  // A card played while the last round is still being TOLD is REFUSED. This
+  // used to be accepted, on the theory that eating a click to protect an
+  // animation was the worse trade; playing it proved otherwise. The round that
+  // was still resolving (health coming off, effects landing, the cards being
+  // swept away) would be interrupted mid-sentence by the next one, so a player
+  // could neither see what had just happened to them nor tell whether their
+  // click had registered. The clock is stopped for exactly this window, so the
+  // refusal costs no think time: the hand unlocks at the same instant the
+  // clock starts counting again.
+  if (ctx.time < match.resolvingUntil) {
+    ctx.error(r.meta.entityId, 'Wait for the round to finish playing out.');
+    return;
+  }
+  const side = sideFor(match, r.meta.entityId);
+  if (side.playedThisRound !== null) {
     ctx.error(r.meta.entityId, 'You already played a card this round.');
     return;
   }
-  const played = playCardFromHand(handFor(match, r.meta.entityId), cardValue);
+  // The one authoritative check that the sender actually holds the card it
+  // named: an instance id is validated against that seat's own hand, and a
+  // miss is refused rather than resolved into an arbitrary card of that value.
+  const played = playCardByInstance(side.cards, cardIid);
   if (played === null) {
     ctx.error(r.meta.entityId, "You don't hold that card.");
     return;
   }
-  if (isA) match.playedA = played;
-  else match.playedB = played;
+  side.playedThisRound = played;
+  match.anyCardPlayed = true;
   ctx.emit({ type: 'cardPlayed', pid: r.meta.entityId });
-  if (match.playedA !== null && match.playedB !== null) {
+  if (match.state.a.playedThisRound !== null && match.state.b.playedThisRound !== null) {
     resolveRound(ctx, match);
   }
 }
 
-function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
-  const a = match.playedA as number;
-  const b = match.playedB as number;
-  if (a > b) match.roundsA++;
-  else if (b > a) match.roundsB++;
-  // a === b: a push, neither side scores.
-  match.playedA = null;
-  match.playedB = null;
-  const reshuffledA = drawOne(ctx.rng, match.handA);
-  const reshuffledB = drawOne(ctx.rng, match.handB);
-  match.roundDeadline = ctx.time + CARD_DUEL_ROUND_DEADLINE_S;
+/** Resolves the round both seats have committed to. Exported for the bots
+ *  sibling, whose commit can be the second of the two. */
+export function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
+  const playedA = match.state.a.playedThisRound as CardInstance;
+  const playedB = match.state.b.playedThisRound as CardInstance;
+  const res = resolveCardRound(match.state, CARD_CATALOG, ctx.rng, {
+    onOverflow: (message) => {
+      // Dev channel only: this is a content bug (a cyclic card pair), never
+      // player-facing text, so it stays English and is not matched client-side.
+      console.warn(`[card duel] ${message}`);
+    },
+  });
+  // The round clock does NOT run while the round is being told. The telling is
+  // as long as the round earned (one beat per effect that did something), both
+  // sides are held for exactly that, and the next round's think time starts
+  // after it. A player must never lose seconds to a story about a round they
+  // have already finished playing.
+  const narration = cardNarrationSeconds(res);
+  match.resolvingUntil = ctx.time + narration;
+  match.roundDeadline = match.resolvingUntil + CARD_DUEL_ROUND_DEADLINE_S;
+  if (match.bot) {
+    // The bot waits out the same telling before it starts thinking, or it would
+    // commit the next round into a table still showing the last one.
+    match.bot.commitAt =
+      ctx.tickCount +
+      Math.ceil(narration * TICK_RATE) +
+      botCommitDelayTicks(match.bot.tier, ctx.rng);
+  }
   for (const pid of [match.a, match.b]) {
-    const mine = pid === match.a ? a : b;
-    const theirs = pid === match.a ? b : a;
+    const isA = pid === match.a;
+    const mine = isA ? res.aValue : res.bValue;
+    const theirs = isA ? res.bValue : res.aValue;
+    const mySeat: CardSeat = isA ? 'a' : 'b';
     ctx.emit({
       type: 'log',
-      text: `Card Duel round: you played ${mine}, opponent played ${theirs}.`,
+      text: `ClaudeStone round: you played ${mine}, opponent played ${theirs}.`,
       color: '#fa6',
       pid,
     });
@@ -305,16 +556,89 @@ function resolveRound(ctx: SimContext, match: CardDuelMatch): void {
       type: 'cardRoundResolved',
       mine,
       theirs,
+      mineBase: isA ? playedA.value : playedB.value,
+      theirsBase: isA ? playedB.value : playedA.value,
+      // The two card IDENTITIES, so the reveal can show the cards that
+      // actually clashed rather than two bare numbers. Both are public the
+      // instant the round resolves: the rules reveal every played card.
+      mineCardId: isA ? playedA.cardId : playedB.cardId,
+      theirsCardId: isA ? playedB.cardId : playedA.cardId,
       outcome: mine > theirs ? 'win' : mine < theirs ? 'lose' : 'push',
-      reshuffled: pid === match.a ? reshuffledA : reshuffledB,
+      reshuffled: isA ? res.refillA.reshuffled : res.refillB.reshuffled,
+      // What the round DID, rewritten from seats to this viewer's point of
+      // view, so a client can narrate the cause of every number it shows.
+      steps: res.log.map((step) => ({
+        side: step.seat === mySeat ? ('mine' as const) : ('theirs' as const),
+        cardId: step.source,
+        effect: step.effect,
+        ...(step.target
+          ? { target: step.target === mySeat ? ('mine' as const) : ('theirs' as const) }
+          : {}),
+        ...(step.amount === null ? {} : { amount: step.amount }),
+        ...(step.valueAfter === null ? {} : { valueAfter: step.valueAfter }),
+      })),
+      damage: res.damage,
+      ...(res.winner === null
+        ? {}
+        : { damageTo: res.winner === mySeat ? ('theirs' as const) : ('mine' as const) }),
+      myHp: isA ? res.aHp : res.bHp,
+      theirHp: isA ? res.bHp : res.aHp,
+      maxHp: CARD_DUEL_START_HP,
       pid,
     });
   }
-  if (match.roundsA >= CARD_DUEL_ROUNDS_TO_WIN) {
-    endCardDuelMatch(ctx, match, match.a);
-  } else if (match.roundsB >= CARD_DUEL_ROUNDS_TO_WIN) {
-    endCardDuelMatch(ctx, match, match.b);
+  // Health decides the match. A seat at zero loses; both at zero in the same
+  // round (only reachable if a future rule ever damages the winner too) is the
+  // same draw the double-timeout is.
+  const aDead = match.state.a.hp <= 0;
+  const bDead = match.state.b.hp <= 0;
+  if (aDead && bDead) {
+    drawMatch(ctx, match);
+    return;
   }
+  if (aDead) {
+    endCardDuelMatch(ctx, match, match.b);
+    return;
+  }
+  if (bDead) {
+    endCardDuelMatch(ctx, match, match.a);
+    return;
+  }
+  // The bound on a match neither deck can finish: at the cap the healthier seat
+  // takes it, and equal health is a draw. Without this, two seats trading
+  // one-point rounds hold a match slot open forever.
+  if (match.state.round > CARD_DUEL_MAX_ROUNDS) {
+    if (match.state.a.hp === match.state.b.hp) drawMatch(ctx, match);
+    else endCardDuelMatch(ctx, match, match.state.a.hp > match.state.b.hp ? match.a : match.b);
+  }
+}
+
+/**
+ * What the match came to, from one seat's point of view.
+ *
+ * Built HERE, at the end, rather than left for the client to accumulate from
+ * the round events it happened to receive: a player who reconnected mid-match
+ * would otherwise get a summary of the half they watched. The summary is a
+ * report, never a rule input, and it carries no English (the opponent is a
+ * player name or a content id, exactly like the seat band).
+ */
+function matchSummaryFor(match: CardDuelMatch, pid: number, ctx: SimContext): CardDuelSummaryEvent {
+  const isA = pid === match.a;
+  const me = isA ? match.state.a : match.state.b;
+  const them = isA ? match.state.b : match.state.a;
+  const oppMeta = ctx.players.get(isA ? match.b : match.a);
+  return {
+    // `round` counts the one about to start, so the finished count is one less.
+    rounds: Math.max(0, match.state.round - 1),
+    myHp: me.hp,
+    theirHp: them.hp,
+    maxHp: CARD_DUEL_START_HP,
+    damageDealt: me.damageDealt,
+    damageTaken: them.damageDealt,
+    ...(me.bestHit ? { bestHit: { ...me.bestHit } } : {}),
+    ...(match.bot ? { opponentId: match.bot.opponentId } : {}),
+    ...(oppMeta ? { opponentName: oppMeta.name } : {}),
+  };
 }
 
 function endCardDuelMatch(ctx: SimContext, match: CardDuelMatch, winnerPid: number): void {
@@ -323,7 +647,11 @@ function endCardDuelMatch(ctx: SimContext, match: CardDuelMatch, winnerPid: numb
   const loserPid = winnerPid === match.a ? match.b : match.a;
   const winnerMeta = ctx.players.get(winnerPid);
   const loserMeta = ctx.players.get(loserPid);
-  if (winnerMeta) ctx.bumpDeedStat(winnerMeta, 'cardDuelsWon', 1);
+  // A bot match credits NO PvP progress. `pvp_card_duel_first_win` is a pvp
+  // deed reading cardDuelsWon, so crediting a win over a Novice would make the
+  // deed a thirty-second formality and the category a lie. Bot-specific
+  // rewards, if they are ever wanted, take their own stat and their own deeds.
+  if (winnerMeta && !match.bot) ctx.bumpDeedStat(winnerMeta, 'cardDuelsWon', 1);
   // Distinct fully-literal messages for the no-opponent-meta arm (the real
   // edge case named by review: the opponent's meta is gone because they left
   // mid-match, e.g. removePlayer ran between their last card and this round
@@ -337,8 +665,8 @@ function endCardDuelMatch(ctx: SimContext, match: CardDuelMatch, winnerPid: numb
       ctx.emit({
         type: 'log',
         text: loserMeta
-          ? `You win the Card Duel against ${loserMeta.name}!`
-          : 'You win the Card Duel!',
+          ? `You win the ClaudeStone match against ${loserMeta.name}!`
+          : 'You win the ClaudeStone match!',
         color: '#fa6',
         pid,
       });
@@ -346,33 +674,44 @@ function endCardDuelMatch(ctx: SimContext, match: CardDuelMatch, winnerPid: numb
       ctx.emit({
         type: 'log',
         text: winnerMeta
-          ? `You lose the Card Duel against ${winnerMeta.name}.`
-          : 'You lose the Card Duel.',
+          ? `You lose the ClaudeStone match against ${winnerMeta.name}.`
+          : 'You lose the ClaudeStone match.',
         color: '#fa6',
         pid,
       });
     }
-    ctx.emit({ type: 'cardDuelMatchEnd', won: pid === winnerPid, pid });
+    ctx.emit({
+      type: 'cardDuelMatchEnd',
+      won: pid === winnerPid,
+      summary: matchSummaryFor(match, pid, ctx),
+      pid,
+    });
   }
 }
 
 // Shared forfeit resolution for both the player-issued forfeit action and the
-// AFK-deadline sweep: the forfeiting side loses, the other side wins and is
-// credited the deed progress, matching how PvP disconnects/desertion are
-// treated elsewhere (arena/Vale Cup desertion). A forfeit used to credit
-// nobody, letting a player one round from losing deny the opponent the deed
-// by disconnecting; that is now fixed here.
+// clock sweep: the forfeiting side loses, the other side wins and is credited
+// the deed progress, matching how PvP disconnects/desertion are treated
+// elsewhere (arena/Vale Cup desertion). A forfeit used to credit nobody,
+// letting a player one round from losing deny the opponent the deed by
+// disconnecting; that is now fixed here.
 //
 // A forfeit before EITHER side has won a round credits nobody: this is the
 // same farm hole voidMatch's own comment names (two accounts queueing and
 // going AFK together for a free deed credit), just reached through the
-// player-issuable card_forfeit command instead of the 90s AFK deadline, and
+// player-issuable card_forfeit command instead of the round clock, and
 // strictly EASIER (no wait at all). Route that case through voidMatch instead
-// of the win/lose messaging below, making the manual-forfeit and AFK-timeout
-// paths consistent; a forfeit after at least one round has been won still
-// credits the non-forfeiting side normally.
+// of the win/lose messaging below, making the manual-forfeit and timeout paths
+// consistent; a forfeit after at least one round has been won still credits
+// the non-forfeiting side normally.
 function forfeitMatch(ctx: SimContext, match: CardDuelMatch, forfeiterPid: number): void {
-  if (match.roundsA + match.roundsB === 0) {
+  // "Nothing is at stake yet" is now a HEALTH test rather than a round-wins
+  // one, which is the same question asked against the new win condition: no
+  // damage dealt means nobody is closer to winning, so the forfeit credits
+  // nobody. It also keeps the anti-farm rule at least as tight as it was (a
+  // round win with any margin at all takes health, and a round that took no
+  // health decided nothing).
+  if (match.state.a.hp >= CARD_DUEL_START_HP && match.state.b.hp >= CARD_DUEL_START_HP) {
     voidMatch(ctx, match);
     return;
   }
@@ -380,51 +719,86 @@ function forfeitMatch(ctx: SimContext, match: CardDuelMatch, forfeiterPid: numbe
   ctx.cardDuels.delete(match.a);
   ctx.cardDuels.delete(match.b);
   const winnerMeta = ctx.players.get(winnerPid);
-  if (winnerMeta) ctx.bumpDeedStat(winnerMeta, 'cardDuelsWon', 1);
+  // Same anti-farm rule on the forfeit path: a bot match credits nothing.
+  if (winnerMeta && !match.bot) ctx.bumpDeedStat(winnerMeta, 'cardDuelsWon', 1);
   if (ctx.players.has(forfeiterPid)) {
     ctx.emit({
       type: 'log',
-      text: 'You forfeit the Card Duel.',
+      text: 'You forfeit the ClaudeStone match.',
       color: '#fa6',
       pid: forfeiterPid,
     });
-    ctx.emit({ type: 'cardDuelMatchEnd', won: false, pid: forfeiterPid });
+    ctx.emit({
+      type: 'cardDuelMatchEnd',
+      won: false,
+      summary: matchSummaryFor(match, forfeiterPid, ctx),
+      pid: forfeiterPid,
+    });
   }
   if (winnerMeta) {
     ctx.emit({
       type: 'log',
-      text: 'Your opponent forfeited the Card Duel. You win!',
+      text: 'Your opponent forfeited the ClaudeStone match. You win!',
       color: '#fa6',
       pid: winnerPid,
     });
-    ctx.emit({ type: 'cardDuelMatchEnd', won: true, pid: winnerPid });
+    ctx.emit({
+      type: 'cardDuelMatchEnd',
+      won: true,
+      summary: matchSummaryFor(match, winnerPid, ctx),
+      pid: winnerPid,
+    });
   }
 }
 
-// No side has earned a round win, so end the match with no winner and no deed
-// credit. Two callers: both sides let the round's AFK deadline expire without
-// playing a card, or forfeitMatch delegates here when the forfeit happens
-// before either side has won a round (see forfeitMatch's comment).
+// Both clocks expired in a match where cards HAD been played: a real result
+// that credits nobody. Distinct from voidMatch, which is the unrecorded case
+// where nothing was ever played (see CardDuelMatch.anyCardPlayed).
+function drawMatch(ctx: SimContext, match: CardDuelMatch): void {
+  ctx.cardDuels.delete(match.a);
+  ctx.cardDuels.delete(match.b);
+  for (const pid of [match.a, match.b]) {
+    ctx.emit({
+      type: 'log',
+      text: 'Your ClaudeStone match ends in a draw.',
+      color: '#fa6',
+      pid,
+    });
+    ctx.emit({
+      type: 'cardDuelMatchEnd',
+      won: false,
+      draw: true,
+      summary: matchSummaryFor(match, pid, ctx),
+      pid,
+    });
+  }
+}
+
+// No side has earned a round win and no card was ever played, so end the match
+// with no winner, no draw, and no deed credit. Two callers: both sides let the
+// round's clock expire without ever playing, or forfeitMatch delegates here
+// when the forfeit happens before either side has won a round (see
+// forfeitMatch's comment).
 function voidMatch(ctx: SimContext, match: CardDuelMatch): void {
   ctx.cardDuels.delete(match.a);
   ctx.cardDuels.delete(match.b);
   for (const pid of [match.a, match.b]) {
     ctx.emit({
       type: 'log',
-      text: 'Your Card Duel is void: neither side played in time.',
+      text: 'Your ClaudeStone match is void: neither side played in time.',
       color: '#fa6',
       pid,
     });
-    // won: false for both sides is a lie in the AFK-timeout case (nobody
-    // lost either), but it is the only value the field has: a void match
-    // still needs a cue, or an early Forfeit ends the match in total
-    // silence while forfeiting a round later correctly plays arenaLoss().
+    // won: false for both sides is a lie in the timeout case (nobody lost
+    // either), but it is the only value the field has: a void match still
+    // needs a cue, or an early Forfeit ends the match in total silence while
+    // forfeiting a round later correctly plays arenaLoss().
     ctx.emit({ type: 'cardDuelMatchEnd', won: false, pid });
   }
 }
 
 // Player-issuable forfeit: lets someone stuck in a live match against an idle
-// opponent get out immediately, instead of waiting for the AFK deadline.
+// opponent get out immediately, instead of waiting for the round clock.
 // Wired to the window's Leave/Forfeit action while in a live match (the queue
 // leave path stays leaveCardMinigameQueue).
 export function forfeitCardDuelMatch(ctx: SimContext, pid?: number): void {
@@ -432,7 +806,7 @@ export function forfeitCardDuelMatch(ctx: SimContext, pid?: number): void {
   if (!r) return;
   const match = ctx.cardDuels.get(r.meta.entityId);
   if (!match) {
-    ctx.error(r.meta.entityId, 'You are not in a Card Duel.');
+    ctx.error(r.meta.entityId, 'You are not in a ClaudeStone match.');
     return;
   }
   forfeitMatch(ctx, match, r.meta.entityId);
@@ -449,35 +823,107 @@ export function leaveCardMinigameEntirely(ctx: SimContext, pid: number): void {
   forfeitMatch(ctx, match, pid);
 }
 
+function wireDecks(ctx: SimContext, pid: number): CardMinigameDecks {
+  const saved = ctx.players.get(pid)?.cards;
+  if (!saved) return { names: [], active: '', activeCards: [] };
+  const names = Object.keys(saved.decks).sort();
+  return {
+    names,
+    active: saved.activeDeck,
+    activeCards: [...(saved.decks[saved.activeDeck] ?? [])],
+  };
+}
+
+function wireCard(card: CardInstance): CardMinigameCard {
+  return { iid: card.iid, cardId: card.cardId, value: card.value };
+}
+
+/** A card in the viewer's OWN hand, with its rules-text numbers priced against
+ *  the live match so the face states what it would really apply, and the buff
+ *  or debuff already parked on it so the face states what it is worth. */
+function wireOwnCard(card: CardInstance, state: CardMatchState, seat: CardSeat): CardMinigameCard {
+  const delta = projectCardValue(state, seat, card, CARD_CATALOG) - card.value;
+  const base = delta === 0 ? wireCard(card) : { ...wireCard(card), projectedDelta: delta };
+  const def = CARD_CATALOG.get(card.cardId);
+  if (!def || def.effects.length === 0) return base;
+  const values = resolveCardTextValues(def, {
+    state,
+    board: buildBoard(state, CARD_CATALOG),
+    catalog: CARD_CATALOG,
+    seat,
+    thisCard: card,
+  });
+  return Object.keys(values).length === 0 ? base : { ...base, textValues: values };
+}
+
 // IWorldCardMinigame read surface: the local/queried player's queue/match
 // snapshot. Lives here (not on the sim.ts coordinator) because it needs
 // nothing from Sim's private state, matching the six thin delegates directly
 // above cardMinigameInfoFor on sim.ts.
+//
+// This is the ONE place opponent information can leak, so it is built per
+// viewer and serializes an opponent card ONLY when that instance id sits in
+// the opponent's revealed set. An identity the viewer is not entitled to never
+// leaves the server, so no client tampering can recover it.
 export function buildCardMinigameInfo(ctx: SimContext, pid: number): CardMinigameInfo {
   const match = cardDuelMatchFor(ctx, pid);
+  const decks = wireDecks(ctx, pid);
   if (!match) {
     return {
       queued: isQueuedForCardMinigame(ctx, pid),
       available: cardMinigameAvailable(ctx, pid),
+      decks,
       match: null,
     };
   }
   const isA = pid === match.a;
   const oppPid = isA ? match.b : match.a;
   const oppMeta = ctx.players.get(oppPid);
-  const myHand = isA ? match.handA : match.handB;
-  const played = isA ? match.playedA : match.playedB;
+  const me = isA ? match.state.a : match.state.b;
+  const them = isA ? match.state.b : match.state.a;
+  const revealed = [...them.cards.hand, ...them.cards.deck, ...them.cards.discard]
+    .filter((card) => them.revealedToOpponent.includes(card.iid))
+    .map(wireCard);
   return {
     queued: false,
     available: true,
+    decks,
     match: {
-      opponent: { pid: oppPid, name: oppMeta?.name ?? '' },
-      hand: myHand.hand.slice(),
-      deckCount: myHand.deck.length,
-      discardCount: myHand.discard.length,
-      myRounds: isA ? match.roundsA : match.roundsB,
-      opponentRounds: isA ? match.roundsB : match.roundsA,
-      waitingOnOpponent: played !== null,
+      opponent: {
+        pid: oppPid,
+        name: oppMeta?.name ?? '',
+        ...(match.bot ? { opponentId: match.bot.opponentId } : {}),
+      },
+      hand: me.cards.hand.map((card) => wireOwnCard(card, match.state, isA ? 'a' : 'b')),
+      deckCount: me.cards.deck.length,
+      discardCount: me.cards.discard.length,
+      myRounds: me.roundWins,
+      opponentRounds: them.roundWins,
+      myHp: me.hp,
+      opponentHp: them.hp,
+      maxHp: CARD_DUEL_START_HP,
+      round: match.state.round,
+      waitingOnOpponent: me.playedThisRound !== null,
+      opponentCommitted: them.playedThisRound !== null,
+      opponentHandCount: them.cards.hand.length,
+      activeEffects: activeCardEffects(match.state, match.state.round).map((effect) => ({
+        mine: effect.seat === (isA ? 'a' : 'b'),
+        cardId: effect.sourceCardId,
+        amount: effect.amount,
+        duration: effect.duration,
+      })),
+      secondsLeft: Math.max(0, match.roundDeadline - ctx.time),
+      myPlayedCard: me.playedThisRound
+        ? wireOwnCard(me.playedThisRound, match.state, isA ? 'a' : 'b')
+        : null,
+      resolving: ctx.time < match.resolvingUntil,
+      resolveSecondsLeft: Math.max(0, match.resolvingUntil - ctx.time),
+      myCounters: { ...me.counters },
+      opponentCounters: { ...them.counters },
+      opponentRevealed: revealed,
+      opponentPlayedValues: match.state.history
+        .filter((entry) => entry.owner !== (isA ? 'a' : 'b'))
+        .map((entry) => entry.value),
     },
   };
 }

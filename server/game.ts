@@ -155,6 +155,7 @@ import {
   buildDetectionCalibrationSnapshot,
   type DetectionCalibrationSnapshot,
 } from './calibration_snapshot';
+import { handleCardDuelCommand } from './card_duel_commands';
 import { RESTORE_ITEM_MAX_COUNT } from './character_professions';
 import { applyCharacterSaveFixups } from './character_save_fixups';
 import { ChatFilter } from './chat_filter';
@@ -4291,7 +4292,7 @@ export class GameServer {
     // remaining player's win/honor durable if both combatants disconnect close
     // together; removePlayer repeats the idempotent cleanup after the save.
     this.sim.arenaResolveDesertion(session.pid);
-    // Card Duel: drop the queue slot and forfeit any live match on disconnect,
+    // ClaudeStone: drop the queue slot and forfeit any live match on disconnect,
     // same idempotent-before-persistence shape as the two lines above.
     this.sim.leaveCardMinigameEntirely(session.pid);
     // Thornhollow Fields desertion also resolves before the leave save so the leaver's
@@ -7756,19 +7757,18 @@ export class GameServer {
         break;
       }
 
-      // Card Duel minigame (the Card Master NPC, docs: src/sim/social/card_duel.ts).
+      // The whole ClaudeStone command family (server/card_duel_commands.ts): the
+      // queue, the play, the forfeit, the named regulars, and the deck builder.
+      // Shape checks there, every authority check in the sim.
       case 'card_queue_join':
-        sim.joinCardDuelQueue(pid);
-        break;
       case 'card_queue_leave':
-        sim.leaveCardDuelQueue(pid);
-        break;
       case 'play_card':
-        if (typeof msg.value === 'number' && Number.isInteger(msg.value))
-          sim.playCardInDuel(msg.value, pid);
-        break;
       case 'card_forfeit':
-        sim.forfeitCardDuel(pid);
+      case 'card_play_opponent':
+      case 'card_deck_save':
+      case 'card_deck_select':
+      case 'card_deck_delete':
+        handleCardDuelCommand(sim, msg, pid);
         break;
 
       // Dungeon Finder (docs/prd/dungeon-finder.md). Deliberately NOT in
