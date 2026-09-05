@@ -278,7 +278,11 @@ const MONOLITHS: MonolithRow[] = [
     // wiring. The merged file is 18920 lines, which is the exact merged count
     // per the ratchet rule and stays far below the branch's old 19015 pin. Any
     // further growth reds again.
-    ceiling: 18920,
+    // Re-pinned again on the second v0.42.0 merge: upstream lowered its own
+    // pin to 18911 with further extractions while this branch carried 18920.
+    // The merged file is 18926 lines, the exact merged count per the ratchet
+    // rule. Any further growth reds again.
+    ceiling: 18926,
     seam: 'pure view core + thin painter on PainterHost (src/ui/CLAUDE.md)',
   },
   {
@@ -356,7 +360,20 @@ const MONOLITHS: MonolithRow[] = [
     // Re-pinned at the PR 3685 base sync (release v0.41.0 through the raid
     // branch): both arms edited the renderer and the union lands at the count
     // below. Measured on the merged tree. Exact merged count, zero headroom.
-    ceiling: 13249,
+    // Re-pinned at the release/v0.42.0 sync of the Chimeglass Tortoise PR
+    // (#3439, carrying the Lanternback Troll of #3399): the rideable-mount
+    // lifecycle (build, live swap, teardown, rider seating, carried lamps
+    // and glows, the summon/dismount FX) moved to src/render/mount_lifecycle.ts,
+    // and the release arm's rickshaw hooks moved with it, so the merged file
+    // lands below both prior pins. Measured on the merged tree. Exact merged
+    // count, zero headroom.
+    // The Realm Builder monument (PR #3695) adds 12 lines here: one import,
+    // the one-line setRealmBuilderHonouree delegation, and the entity arm
+    // that returns the monument's pick volume (matched on the template-id
+    // literal like the noticeboard arm beside it; tests/realm_builder_monument
+    // pins the literal to the constant). They land exactly on the pin above,
+    // so the ceiling does not move but the slack is now zero.
+    ceiling: 13214,
     seam: 'a new src/render/<thing>.ts module the renderer calls (src/render/CLAUDE.md)',
   },
   {
@@ -697,7 +714,13 @@ const MONOLITHS: MonolithRow[] = [
     // Re-pinned to the exact merged count of the OSSBrain v0.41.0 base
     // merge: both parents had already ratcheted for their own work, so
     // the composite is the honest size. Exact count, zero slack.
-    ceiling: 5145,
+    // Up 5145 -> 5151 for the Realm Builder of the Month roll (PR #3695, at
+    // its release/v0.42.0 base merge): the table and its SQL live in
+    // server/realm_builder_db.ts; the residue here is the schema import and
+    // the one ensureSchema() apply line with its ordering note, the same
+    // shape every other domain *_SCHEMA takes. Exact merged count, zero
+    // slack; maintainer-review item.
+    ceiling: 5151,
     seam: 'a domain <domain>_db.ts module with its own *_SCHEMA (server/CLAUDE.md)',
   },
   {
@@ -895,7 +918,12 @@ const MONOLITHS: MonolithRow[] = [
     // the full guarded skin purchase flow moved to store_armory_purchase.ts.
     // The new Store-owned modal itself lives in store_decision_prompt.ts, while
     // the cold shell markup moved to daily_rewards_chrome_view.ts.
-    ceiling: 1264,
+    // LOWERED 1264 -> 1262 by the Cluckwork Mech Bird store mount (PR #3464): the
+    // Machine Stable strip landed as src/ui/store_mount_card_view.ts (markup) +
+    // src/ui/store_mount_purchase.ts (the spend controller), the store body's
+    // button wiring moved to src/ui/store_body_actions.ts, and both grant-SKU
+    // controllers now build over one seam object (store_spend_controllers.ts).
+    ceiling: 1262,
     seam: 'a pure view-core plus a thin painter sibling (src/ui/CLAUDE.md)',
   },
   {

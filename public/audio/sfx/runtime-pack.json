@@ -1,8 +1,8 @@
 {
   "format": "woc-sfx-runtime-pack",
   "version": 1,
-  "bundleId": "6eea0d891a7ba780501eed930ef53b714f45ad41f25854e6d10f61f8e4c60f8e",
-  "catalogHash": "6fa5b5a9677232639855e1b5297184b720e3ace0c1fd1b87141aca937ade1e50",
+  "bundleId": "8890687610860b5f2af05e639a9d3a18c9c8ac9f255cb984d6e328304f435eae",
+  "catalogHash": "71bd6e5d9e2a2bb316021f538a6116bc2167eb0e6d1957c63429091fd1729a5a",
   "clips": {
     "amb_birds": {
       "variants": [
@@ -3070,6 +3070,42 @@
       "gain": 1,
       "playbackRate": 1
     },
+    "mount_idle_mech_bird": {
+      "variants": [
+        {
+          "id": "main",
+          "url": "/audio/sfx/mount_idle_mech_bird.mp3?v=95b62ab97f76",
+          "bytes": 235772,
+          "sha256": "95b62ab97f76cf832a15eed0d4fa9f9c6750e9bc350efde691ae1ff86963e994"
+        }
+      ],
+      "gain": 1.202264,
+      "playbackRate": 1
+    },
+    "mount_jump_mech_bird": {
+      "variants": [
+        {
+          "id": "main",
+          "url": "/audio/sfx/mount_jump_mech_bird.mp3?v=440a40bb3fbb",
+          "bytes": 17597,
+          "sha256": "440a40bb3fbb7c0fb8e9600f95b29e69531af96c7d077f6ac1be0313034d81b3"
+        }
+      ],
+      "gain": 1.202264,
+      "playbackRate": 1
+    },
+    "mount_land_mech_bird": {
+      "variants": [
+        {
+          "id": "main",
+          "url": "/audio/sfx/mount_land_mech_bird.mp3?v=440a40bb3fbb",
+          "bytes": 17597,
+          "sha256": "440a40bb3fbb7c0fb8e9600f95b29e69531af96c7d077f6ac1be0313034d81b3"
+        }
+      ],
+      "gain": 1.202264,
+      "playbackRate": 1
+    },
     "mount_loop_rickshaw_mount": {
       "variants": [
         {
@@ -3116,6 +3152,18 @@
         }
       ],
       "gain": 1,
+      "playbackRate": 1
+    },
+    "mount_run_mech_bird": {
+      "variants": [
+        {
+          "id": "main",
+          "url": "/audio/sfx/mount_run_mech_bird.mp3?v=b341e1f75de8",
+          "bytes": 13835,
+          "sha256": "b341e1f75de88e3ed330390c84ddc84171fcb3e65c11a96e51da87b8f60e9091"
+        }
+      ],
+      "gain": 1.202264,
       "playbackRate": 1
     },
     "mount_run_shadowjump_toad": {

@@ -570,6 +570,9 @@ export const ru_RU: EnTranslations = {
       "tabsLabel": "Разделы магазина WOC",
       "storeTab": "Магазин",
       "rewardsTab": "Ежедневные награды",
+      "mountsEyebrow": "Маунты аккаунта",
+      "mountsTitle": "Механическая конюшня",
+      "mountBuyAria": "Купить: {item}",
       "loading": "Загрузка магазина WOC…",
       "error": "Магазин WOC сейчас недоступен. Повторите попытку позже.",
       "balance": "Баланс Claudium",
@@ -1387,6 +1390,9 @@ export const ru_RU: EnTranslations = {
       "name_thunderstrut_gobbler": "Громоступ, великий индюк",
       "name_terrorspark_groundshaker": "Страхоискр, сотрясатель земли",
       "name_drakemaw_raptor": "Раптор Дрейкмо",
+      "name_mech_bird": "Заводная механоптица",
+      "name_lanternback_troll": "Грумбол Фонареносец",
+      "name_chimeglass_tortoise": "Толливер Звонкостёкл",
       "name_rickshaw_mount": "Костяная рикша",
       "desc_valorsteed": "Выносливый и твердо стоящий на ногах скакун, повышающий скорость передвижения.",
       "desc_grag_bear": "Выносливый и твердо стоящий на лапах медведь, повышающий скорость передвижения.",
@@ -1397,6 +1403,9 @@ export const ru_RU: EnTranslations = {
       "desc_thunderstrut_gobbler": "Исполинский индюк, рожденный бурей: он важно спускается с Пробуждающегося пика, распустив хвост, словно грозовой фронт.",
       "desc_terrorspark_groundshaker": "Компактная бронированная машина с тяжёлыми гусеницами, крупнокалиберной пушкой и седлом для бесстрашных пилотов.",
       "desc_drakemaw_raptor": "Приученный к седлу выводковый раптор из кальдеры Дрейкмо: сплошные жилы и бег, и от него всё ещё едва пахнет пеплом.",
+      "desc_mech_bird": "Заводная боевая курица ручной сборки: несётся на щёлкающих сервоприводах, а заводной ключ всё ещё крутится.",
+      "desc_lanternback_troll": "Холмовой тролль, укрощённый фонарщиками: на плечах он несёт железный трон, а на обоих подлокотниках горит по штормовому фонарю.",
+      "desc_chimeglass_tortoise": "Черепаха солончаков, пережившая в пути три поколения караванов. Приютившие её лудильщики выточили ей очки из штормового стекла и подвесили к горлу бронзовый колокольчик — дорога слышит её задолго до того, как увидит.",
       "desc_rickshaw_mount": "Дребезжащая костяная повозка, к оглоблям которой впряжен костлявый воин-скелет, тащащий вас во весь опор."
     },
     "mountTraining": {
@@ -3291,6 +3300,15 @@ export const ru_RU: EnTranslations = {
       "rosterTitle": "Просмотреть состав гильдии {guild}",
       "back": "Назад",
       "popupTitle": "Гильдейский столб",
+      "close": "Закрыть"
+    },
+    "realmBuilder": {
+      "title": "Зодчий месяца",
+      "currentLabel": "Отмечен в этом месяце",
+      "placeholderName": "Ваше имя",
+      "placeholderHint": "Эта табличка ждёт своего первого имени.",
+      "pastTitle": "Прежние зодчие",
+      "pastEmpty": "В списке пока нет имён.",
       "close": "Закрыть"
     },
     "bank": {
@@ -13777,11 +13795,20 @@ export const ru_RU: EnTranslations = {
       "reins_terrorspark_groundshaker": {
         "name": "Ключ зажигания Страхоискра"
       },
+      "reins_lanternback_troll": {
+        "name": "Ярмо фонарщика: Грумбол"
+      },
+      "reins_chimeglass_tortoise": {
+        "name": "Колокольный ремень путеблюстителя: Толливер"
+      },
       "reins_rickshaw_mount": {
         "name": "Связанные поводья: Костяная рикша"
       },
       "reins_drakemaw_raptor": {
         "name": "Поводья раптора Дрейкмо"
+      },
+      "reins_mech_bird": {
+        "name": "Ключ зажигания механоптицы"
       },
       "rimefang": {
         "name": "Инеевый клык"
@@ -19696,6 +19723,7 @@ export const ru_RU: EnTranslations = {
     "delveRiteShrineReedInteract": "Святилище тростника: нажмите F, чтобы коснуться",
     "delveRiteShrineSkullInteract": "Святилище черепа: нажмите F, чтобы коснуться",
     "mailboxName": "Почтовый ящик",
-    "noticeboardName": "Доска объявлений"
+    "noticeboardName": "Доска объявлений",
+    "realmBuilderMonumentName": "Памятник зодчим королевства"
   }
 };

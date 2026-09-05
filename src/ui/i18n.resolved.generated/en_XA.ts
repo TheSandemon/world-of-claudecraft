@@ -570,6 +570,9 @@ export const en_XA: EnTranslations = {
       "tabsLabel": "[ŴÓÇ Šţóŕé šéçţíóñš]",
       "storeTab": "[Šţóŕé]",
       "rewardsTab": "[Ðáíļý Ŕéŵáŕðš]",
+      "mountsEyebrow": "[Áççóúñţ Ɱóúñţš]",
+      "mountsTitle": "[Ɱáçĥíñé Šţáƀļé]",
+      "mountBuyAria": "[Þúŕçĥášé {item}]",
       "loading": "[Ļóáðíñĝ ŴÓÇ Šţóŕé...]",
       "error": "[Ţĥé ŴÓÇ Šţóŕé íš úñáʋáíļáƀļé ŕíĝĥţ ñóŵ. Þļéášé ţŕý áĝáíñ šĥóŕţļý.]",
       "balance": "[Çļáúðíúɱ Ɓáļáñçé]",
@@ -1387,6 +1390,9 @@ export const en_XA: EnTranslations = {
       "name_thunderstrut_gobbler": "[Ţĥúñðéŕšţŕúţ ţĥé Ĝŕáñð Ĝóƀƀļéŕ]",
       "name_terrorspark_groundshaker": "[Ţéŕŕóŕšþáŕķ Ĝŕóúñðšĥáķéŕ]",
       "name_drakemaw_raptor": "[Ðŕáķéɱáŵ Ŕáþţóŕ]",
+      "name_mech_bird": "[Çļúçķŵóŕķ Ɱéçĥ Ɓíŕð]",
+      "name_lanternback_troll": "[Ĝŕúɱƀóļ ţĥé Ļáñţéŕñƀáçķ]",
+      "name_chimeglass_tortoise": "[Ţóļļíʋéŕ ţĥé Çĥíɱéĝļášš]",
       "name_rickshaw_mount": "[Ɓóñéƀóúñð Ŕíçķšĥáŵ]",
       "desc_valorsteed": "[Á ĥáŕðý, šúŕé-ƒóóţéð šţééð ţĥáţ þŕóʋíðéš éñĥáñçéð ţŕáʋéļ šþééð.]",
       "desc_grag_bear": "[Á ĥáŕðý, šúŕé-ƒóóţéð ƀéáŕ ţĥáţ þŕóʋíðéš éñĥáñçéð ţŕáʋéļ šþééð.]",
@@ -1397,6 +1403,9 @@ export const en_XA: EnTranslations = {
       "desc_thunderstrut_gobbler": "[Á çóļóššáļ šţóŕɱ-ĥáţçĥéð ĝóƀƀļéŕ ţĥáţ šţŕúţš ðóŵñ ƒŕóɱ ţĥé Ŵáķíñĝ Þéáķ, ţáíļ ƒáññéð ļíķé á ţĥúñðéŕĥéáð.]",
       "desc_terrorspark_groundshaker": "[Á çóɱþáçţ áŕɱóŕéð éñĝíñé ŵíţĥ ĥéáʋý ţŕáçķš, á ðééþ-ƀóŕé çáññóñ, áñð á šáððļé ƀúíļţ ƒóŕ ƒéáŕļéšš þíļóţš.]",
       "desc_drakemaw_raptor": "[Á šáððļé-ƀŕóķéñ ƀŕóóð ŕáþţóŕ ƒŕóɱ ţĥé Ðŕáķéɱáŵ Çáļðéŕá, áļļ šíñéŵ áñð šþŕíñţ, šţíļļ šɱéļļíñĝ ƒáíñţļý óƒ ášĥ.]",
+      "desc_mech_bird": "[Á ĥáñð-ƀúíļţ çļóçķŵóŕķ ŵáŕ çĥíçķéñ ţĥáţ šþŕíñţš óñ šñáþþíñĝ šéŕʋóš, ŵíñð-úþ ķéý šţíļļ ţúŕñíñĝ.]",
+      "desc_lanternback_troll": "[Á ĥíļļ ţŕóļļ ƀŕóķéñ ţó ţĥé ýóķé ƀý ļáɱþļíĝĥţéŕš, çáŕŕýíñĝ áñ íŕóñ ţĥŕóñé áçŕóšš ĥíš šĥóúļðéŕš ŵíţĥ á šţóŕɱ ļáñţéŕñ ƀúŕñíñĝ óñ éíţĥéŕ áŕɱ.]",
+      "desc_chimeglass_tortoise": "[Á šáļţ-ƒļáţ ţóŕţóíšé ŵĥó ĥáš óúţŵáļķéð ţĥŕéé ĝéñéŕáţíóñš óƒ çáŕáʋáñš. Ţíñķéŕš ĝŕóúñð ĥíɱ šþéçţáçļéš ƒŕóɱ šţóŕɱ-ĝļášš áñð ĥúñĝ á ƀŕóñžé ƀéļļ áţ ĥíš ţĥŕóáţ, šó ţĥé ŕóáð ĥéáŕš ĥíɱ ļóñĝ ƀéƒóŕé íţ šééš ĥíɱ.]",
       "desc_rickshaw_mount": "[Á ŕáţţļíñĝ ƀóñé-çáŕţ ŵíţĥ á ƀóñý ĝŕúñţ ĥáŕñéššéð ţó ţĥé šĥáƒţš, ĥáúļíñĝ ýóú áļóñĝ áţ á ðéáð ŕúñ.]"
     },
     "mountTraining": {
@@ -3291,6 +3300,15 @@ export const en_XA: EnTranslations = {
       "rosterTitle": "[Ʋíéŵ ţĥé ŕóšţéŕ óƒ {guild}]",
       "back": "[Ɓáçķ]",
       "popupTitle": "[Ĝúíļð Šíĝñþóšţ]",
+      "close": "[Çļóšé]"
+    },
+    "realmBuilder": {
+      "title": "[Ŕéáļɱ Ɓúíļðéŕ óƒ ţĥé Ɱóñţĥ]",
+      "currentLabel": "[Ĥóñóúŕéð ţĥíš ɱóñţĥ]",
+      "placeholderName": "[Ýóúŕ Ñáɱé Ĥéŕé]",
+      "placeholderHint": "[Ţĥíš þļáţé íš ŵáíţíñĝ ƒóŕ íţš ƒíŕšţ ñáɱé.]",
+      "pastTitle": "[Þášţ ĥóñóúŕééš]",
+      "pastEmpty": "[Ñó ñáɱéš óñ ţĥé ŕóļļ ýéţ.]",
       "close": "[Çļóšé]"
     },
     "bank": {
@@ -13777,11 +13795,20 @@ export const en_XA: EnTranslations = {
       "reins_terrorspark_groundshaker": {
         "name": "[Íĝñíţíóñ Ķéý: Ţéŕŕóŕšþáŕķ Ĝŕóúñðšĥáķéŕ]"
       },
+      "reins_lanternback_troll": {
+        "name": "[Ļáɱþļíĝĥţéŕ'š Ýóķé: Ĝŕúɱƀóļ]"
+      },
+      "reins_chimeglass_tortoise": {
+        "name": "[Ŕóáðŵáŕðéñ'š Ɓéļļšţŕáþ: Ţóļļíʋéŕ]"
+      },
       "reins_rickshaw_mount": {
         "name": "[Ɓóúñð Ŕéíñš: Ɓóñéƀóúñð Ŕíçķšĥáŵ]"
       },
       "reins_drakemaw_raptor": {
         "name": "[Ŕéíñš óƒ ţĥé Ðŕáķéɱáŵ Ŕáþţóŕ]"
+      },
+      "reins_mech_bird": {
+        "name": "[Íĝñíţíóñ Ķéý: Çļúçķŵóŕķ Ɱéçĥ Ɓíŕð]"
       },
       "rimefang": {
         "name": "[Ŕíɱéƒáñĝ]"
@@ -19696,6 +19723,7 @@ export const en_XA: EnTranslations = {
     "delveRiteShrineReedInteract": "[Ŕééð Šĥŕíñé: Þŕéšš Ƒ ţó ţóúçĥ íţ]",
     "delveRiteShrineSkullInteract": "[Šķúļļ Šĥŕíñé: Þŕéšš Ƒ ţó ţóúçĥ íţ]",
     "mailboxName": "[Ɱáíļƀóẋ]",
-    "noticeboardName": "[Ñóţíçé Ɓóáŕð]"
+    "noticeboardName": "[Ñóţíçé Ɓóáŕð]",
+    "realmBuilderMonumentName": "[Ŕéáļɱ Ɓúíļðéŕ Ɱóñúɱéñţ]"
   }
 };
