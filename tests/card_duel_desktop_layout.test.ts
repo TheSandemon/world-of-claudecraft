@@ -81,11 +81,24 @@ describe('card duel desktop table', () => {
     // the bottom of the screen while the bars believed they were pinned.
     const bound = DESKTOP.match(/\.dt-board,\s*\n\s*\.dt-side \{[^}]*\}/)?.[0] ?? '';
     expect(bound).toContain('max-height:');
-    expect(bound).toContain('--app-vh');
-    // Against the WINDOW's own clamp (the same 0.9 factor #card-duel-window uses),
-    // so the two cannot drift apart and let the window scroll again.
-    expect(bound).toContain('* 0.9');
     expect(bound).toContain('overflow-y: auto');
+    // The bound is the board ROW, which the pinned frame below makes a real
+    // length. It used to be `calc(90vh - 20rem)`, where 20rem was the
+    // surrounding furniture measured on one laptop: an estimate, and one whose
+    // being too large is silent until the window scrolls and carries the
+    // sticky bars off screen. 100% of a definite row cannot be wrong.
+    expect(bound).toContain('max-height: 100%');
+    expect(bound).toContain('min-height: 0');
+    // Teeth: the old estimate must not come back alongside it. Against the
+    // DECLARATIONS, not the comment that explains why it went away.
+    const boundDecls = bound.replace(/\/\*[\s\S]*?\*\//g, '');
+    expect(boundDecls).not.toContain('--app-vh');
+    expect(boundDecls).not.toContain('20rem');
+    // The row it is 100% OF has to actually be bounded, or `max-height: 100%`
+    // resolves against nothing and every guarantee above is decorative.
+    const grid = DESKTOP.match(/\.dt \{[^}]*\}/)?.[0] ?? '';
+    expect(grid).toContain('grid-template-rows: minmax(0, 1fr) auto');
+    expect(grid).toContain('min-height: 0');
 
     expect(DESKTOP).toMatch(
       /\.dt-board > \[data-cd-seats-them\],\s*\n\s*\.dt-board > \[data-cd-seats-mine\] \{[^}]*position: sticky/,
@@ -96,6 +109,41 @@ describe('card duel desktop table', () => {
     expect(DESKTOP).toMatch(
       /\.dt-hand-wrap,\s*\n\s*\.dt-forfeit \{[^}]*position: sticky;[^}]*bottom: 0;/,
     );
+  });
+
+  it('pins the live table to ONE frame, so only a player resize ever changes it', () => {
+    // The defect: the window took its height from whatever the body currently
+    // held, so it grew and shrank under the player mid-match. An effect
+    // parking on the table lengthened the effects row, the "waiting on them"
+    // line came and went, and the whole board (every card in it included)
+    // jumped. A surface that resizes while it is being played is a moving
+    // target, and the hand is the row a player has to hit.
+    const pinned = DESKTOP.match(/#card-duel-window:has\(\.dt\) \{[^}]*\}/)?.[0] ?? '';
+    expect(pinned, 'no pinned-frame rule at all').not.toBe('');
+    expect(pinned).toContain('height:');
+    // The frame is the SAME clamp the window's own max-height already allowed,
+    // so pinning it takes nothing away and the two cannot drift apart.
+    expect(pinned).toContain('--app-vh');
+    expect(pinned).toContain('* 0.9');
+    expect(pinned).toContain('--window-scale');
+    // The window is never the thing that scrolls: that is what drags the
+    // sticky health bars out of view (see the board bound above).
+    expect(pinned).toContain('overflow: hidden');
+
+    // Keyed on the LIVE TABLE, never the window. `.dt` is the played table;
+    // the sit-down list and the summary (`.dt-sum`, a different class) are
+    // reading bodies and still size to what they hold, or the fix would just
+    // be the same defect pointed the other way: a metre of empty panel around
+    // four buttons.
+    const framed = DESKTOP.match(/#card-duel-window:has\(([^)]*)\)/)?.[1] ?? '';
+    expect(framed).toBe('.dt');
+    expect(DESKTOP).not.toMatch(/#card-duel-window:has\(\.dt-sum\)/);
+
+    // The height has to REACH the table, or the body floors at its content and
+    // the growth this whole block refuses comes straight back one level down.
+    const body = DESKTOP.match(/#card-duel-window:has\(\.dt\) \.cd-body \{[^}]*\}/)?.[0] ?? '';
+    expect(body).toContain('min-height: 0');
+    expect(body).toContain('flex: 1 1 auto');
   });
 
   it('lays the board and its rail out as named areas, with the hand across the bottom', () => {

@@ -1747,6 +1747,50 @@
       container-name: cd-table;
       container-type: inline-size;
     }
+
+    /* A LIVE TABLE HOLDS ITS FRAME. The window used to take its height from
+       whatever the body currently held, so the thing a player is aiming at
+       moved under them for reasons that had nothing to do with them: an effect
+       parking on the table grew the effects row, the round clock's "waiting on
+       them" line came and went, the announce strip appeared, and the whole
+       window (and every card in it) jumped. A board that resizes while it is
+       being played is the surface equivalent of a moving target.
+
+       So the frame is CONSTANT for the whole match: one height, the same one
+       the max-height above already allowed, taken the moment the table appears
+       and held until it goes away. Everything that varies now varies INSIDE it
+       (the board and the rail scroll, see the reflow below), which is where a
+       change belongs: a growing effects row should cost the effects row, never
+       the hand.
+
+       Keyed on `:has(.dt)`, so it is the TABLE that is pinned, never the
+       window. The sit-down list and the match summary are ordinary reading
+       bodies and still size to what they hold: a metre of empty panel around
+       four buttons would be the same defect pointed the other way. `.dt` is
+       the live table only; the summary is `.dt-sum`, a different class.
+
+       The player's own resize still wins, and that is the whole point of the
+       exception: window_resize.ts writes `height` INLINE, which beats this
+       rule. The size only ever changes because someone dragged the grip. */
+    #card-duel-window:has(.dt) {
+      height: calc(var(--app-vh, 100vh) * 0.9 / var(--window-scale, 1) - 24px);
+      /* The window itself must never be the thing that scrolls: it would drag
+         the sticky health bars out of view with it (the same bug the board's
+         own bound below is written against). */
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    /* The body carries the height down to the table rather than the table
+       reading a percentage off a padded box. min-height:0 because a flex item
+       floors at its content by default, which is exactly the growth this
+       block exists to refuse. */
+    #card-duel-window:has(.dt) .cd-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
   }
 
   /* The reflow. 52rem is where the board and a 15rem rail stop crowding each
@@ -1776,6 +1820,14 @@
       grid-template-areas:
         "board side"
         "hand  forfeit";
+      /* FILLS the frame the media block pinned, rather than setting it. The
+         board row takes the slack and the hand row takes what it needs, so a
+         round that parks three effects spends the room inside the board
+         instead of pushing the window taller. minmax(0, 1fr) rather than 1fr
+         because a grid row also floors at its content by default. */
+      flex: 1 1 auto;
+      min-height: 0;
+      grid-template-rows: minmax(0, 1fr) auto;
     }
     .dt-board {
       grid-area: board;
@@ -1796,7 +1848,17 @@
        health bars with it, which is the bug this replaced. */
     .dt-board,
     .dt-side {
-      max-height: calc(var(--app-vh, 100vh) * 0.9 / var(--window-scale, 1) - 20rem);
+      /* Bounded by the ROW, which the pinned frame above makes a real length,
+         rather than by an estimate of the furniture around it. It used to read
+         `calc(90vh - 20rem)`, where the 20rem was the title, padding, hand,
+         Forfeit row and gaps MEASURED on a 1366x768 laptop: a number that is
+         only ever right for the layout it was measured in, and whose being
+         wrong is silent in the dangerous direction (too tall, and the WINDOW
+         becomes the thing that scrolls, taking the sticky health bars with
+         it). The frame is fixed now, so 100% of the board row is that same
+         bound, exact by construction and on every viewport. */
+      max-height: 100%;
+      min-height: 0;
       overflow-y: auto;
       overscroll-behavior: contain;
     }
