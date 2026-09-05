@@ -190,6 +190,20 @@ const VIEW_SIG_BLOCK = 'if (view.sig !== this.lastSig) {';
 // summary sitting on top of it, which is why the guard compares a resolved
 // `shell` rather than `view.state` directly.
 const SHELL_BLOCK = 'if (shell !== this.lastShell) {';
+// The deck builder's shell guard, and the same shape as the ClaudeStone one
+// above for the same underlying reason: the window carries no single signature
+// over its whole body. It guards the full REBUILD, which only a restructuring
+// change earns (the set filter, or the saved-deck list); below it, each of the
+// ten value rows carries its own memo and repaints alone.
+//
+// That split is the whole point of the guard here. The builder paints a card
+// face for every card in the catalog, about two hundred of them, so a single
+// signature over the draft meant one click rebuilt all of it (measured at 6280
+// nodes and 172ms, against 655 and 18ms for the row that actually changed),
+// and the draft NAME riding it destroyed the field being typed into. The rows'
+// own repaint cost is pinned behaviorally, not by shape, in
+// tests/deck_builder_repaint.test.ts.
+const DECK_SHELL_SIG_BLOCK = 'if (sig !== this.lastSig) {';
 
 /**
  * Every statement-position call `Hud.update()` makes, in SOURCE ORDER, so the table reads as
@@ -1061,8 +1075,8 @@ const HUD_UPDATE_DRIVES: readonly DriveRow[] = [
     band: 'medium',
     gate: 'this.cardWindows.deckBuilder.isOpen',
     surface: 'window',
-    guard: { kind: 'module', module: 'deck_builder_window.ts', proof: SIG_RETURN },
-    why: 'the deck builder window',
+    guard: { kind: 'module', module: 'deck_builder_window.ts', proof: DECK_SHELL_SIG_BLOCK },
+    why: 'the deck builder window (the shell rebuilds on a restructuring change; each of the ten value rows repaints behind its own memo, and the progress readout is written in place)',
   },
   {
     call: 'this.lootWindow.updateProximity',
@@ -1769,7 +1783,7 @@ describe('Hud.update() drives exactly the registered set, on the registered band
         'bank_window.ts: if (sig === this.lastSig) return;',
         'calendar_window.ts: if (sig === this.lastSig) return;',
         'card_duel_window.ts: if (shell !== this.lastShell) {',
-        'deck_builder_window.ts: if (sig === this.lastSig) return;',
+        'deck_builder_window.ts: if (sig !== this.lastSig) {',
         'daily_rewards_window.ts: if (!this.charterFit.changedFrom(this.deps.world().bankPurchasedSlots)) return;',
         'deeds_window.ts: if (sig === this.lastSig) return;',
         'dungeon_finder_proposal_popup.ts: if (view.sig !== this.lastSig) {',

@@ -237,6 +237,46 @@ written at once rather than on a beat, and it holds an already-decided round
 whatever the motion level. Nothing a player is still deciding on is ever
 staged.
 
+## The deck builder repaints ONE ROW, never the catalog
+
+The builder shows a card face for every card in the game: ten value rows of two
+slots plus the whole pool at that value, about two hundred faces, roughly
+440 KB of markup and six thousand nodes. It sat behind one whole-view repaint
+signature, so **every click rebuilt all of it** to change one slot and one
+button's pressed state. Measured: 6280 nodes and 172 ms per toggle, against 655
+nodes and 18 ms for the row that actually moved.
+
+The signature is split the way the duel window's regions are split, and for the
+same reason:
+
+- `deckBuilderShellSignature` covers only what RESTRUCTURES the builder: the set
+  filter (which changes what all ten rows offer, so a full rebuild is correct
+  there) and the saved-deck list.
+- `deckBuilderRowSignature` covers one value row: its two slots, and which of
+  its options are marked taken. A toggle can only ever move one of these.
+- The progress line, the Save button and the Delete button track the DRAFT, so
+  they are written in place on every render rather than riding a signature.
+
+Two consequences that are not optional:
+
+- **The wiring is delegated.** A row is now replaced under the handler, so a
+  listener bound to a card button is bound to a node the next toggle destroys.
+  One click handler on the root reads its target at click time and survives
+  every row repaint under it.
+- **The draft NAME is in no signature at all**, and that was a bug rather than
+  a cost. The name field is what the player is typing into, so a signature that
+  moved with it rebuilt the window because they typed, taking the field and the
+  caret with it. Loading a saved deck still repaints the field, through
+  `activeName`.
+
+`relocalize` stays one arm for both memos, and that is a property of the split
+rather than an assumption: clearing the shell signature forces the shell
+branch, and that branch repaints all ten rows and re-latches every row
+signature from the fresh markup, so no row can be left holding pre-switch text.
+`tests/deck_builder_repaint.test.ts` pins all of it on node identity, which is
+the only check that tells "repainted one row" apart from "repainted everything
+and produced the same markup".
+
 ## How a match ENDS
 
 The sim emits `cardDuelMatchEnd` in the SAME tick as the final

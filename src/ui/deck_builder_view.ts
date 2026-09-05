@@ -151,16 +151,59 @@ export function toggleDraftCard(
   return [...draft, cardId];
 }
 
-/** A repaint signature over everything the builder shows. */
+/**
+ * A repaint signature over everything the builder shows.
+ *
+ * Kept as the whole-view digest for callers that want one, and composed from
+ * the two below so it cannot disagree with them.
+ */
 export function deckBuilderSignature(view: DeckBuilderViewModel): string {
+  return [deckBuilderShellSignature(view), view.rows.map(deckBuilderRowSignature).join('|')].join(
+    '#',
+  );
+}
+
+/**
+ * The changes that RESTRUCTURE the builder: the set filter, and the saved-deck
+ * list with which of them is active.
+ *
+ * Deliberately narrow, and the two omissions are the whole point.
+ *
+ * `filled` is NOT here. It moves on every card toggle, so including it meant
+ * every click rebuilt all two hundred card faces to change a slot and one
+ * button's pressed state: measured at about 440 KB of markup and six thousand
+ * nodes per press. It drives the progress line and the Save button, which the
+ * window updates in place instead.
+ *
+ * `draftName` is NOT here either, and that one was a bug rather than a cost.
+ * The name input is the thing the player is TYPING INTO, so rebuilding the
+ * window because it changed destroyed the field mid-keystroke and dropped the
+ * caret with it. The input already shows what was typed; re-rendering it can
+ * only take it away. Loading a saved deck still repaints the field, because
+ * that moves `activeName`, which IS here.
+ *
+ * The FILTER belongs here even though it changes what every row offers, and
+ * that is consistent rather than an exception: it restructures all ten rows at
+ * once, so it is exactly the case a full rebuild is for.
+ */
+export function deckBuilderShellSignature(view: DeckBuilderViewModel): string {
+  return [view.activeName, view.savedNames.join(','), view.setFilter ?? '*'].join('#');
+}
+
+/**
+ * One value row: which cards fill its two slots, and which of its options are
+ * marked as taken.
+ *
+ * The chosen flags are in it as well as the slots, because a card can be
+ * chosen at a value whose slot list already looks the same from a different
+ * draft, and the option's own pressed state is what tells the player their
+ * click landed.
+ */
+export function deckBuilderRowSignature(row: DeckBuilderRow): string {
   return [
-    view.draftName,
-    view.activeName,
-    view.savedNames.join(','),
-    view.filled,
-    // The filter changes which cards a row OFFERS, so it has to reach the
-    // signature or switching identities would repaint nothing.
-    view.setFilter ?? '*',
-    view.rows.map((row) => row.slots.map((slot) => slot ?? '-').join('+')).join('|'),
-  ].join('#');
+    row.value,
+    row.complete ? '1' : '0',
+    row.slots.map((slot) => slot ?? '-').join('+'),
+    row.options.map((option) => (option.chosen ? '1' : '0')).join(''),
+  ].join('~');
 }

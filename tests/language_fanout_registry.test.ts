@@ -310,11 +310,19 @@ const ANSWERED: readonly AnsweredSurface[] = [
   },
   {
     file: 'deck_builder_window.ts',
-    memos: ['lastSig'],
+    memos: ['lastRowSigs', 'lastSig'],
     answer: 'this.cardWindows.deckBuilder.relocalize',
-    // Its signature is over the DRAFT, so a locale change alone can never move
-    // it: the rule line, the row titles and every card name would keep the old
-    // language until the player happened to edit a slot.
+    // BOTH memos are over structure and the DRAFT, never over text, so a
+    // locale change alone can move neither: the rule line, the value row
+    // titles and every card name would keep the old language until the player
+    // happened to edit a slot.
+    //
+    // One arm still answers for the pair, and that is a property of the split
+    // rather than an assumption. `lastRowSigs` is only ever consulted on the
+    // cheap path, which `relocalize` cannot reach: clearing `lastSig` forces
+    // the SHELL branch, and that branch repaints all ten rows and re-latches
+    // every row signature from the fresh markup. A row can therefore never be
+    // left holding pre-switch text behind a signature that still matches.
     why: 'the deck rule line, the value row titles and the card names on every face',
   },
   {

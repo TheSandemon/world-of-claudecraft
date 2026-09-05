@@ -4,6 +4,8 @@ import { validateDeck } from '../src/sim/minigames/card_duel';
 import { CARD_SETS } from '../src/sim/minigames/card_duel/types';
 import {
   buildDeckBuilderView,
+  deckBuilderRowSignature,
+  deckBuilderShellSignature,
   deckBuilderSignature,
   draftCardIds,
   toggleDraftCard,
@@ -106,13 +108,53 @@ describe('deck builder view', () => {
     expect(row?.slots).toEqual([threes[0], threes[1]]);
   });
 
-  it('the signature moves when the draft, the name, or the saved list changes', () => {
+  it('the signature moves when the draft or the saved list changes', () => {
     const base = deckBuilderSignature(view(defaultIds));
     expect(deckBuilderSignature(view(defaultIds))).toBe(base);
     expect(deckBuilderSignature(view(defaultIds.slice(0, 19)))).not.toBe(base);
-    expect(deckBuilderSignature(view(defaultIds, { draftName: 'Other' }))).not.toBe(base);
     expect(deckBuilderSignature(view(defaultIds, { savedNames: ['A'] }))).not.toBe(base);
     expect(deckBuilderSignature(view(defaultIds, { activeName: 'A' }))).not.toBe(base);
+    expect(deckBuilderSignature(view(defaultIds, { setFilter: 'briarpack' }))).not.toBe(base);
+  });
+
+  it('the DRAFT NAME deliberately moves nothing: it is what the player is typing', () => {
+    // Not an omission. The name field is the thing being typed into, so a
+    // signature that moved with it rebuilt the window because the player
+    // typed, destroying the field and the caret with it. The input already
+    // shows what was typed; repainting it can only take it away. Loading a
+    // saved deck still repaints it, through `activeName` above.
+    const base = deckBuilderSignature(view(defaultIds));
+    expect(deckBuilderSignature(view(defaultIds, { draftName: 'Other' }))).toBe(base);
+    expect(deckBuilderShellSignature(view(defaultIds, { draftName: 'Other' }))).toBe(
+      deckBuilderShellSignature(view(defaultIds)),
+    );
+  });
+
+  it('splits the shell from the rows, so one toggle cannot repaint the catalog', () => {
+    // The builder paints a face for every card it offers, about two hundred of
+    // them. Toggling one card changes exactly ONE value row, so the row
+    // signatures have to move independently of the shell or every click costs
+    // the whole pool (measured: 6280 nodes, 172ms, versus 655 and 18ms).
+    const empty = view([]);
+    const withCard = view([defaultIds[4]]);
+    const movedRows = empty.rows.filter(
+      (row, i) => deckBuilderRowSignature(row) !== deckBuilderRowSignature(withCard.rows[i]),
+    );
+    expect(movedRows).toHaveLength(1);
+    // And the shell holds still for it: the progress count and the Save button
+    // track `filled`, and the window writes those in place.
+    expect(deckBuilderShellSignature(withCard)).toBe(deckBuilderShellSignature(empty));
+    expect(withCard.filled).not.toBe(empty.filled);
+  });
+
+  it('a row signature notices a card being TAKEN, not just its slots filling', () => {
+    // Teeth: the pressed state of an option is what tells a player their click
+    // landed, and two different drafts can leave a row's slot list looking the
+    // same, so the chosen flags belong in the row signature beside the slots.
+    const model = view([]);
+    const row = model.rows[4];
+    const chosen = { ...row, options: row.options.map((o, i) => ({ ...o, chosen: i === 0 })) };
+    expect(deckBuilderRowSignature(chosen)).not.toBe(deckBuilderRowSignature(row));
   });
 });
 
