@@ -849,9 +849,10 @@ export class CardDuelWindow {
       //
       // Placed ONCE, before the dispatch, rather than per arm: an arm added
       // later is audible by construction instead of by remembering. Playing a
-      // CARD is the one exception and fires its own cue below, so it is
-      // excluded here rather than double-sounded.
-      if (!target.closest('[data-play]')) audio.click();
+      // card is included: the click is the PRESS, and the card's own cue rides
+      // the sim's `cardPlayed` event a moment later, which is what both seats
+      // hear. Firing that cue here too would just play it twice locally.
+      audio.click();
       if (target.closest('[data-close]')) {
         this.close();
         return;
@@ -899,12 +900,6 @@ export class CardDuelWindow {
           from: { left: box.left, top: box.top, width: box.width, height: box.height },
           html: card.outerHTML,
         };
-        // The card's own cue rather than the generic click: this is the one
-        // control here that is a MOVE in the round rather than a button, and
-        // it is the moment the player commits. The sim also emits `cardPlayed`
-        // (heard by both seats), so this is the local, immediate answer to the
-        // press, ahead of the round trip.
-        audio.cardPlay();
         // The INSTANCE id, not the face value: a hand can hold two different
         // cards of the same value, so a value would be an ambiguous request.
         world.playCardInDuel(Number(card.dataset.play));

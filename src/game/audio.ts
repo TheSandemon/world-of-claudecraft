@@ -69,20 +69,36 @@ export const UI_CUES = {
   // used to be silent (the deal, the clash, a won or lost verdict, and a
   // settle with no reshuffle behind it), which meant the round's audio told a
   // shorter story than its picture did and told a player who was not looking
-  // at the window almost nothing. All of these are per-beat sounds, so they
-  // are short and sit under the four cues above, exactly as the two do.
-  cardDeal: 'ui_card_deal',
-  cardClash: 'ui_card_clash',
-  cardRoundWin: 'ui_card_round_win',
-  cardRoundLose: 'ui_card_round_lose',
-  cardSettle: 'ui_card_settle',
-  // The ending's beats (src/ui/cards/duel_outro_core.ts). The health bar
-  // emptying and the table clearing are new; the match VERDICT deliberately
-  // stays the existing duel recordings (see cardMatchWin/cardMatchLose below),
-  // because what was wrong with it was WHEN it played, not what it sounded
-  // like.
-  cardFinish: 'ui_card_finish',
-  cardCurtain: 'ui_card_curtain',
+  // at the window almost nothing.
+  //
+  // Every one of them REUSES a recording the game already ships, and each was
+  // chosen because it already means the thing the beat means, not because it
+  // was close enough to reach for. A new recording is a new asset to master,
+  // conform and carry forever, so it has to earn itself; none of these five
+  // could, and the two above (cardEffect, cardHit) are the ones that did,
+  // because nothing in the catalog was a small repeatable tick or a blunt
+  // health-loss thud.
+  //
+  // Two cards being put down on the table is what `ui_card_play` already IS.
+  cardDeal: 'ui_card_play',
+  // The two cards lean in and strike: the duel's own start-of-fight cue.
+  cardClash: 'ui_duel_start',
+  // Who took the round. The Fiesta score pair is literally "I scored" and
+  // "they scored", which is exactly the distinction a round verdict draws,
+  // and it is already a MIRRORED pair, so a player tells the two apart
+  // without being taught either.
+  cardRoundWin: 'ui_fiesta_score_mine',
+  cardRoundLose: 'ui_fiesta_score_other',
+  // The round's picture settles and the spent cards go to the piles: the soft
+  // put-away sound the bags already close with.
+  cardSettle: 'ui_bag_close',
+  // The ending's beats (src/ui/cards/duel_outro_core.ts). A health bar running
+  // out is what the Fiesta "down" cue already reports; the table clearing for
+  // the summary is a panel opening. The match VERDICT stays the existing duel
+  // recordings (see cardMatchWin/cardMatchLose below), because what was wrong
+  // with it was WHEN it played, not what it sounded like.
+  cardFinish: 'ui_fiesta_down',
+  cardCurtain: 'ui_bag_open',
   // Gathering rhythm (Professions 2.0 Phase 12b, issue #2208): fishCast/
   // fishBite/fishReel are real, shipped fishing cues. gatherCast branches by
   // node type (gatherCastByNodeType below); this flat cue is only the

@@ -289,17 +289,26 @@ describe('sampled GameAudio facade', () => {
 });
 
 describe('deterministic UI SFX catalog', () => {
-  it('adds 15 unique UI cues to the authoritative studio inventory', () => {
+  it('adds 17 unique UI cues to the authoritative studio inventory', () => {
     // 13 pre-12b cues plus the Phase 12b gathering-rhythm placeholder
     // (ui_gather_cast) plus the Craft Cast System Phase 6 craft-family
     // cast-start placeholder (ui_craft_cast). ui_gather_strike/rare and
     // ui_fish_cast/bite/reel were retired once real per-node-type /
     // rarity-tier / fishing recordings replaced them (src/game/audio.ts);
     // ui_vcup_kickoff left with the Vale Cup minigame.
+    //
+    // Plus the TWO ClaudeStone narration cues (ui_card_effect, ui_card_hit),
+    // and those two only. Every other beat of a duel reuses a recording the
+    // game already ships (see the ClaudeStone block in src/game/audio.ts):
+    // these two earned a new one because nothing in the catalog was a small
+    // repeatable tick or a blunt health-loss thud, and both fire several times
+    // per round where a borrowed cue would have worn immediately.
     const keys = UI_SFX_CATALOG.map((cue: { key: string }) => cue.key);
     const fullCatalogKeys = new Set(SFX.map((cue: { key: string }) => cue.key));
 
-    expect(keys).toHaveLength(15);
+    expect(keys).toHaveLength(17);
+    expect(keys).toContain('ui_card_effect');
+    expect(keys).toContain('ui_card_hit');
     expect(keys).toContain('ui_craft_cast');
     expect(new Set(keys).size).toBe(keys.length);
     expect(keys.every((key: string) => key.startsWith('ui_'))).toBe(true);

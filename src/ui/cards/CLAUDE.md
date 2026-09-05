@@ -294,13 +294,27 @@ phases and `outroCue` over the ending's, which is what keeps it true.
 Two cues branch, because they carry two different pieces of NEWS rather than
 two volumes of the same one: the verdict (`roundWin` / `roundLose` / `push`)
 and the settle (`settle` / `shuffle`). The match verdict is the third
-(`matchWin` / `matchLose`), and it deliberately reuses the existing duel
-recordings: what was wrong with the match-end sound was never how it sounded,
-it was that it fired on the `cardDuelMatchEnd` EVENT, which the sim emits in
-the same tick as the final round. A player heard the match end while the round
-that decided it was still speaking. It rides the `glory` beat now, and
-`showMatchEnd` returns whether the ending will be narrated so the HUD arm knows
-whether it still owes the sound, exactly the contract `showReveal` has.
+(`matchWin` / `matchLose`), and what was wrong with IT was never how it
+sounded, it was that it fired on the `cardDuelMatchEnd` EVENT, which the sim
+emits in the same tick as the final round. A player heard the match end while
+the round that decided it was still speaking. It rides the `glory` beat now,
+and `showMatchEnd` returns whether the ending will be narrated so the HUD arm
+knows whether it still owes the sound, exactly the contract `showReveal` has.
+
+**A beat REUSES a recording the game already ships unless it cannot.** The
+whole vocabulary resolves through `UI_CUES` in `src/game/audio.ts`, and only
+two members of it are ClaudeStone's own: `ui_card_effect` and `ui_card_hit`.
+Everything else borrows, and each borrow was chosen because the cue already
+MEANS the thing the beat means rather than because it was close enough to
+reach for: two cards going down is `ui_card_play`, the clash is the duel's
+own `ui_duel_start`, the round verdict is the Fiesta score pair (already a
+mirrored "I scored" / "they scored", so a player tells them apart untaught),
+the settle is the bag's put-away close, a health bar running out is the
+Fiesta "down" cue, and the table clearing for the summary is a panel opening.
+A new recording is an asset to master, conform and carry forever, so it has to
+earn itself; the two that did are the ones with no catalog equivalent, a small
+repeatable tick and a blunt health-loss thud, and both fire several times a
+round where a borrowed cue would wear immediately.
 
 A collapsed timeline still owes the player all of them, which is why they are
 named on the beats and folded into the single settle beat rather than fired by
@@ -319,9 +333,11 @@ added to the vocabulary without a method is a compile error rather than the
 bare `else cardShuffle()` fallback it replaced.
 
 **The window's own controls answer too.** Sitting down, joining or leaving the
-queue, forfeiting, opening the deck builder, dismissing a summary, and every
-press in the deck builder fire the shared UI click; playing a card fires
-`cardPlay`. These are ordinary buttons rather than moments in a round, so they
-take the ordinary sound and the round's vocabulary stays reserved for the
-beats. Both windows attach it ONCE on the root ahead of the dispatch rather
-than per arm, so a control added later is audible by construction.
+queue, forfeiting, opening the deck builder, dismissing a summary, playing a
+card, and every press in the deck builder fire the shared UI click. These are
+ordinary buttons rather than moments in a round, so they take the ordinary
+sound and the round's vocabulary stays reserved for the beats. Both windows
+attach it ONCE on the root ahead of the dispatch rather than per arm, so a
+control added later is audible by construction. Playing a card is NOT special
+cased here: the click is the press, and the card's own cue rides the sim's
+`cardPlayed` event a moment later, which is what both seats hear.

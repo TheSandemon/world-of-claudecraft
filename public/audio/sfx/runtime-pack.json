@@ -1,8 +1,8 @@
 {
   "format": "woc-sfx-runtime-pack",
   "version": 1,
-  "bundleId": "918ed8c8419b39653e15ba1e0651adaa1e36a2e346ff29d2d2eeaf11598074fe",
-  "catalogHash": "f019cc214d4a671b1967e48eaaea07570028385f04c5ed1f60a05174fcf83ba8",
+  "bundleId": "8890687610860b5f2af05e639a9d3a18c9c8ac9f255cb984d6e328304f435eae",
+  "catalogHash": "71bd6e5d9e2a2bb316021f538a6116bc2167eb0e6d1957c63429091fd1729a5a",
   "clips": {
     "amb_birds": {
       "variants": [
@@ -3940,42 +3940,6 @@
       "gain": 1,
       "playbackRate": 1
     },
-    "ui_card_clash": {
-      "variants": [
-        {
-          "id": "main",
-          "url": "/audio/sfx/ui_card_clash.mp3?v=5f0285e95763",
-          "bytes": 13835,
-          "sha256": "5f0285e9576345687f723a5dbb1a8df2b95bd1ed2ed315dac487c9f7d7a80355"
-        }
-      ],
-      "gain": 1,
-      "playbackRate": 1
-    },
-    "ui_card_curtain": {
-      "variants": [
-        {
-          "id": "main",
-          "url": "/audio/sfx/ui_card_curtain.mp3?v=46f3d4ce1bec",
-          "bytes": 13835,
-          "sha256": "46f3d4ce1bec74481a31ad132e752362cc06fb0bb77bf7bd32e0a9fedc4dc0d9"
-        }
-      ],
-      "gain": 1,
-      "playbackRate": 1
-    },
-    "ui_card_deal": {
-      "variants": [
-        {
-          "id": "main",
-          "url": "/audio/sfx/ui_card_deal.mp3?v=2e11b1f3d706",
-          "bytes": 13835,
-          "sha256": "2e11b1f3d706f042c3dc3118daff4880264199073e9714f46a870ccbd5380ce4"
-        }
-      ],
-      "gain": 1,
-      "playbackRate": 1
-    },
     "ui_card_effect": {
       "variants": [
         {
@@ -3983,18 +3947,6 @@
           "url": "/audio/sfx/ui_card_effect.mp3?v=c32f47b81626",
           "bytes": 13835,
           "sha256": "c32f47b81626759c1c993bb5403de676fb40d69df73180d9cc444473fe274b13"
-        }
-      ],
-      "gain": 1,
-      "playbackRate": 1
-    },
-    "ui_card_finish": {
-      "variants": [
-        {
-          "id": "main",
-          "url": "/audio/sfx/ui_card_finish.mp3?v=41e76ef7e035",
-          "bytes": 23239,
-          "sha256": "41e76ef7e03518caa28fa00c35e79ce1d883f50793cea48f05c372192dde78b7"
         }
       ],
       "gain": 1,
@@ -4066,18 +4018,6 @@
       "gain": 1,
       "playbackRate": 1
     },
-    "ui_card_round_lose": {
-      "variants": [
-        {
-          "id": "main",
-          "url": "/audio/sfx/ui_card_round_lose.mp3?v=179242d967a7",
-          "bytes": 13835,
-          "sha256": "179242d967a7ae92b239d5503cf5e6699b989cce08a624effcd048a0417df9a6"
-        }
-      ],
-      "gain": 1,
-      "playbackRate": 1
-    },
     "ui_card_round_push": {
       "variants": [
         {
@@ -4085,30 +4025,6 @@
           "url": "/audio/sfx/ui_card_round_push.mp3?v=ad8887b3c601",
           "bytes": 12581,
           "sha256": "ad8887b3c60111b91a0e3e146ea0102ab250c2da1be68e8c68cc7bcc2f153a9a"
-        }
-      ],
-      "gain": 1,
-      "playbackRate": 1
-    },
-    "ui_card_round_win": {
-      "variants": [
-        {
-          "id": "main",
-          "url": "/audio/sfx/ui_card_round_win.mp3?v=c09ab1d542fc",
-          "bytes": 13835,
-          "sha256": "c09ab1d542fcb8db777a5a5bd3580e0b8daa3efc078b088550adeab8f903272a"
-        }
-      ],
-      "gain": 1,
-      "playbackRate": 1
-    },
-    "ui_card_settle": {
-      "variants": [
-        {
-          "id": "main",
-          "url": "/audio/sfx/ui_card_settle.mp3?v=a5596323baf2",
-          "bytes": 13835,
-          "sha256": "a5596323baf2ef82e4fe70cadb0cba9ad3ba0d37396702cad3ca8a977eecaa4b"
         }
       ],
       "gain": 1,
