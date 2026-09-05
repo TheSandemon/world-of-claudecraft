@@ -73,13 +73,18 @@ describe('duel theater', () => {
     const rig = fakeHost();
     const push = buildDuelStage({ mine: 4, theirs: 4, outcome: 'push', reshuffled: true });
     new DuelTheater(rig.host).play(push, 'full');
-    expect(rig.cues).toEqual([]);
+    // The deal beat opens synchronously and now carries a cue of its own, so
+    // the first thing a player hears is the cards landing.
+    expect(rig.cues).toEqual(['deal']);
     // Far enough for the reveal to open, taken from the beat itself rather
     // than a literal that goes stale the next time the pacing is retuned.
     rig.advance(DUEL_BEAT_GAP_MS.deal);
-    expect(rig.cues).toEqual(['reveal']);
+    expect(rig.cues).toEqual(['deal', 'reveal']);
     rig.advance(PAST_THE_ROUND);
-    expect(rig.cues).toEqual(['reveal', 'push', 'shuffle']);
+    expect(rig.cues).toEqual(['deal', 'reveal', 'clash', 'push', 'shuffle']);
+    // One cue per beat that opened, in the same order: nothing arrives early
+    // and nothing is silent.
+    expect(rig.cues).toHaveLength(rig.phases.length);
   });
 
   it('lands on the settled picture at once when motion is off, cues and all', () => {
@@ -87,7 +92,10 @@ describe('duel theater', () => {
     const push = buildDuelStage({ mine: 4, theirs: 4, outcome: 'push', reshuffled: true });
     new DuelTheater(rig.host).play(push, 'none');
     expect(rig.phases).toEqual(['settle']);
-    expect(rig.cues).toEqual(['reveal', 'push', 'shuffle']);
+    // The collapsed arm still owes the player the WHOLE round, which is now
+    // five cues rather than three: it is read off the played timeline, so it
+    // cannot report fewer moments than the played round would have.
+    expect(rig.cues).toEqual(['deal', 'reveal', 'clash', 'push', 'shuffle']);
     // Nothing left to fire: a collapsed timeline costs no timers either.
     expect(rig.pending()).toBe(0);
   });

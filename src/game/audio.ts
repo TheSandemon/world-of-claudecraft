@@ -65,6 +65,24 @@ export const UI_CUES = {
   // both are short and sit under the four cues above.
   cardEffect: 'ui_card_effect',
   cardHit: 'ui_card_hit',
+  // The rest of the round, so that EVERY beat is audible. Half the timeline
+  // used to be silent (the deal, the clash, a won or lost verdict, and a
+  // settle with no reshuffle behind it), which meant the round's audio told a
+  // shorter story than its picture did and told a player who was not looking
+  // at the window almost nothing. All of these are per-beat sounds, so they
+  // are short and sit under the four cues above, exactly as the two do.
+  cardDeal: 'ui_card_deal',
+  cardClash: 'ui_card_clash',
+  cardRoundWin: 'ui_card_round_win',
+  cardRoundLose: 'ui_card_round_lose',
+  cardSettle: 'ui_card_settle',
+  // The ending's beats (src/ui/cards/duel_outro_core.ts). The health bar
+  // emptying and the table clearing are new; the match VERDICT deliberately
+  // stays the existing duel recordings (see cardMatchWin/cardMatchLose below),
+  // because what was wrong with it was WHEN it played, not what it sounded
+  // like.
+  cardFinish: 'ui_card_finish',
+  cardCurtain: 'ui_card_curtain',
   // Gathering rhythm (Professions 2.0 Phase 12b, issue #2208): fishCast/
   // fishBite/fishReel are real, shipped fishing cues. gatherCast branches by
   // node type (gatherCastByNodeType below); this flat cue is only the
@@ -377,6 +395,48 @@ export class GameAudio {
 
   cardHit(): void {
     this.play(UI_CUES.cardHit);
+  }
+
+  cardDeal(): void {
+    this.play(UI_CUES.cardDeal);
+  }
+
+  cardClash(): void {
+    this.play(UI_CUES.cardClash);
+  }
+
+  cardRoundWin(): void {
+    this.play(UI_CUES.cardRoundWin);
+  }
+
+  cardRoundLose(): void {
+    this.play(UI_CUES.cardRoundLose);
+  }
+
+  cardSettle(): void {
+    this.play(UI_CUES.cardSettle);
+  }
+
+  cardFinish(): void {
+    this.play(UI_CUES.cardFinish);
+  }
+
+  // The MATCH verdict. These are the existing duel recordings on purpose: the
+  // defect was that they fired on the `cardDuelMatchEnd` EVENT, which arrives
+  // in the same tick as the final round, so a player heard the match end while
+  // the round that decided it was still being told. Riding the ending's own
+  // `glory` beat fixes the timing without inventing a sound for a moment that
+  // already had one.
+  cardMatchWin(): void {
+    this.play(UI_CUES.duelEnd);
+  }
+
+  cardMatchLose(): void {
+    this.play(UI_CUES.arenaLoss);
+  }
+
+  cardCurtain(): void {
+    this.play(UI_CUES.cardCurtain);
   }
 
   // Gathering rhythm (Professions 2.0 Phase 12b). All of these are personal

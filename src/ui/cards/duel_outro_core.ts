@@ -86,6 +86,35 @@ export function duelOutroSpanMs(beats: readonly DuelBeat[]): number {
  * driver catching up) owes nothing at all. Its caller shows the summary at
  * once, which is the correct picture for a match that is already over.
  */
+/**
+ * The cue that rides one ending beat.
+ *
+ * These were silent, on the reasoning that the match end "already has its own
+ * sound fired by the event handler". That was true and it was the defect: the
+ * sound fired on the EVENT, which arrives in the same tick as the final round,
+ * so a player heard the match end while the round that decided it was still
+ * being told, and then watched three more beats go by in silence. It is the
+ * same complaint the queued outro answers one layer up, and the same answer:
+ * the ending's sound rides the ending's beat.
+ *
+ * So `glory` carries the match verdict, and it carries the EXISTING duel
+ * recordings rather than new ones (`matchWin` / `matchLose` resolve to
+ * duelEnd / arenaLoss in src/game/audio.ts). Nothing about the sound changed;
+ * only when it plays did. A drawn match takes `push`, which is already the
+ * vocabulary's word for "neither side took it".
+ */
+function outroCue(phase: DuelOutroPhase, outcome: DuelMatchOutcome): DuelBeat['cue'] {
+  // A health bar empties: the one fact that ended the match.
+  if (phase === 'finish') return 'finish';
+  if (phase === 'glory') {
+    if (outcome === 'win') return 'matchWin';
+    if (outcome === 'lose') return 'matchLose';
+    return 'push';
+  }
+  // The table clears and the summary is owed the window.
+  return 'curtain';
+}
+
 export function buildDuelOutro(outcome: DuelMatchOutcome, motion: DuelMotion): DuelBeat[] {
   if (motion === 'none') return [];
   // The bar that emptied. A win means THEIR health ran out.
@@ -100,11 +129,7 @@ export function buildDuelOutro(outcome: DuelMatchOutcome, motion: DuelMotion): D
     beats.push({
       phase: phase as DuelBeat['phase'],
       at,
-      // Silent. Every cue in the vocabulary names a thing that happens inside a
-      // ROUND (a reveal, an effect, a hit, a push, a reshuffle), and the match
-      // end already has its own sound fired by the event handler. Inventing a
-      // sixth cue here would give one moment two voices.
-      cue: null,
+      cue: outroCue(phase, outcome),
       step: null,
       spotlight: phase === 'finish' ? fatal : null,
     });

@@ -22,6 +22,7 @@ on where it appears.
 | `duel_table_markup.ts` | thin consumer: table and stage models in, markup out. Touches no DOM. |
 | `duel_theater.ts` | the driver that walks a timeline against an injected host. No element, no timer API, no audio object. |
 | `duel_theater_host.ts` | the browser half: the real timer, the real element, and the one motion decision. In `UI_DOM_MODULES`. |
+| `duel_cue_audio.ts` | the audio surface (one method per `DuelBeatCue`) and the cue-to-method map. DOM-free, shared by the host and the closed-window arm so the two cannot disagree. |
 | `card_round_feedback.ts` | what a resolved round does to the client: hands the round and its cues to the stage, and plays them itself only when no stage took it |
 | `card_inspect_view.ts` | pure core: where the enlarged copy of a hovered card sits. In `UI_PURE_CORES`. |
 | `card_inspect.ts` | the card inspector: hover, focus or press-and-hold shows a card at a readable size. Owns the popup element and one layout read per show. |
@@ -231,10 +232,52 @@ at that same instant, pinned in `tests/duel_beats_core.test.ts`, so the hand
 comes back the moment the clock starts counting again and never a beat before
 the round finishes speaking.
 
-The **cues** ride the beats rather than firing at the switch arm: the reveal
-sound when the cards turn, the push sound on the verdict, the shuffle when the
-hand refills. A collapsed timeline still owes the player all of them, which is
-why they are named on the beats and folded into the single settle beat rather
-than fired by the caller. A CLOSED window has no beats to ride, so
-`applyCardRoundFeedback` plays all three at once for exactly that case: a
-player mid-match with the window shut still hears their round resolve.
+The **cues** ride the beats rather than firing at the switch arm, and **EVERY
+BEAT CARRIES ONE**: the cards land, the faces turn, each effect ticks, the two
+cards lean in, the hit lands, the verdict says who took it, the round settles
+(or the deck comes back around). The ending's three beats too: the bar empties,
+the match is called, the table clears.
+
+That totality is the rule, not an accident of the current list. Half the
+timeline used to be silent (the deal, the clash, a decided verdict, and a
+settle with no reshuffle behind it), so a round's audio told a shorter story
+than its picture did: a player heard the cards turn and then nothing, while
+four more moments went past on screen. A beat is defined as one thing the
+player is being told, so a beat with no sound is a thing the player who is not
+staring at the window is never told at all. `cueFor` is total over the round
+phases and `outroCue` over the ending's, which is what keeps it true.
+
+Two cues branch, because they carry two different pieces of NEWS rather than
+two volumes of the same one: the verdict (`roundWin` / `roundLose` / `push`)
+and the settle (`settle` / `shuffle`). The match verdict is the third
+(`matchWin` / `matchLose`), and it deliberately reuses the existing duel
+recordings: what was wrong with the match-end sound was never how it sounded,
+it was that it fired on the `cardDuelMatchEnd` EVENT, which the sim emits in
+the same tick as the final round. A player heard the match end while the round
+that decided it was still speaking. It rides the `glory` beat now, and
+`showMatchEnd` returns whether the ending will be narrated so the HUD arm knows
+whether it still owes the sound, exactly the contract `showReveal` has.
+
+A collapsed timeline still owes the player all of them, which is why they are
+named on the beats and folded into the single settle beat rather than fired by
+the caller. A CLOSED window has no beats to ride, so `applyCardRoundFeedback`
+plays them all at once for exactly that case: a player mid-match with the
+window shut still hears their round resolve.
+
+**Neither arm owns a copy of the decisions.** `duelCues` is READ OFF
+`buildDuelBeats` rather than rebuilt beside it, and both arms fire through
+`duel_cue_audio.ts`. A hand-written second list is a copy that only has to be
+right and is never checked at the moment it goes wrong: a round played with the
+window open and the same round played with it shut would simply have sounded
+different, silently, for exactly the players who cannot see that anything is
+missing. The cue-to-method map is a `Record` keyed on the cue union, so a cue
+added to the vocabulary without a method is a compile error rather than the
+bare `else cardShuffle()` fallback it replaced.
+
+**The window's own controls answer too.** Sitting down, joining or leaving the
+queue, forfeiting, opening the deck builder, dismissing a summary, and every
+press in the deck builder fire the shared UI click; playing a card fires
+`cardPlay`. These are ordinary buttons rather than moments in a round, so they
+take the ordinary sound and the round's vocabulary stays reserved for the
+beats. Both windows attach it ONCE on the root ahead of the dispatch rather
+than per arm, so a control added later is audible by construction.

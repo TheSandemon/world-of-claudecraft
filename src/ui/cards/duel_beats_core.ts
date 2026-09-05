@@ -51,8 +51,41 @@ export type DuelBeatPhase =
   | 'glory'
   | 'curtain';
 
-/** The audio cues the ClaudeStone sounds map onto. */
-export type DuelBeatCue = 'reveal' | 'effect' | 'hit' | 'push' | 'shuffle';
+/**
+ * The audio cues the ClaudeStone sounds map onto.
+ *
+ * EVERY BEAT CARRIES ONE. Half the timeline used to be silent (the deal, the
+ * clash, a won or lost verdict, and a settle with no reshuffle behind it), so
+ * the round's audio told a different, shorter story than its picture did: a
+ * player heard the cards turn and then nothing until the next round, while
+ * four more moments went by on screen. A beat is defined as one thing a player
+ * is being told, and a thing they are told with no sound is a thing the player
+ * who is not staring at the window is never told at all.
+ *
+ * The vocabulary is per-MOMENT rather than per-outcome wherever it can be, but
+ * the verdict and the match ending are genuinely two different pieces of news
+ * each, so they get two cues each. `matchWin` / `matchLose` reuse the existing
+ * duel recordings (see UI_CUES in src/game/audio.ts): the ending needed to
+ * ride its own beat, not to be a new sound.
+ */
+export type DuelBeatCue =
+  // Inside a round.
+  | 'deal'
+  | 'reveal'
+  | 'effect'
+  | 'clash'
+  | 'hit'
+  | 'roundWin'
+  | 'roundLose'
+  | 'push'
+  | 'settle'
+  | 'shuffle'
+  // The match ending (duel_outro_core.ts), on the same driver and the same
+  // attribute, so there is one cue vocabulary rather than two.
+  | 'finish'
+  | 'matchWin'
+  | 'matchLose'
+  | 'curtain';
 
 export type DuelOutcome = 'win' | 'lose' | 'push';
 
@@ -270,16 +303,33 @@ export function buildDuelStage(input: DuelRoundInput): DuelStageModel {
   };
 }
 
-/** The cue that rides one beat, or null when that beat is silent. */
-function cueFor(phase: DuelBeatPhase, stage: DuelStageModel): DuelBeatCue | null {
+/**
+ * The cue that rides one beat.
+ *
+ * Total over the round phases, and deliberately so: a beat is one thing the
+ * player is being told, and every one of them is now audible. The two that
+ * branch do so because they carry two different pieces of news, not two
+ * volumes of the same one: a verdict says who took the round, and a settle
+ * says whether the deck came back around with it.
+ */
+function cueFor(phase: DuelBeatPhase, stage: DuelStageModel): DuelBeatCue {
+  // The cards land face-down: the round has begun and nothing is known yet.
+  if (phase === 'deal') return 'deal';
   if (phase === 'reveal') return 'reveal';
   // Every effect gets its own sound as well as its own moment: a round where
   // three things happened should not sound like a round where one did.
   if (phase === 'step') return 'effect';
+  // The two cards lean in and strike.
+  if (phase === 'clash') return 'clash';
   if (phase === 'damage') return 'hit';
-  if (phase === 'verdict' && stage.outcome === 'push') return 'push';
-  if (phase === 'settle' && stage.reshuffled) return 'shuffle';
-  return null;
+  if (phase === 'verdict') {
+    if (stage.outcome === 'win') return 'roundWin';
+    if (stage.outcome === 'lose') return 'roundLose';
+    return 'push';
+  }
+  // The reshuffle is the louder news when it happened: a round that brought
+  // the deck back around is told by that, not by the quieter settle tick.
+  return stage.reshuffled ? 'shuffle' : 'settle';
 }
 
 /**
@@ -371,17 +421,22 @@ export function buildDuelBeats(stage: DuelStageModel, motion: DuelMotion = 'full
   return beats;
 }
 
-/** Every cue the timeline will fire, in order. A collapsed timeline still owes
- *  the player all of them, so the driver folds this into its one beat. */
+/**
+ * Every cue the timeline will fire, in order. A collapsed timeline still owes
+ * the player all of them, so the driver folds this into its one beat.
+ *
+ * READ OFF the played timeline rather than rebuilt beside it. It used to be a
+ * hand-written second list of the same decisions, which is a copy that only
+ * has to be right and is never checked at the moment it goes wrong: a round
+ * played with the window open and the same round played with it shut would
+ * simply have sounded different, silently, and the shape of the bug is a cue
+ * that exists in one arm and not the other. Now the two cannot disagree,
+ * because there is only one set of decisions.
+ */
 export function duelCues(stage: DuelStageModel): DuelBeatCue[] {
-  const cues: DuelBeatCue[] = ['reveal'];
-  // One per effect, exactly as the played timeline would fire them, then the
-  // hit: a collapsed round still SOUNDS like the round it was.
-  for (const _step of stage.steps) cues.push('effect');
-  if (hasDamageBeat(stage)) cues.push('hit');
-  if (stage.outcome === 'push') cues.push('push');
-  if (stage.reshuffled) cues.push('shuffle');
-  return cues;
+  return buildDuelBeats(stage, 'full')
+    .map((beat) => beat.cue)
+    .filter((cue): cue is DuelBeatCue => cue !== null);
 }
 
 /** When the last beat opens. Zero for a collapsed timeline. */

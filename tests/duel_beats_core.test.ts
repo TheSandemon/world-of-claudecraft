@@ -215,17 +215,31 @@ describe('duel beat timeline', () => {
       }),
     );
     const cueAt = (phase: string) => push.find((b) => b.phase === phase)?.cue;
+    expect(cueAt('deal')).toBe('deal');
     expect(cueAt('reveal')).toBe('reveal');
     expect(cueAt('step')).toBe('effect');
+    expect(cueAt('clash')).toBe('clash');
     expect(cueAt('damage')).toBe('hit');
     expect(cueAt('verdict')).toBe('push');
     expect(cueAt('settle')).toBe('shuffle');
-    expect(cueAt('deal')).toBeNull();
+    // EVERY beat is audible. Half of them used to be silent (the deal, the
+    // clash, a decided verdict, a settle with no reshuffle), so the round's
+    // audio told a shorter story than its picture did, and told a player who
+    // was not watching the window almost nothing at all.
+    expect(push.filter((b) => b.cue === null)).toEqual([]);
   });
 
-  it('fires no push cue on a decided round and no shuffle without a reshuffle', () => {
-    const beats = buildDuelBeats(buildDuelStage(plainWin));
-    expect(beats.filter((b) => b.cue !== null).map((b) => b.cue)).toEqual(['reveal']);
+  it('branches the verdict and the settle on what actually happened', () => {
+    // The two beats that carry two different pieces of news rather than two
+    // volumes of the same one: who took the round, and whether the deck came
+    // back around with it.
+    const cueOn = (phase: string, input: Parameters<typeof buildDuelStage>[0]) =>
+      buildDuelBeats(buildDuelStage(input)).find((b) => b.phase === phase)?.cue;
+    expect(cueOn('verdict', plainWin)).toBe('roundWin');
+    expect(cueOn('verdict', { ...plainWin, outcome: 'lose' })).toBe('roundLose');
+    expect(cueOn('verdict', { ...plainWin, outcome: 'push' })).toBe('push');
+    expect(cueOn('settle', plainWin)).toBe('settle');
+    expect(cueOn('settle', { ...plainWin, reshuffled: true })).toBe('shuffle');
   });
 
   it('gives the calm level the same beats as the full timeline, never a collapse', () => {
@@ -259,8 +273,39 @@ describe('duel beat timeline', () => {
       damage: 5,
       damageTo: 'mine',
     });
-    expect(duelCues(stage)).toEqual(['reveal', 'effect', 'effect', 'hit', 'push', 'shuffle']);
-    expect(duelCues(buildDuelStage(plainWin))).toEqual(['reveal']);
+    expect(duelCues(stage)).toEqual([
+      'deal',
+      'reveal',
+      'effect',
+      'effect',
+      'clash',
+      'hit',
+      'push',
+      'shuffle',
+    ]);
+    expect(duelCues(buildDuelStage(plainWin))).toEqual([
+      'deal',
+      'reveal',
+      'clash',
+      'roundWin',
+      'settle',
+    ]);
+  });
+
+  it('reads the collapsed cues OFF the played timeline, so the two cannot drift', () => {
+    // The teeth on the rewrite: duelCues used to be a second hand-written list
+    // of the same decisions, which only has to be right and is never checked
+    // at the moment it goes wrong. A round played with the window open and the
+    // same round played with it shut would simply have sounded different.
+    for (const input of [
+      plainWin,
+      { ...plainWin, outcome: 'lose' as const },
+      { ...plainWin, outcome: 'push' as const, reshuffled: true },
+      { ...plainWin, steps: [step(1), step(-2)], damage: 5, damageTo: 'mine' as const },
+    ]) {
+      const stage = buildDuelStage(input);
+      expect(duelCues(stage)).toEqual(buildDuelBeats(stage, 'full').map((b) => b.cue));
+    }
   });
 
   it('is a pure function of the round', () => {

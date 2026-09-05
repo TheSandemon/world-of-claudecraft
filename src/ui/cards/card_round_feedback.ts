@@ -15,17 +15,14 @@
 // looking at the table still hears their round resolve.
 
 import type { SimEvent } from '../../sim/types';
+import { buildDuelStage, duelCues } from './duel_beats_core';
+import { type DuelCueAudio, playDuelCues } from './duel_cue_audio';
 
 type CardRoundResolved = Extract<SimEvent, { type: 'cardRoundResolved' }>;
 
-/** The audio surface this needs, narrowed to the ClaudeStone round cues. */
-export interface CardRoundAudio {
-  cardReveal(): void;
-  cardRoundPush(): void;
-  cardShuffle(): void;
-  cardEffect(): void;
-  cardHit(): void;
-}
+/** The audio surface this needs: every ClaudeStone cue, because a round played
+ *  with the window shut is owed exactly the round a played one is. */
+export type CardRoundAudio = DuelCueAudio;
 
 /** What the theater narrates for one resolved round: the whole round event,
  *  minus the wire bookkeeping. */
@@ -96,12 +93,25 @@ export function applyCardRoundFeedback(
     audio,
   );
   if (taken) return;
-  // No stage to ride: the player still hears the round they are not watching,
-  // including one tick per effect and the hit, so a match played with the
-  // window shut still sounds like the round it was.
-  audio.cardReveal();
-  for (const _step of ev.steps ?? []) audio.cardEffect();
-  if ((ev.damage ?? 0) > 0) audio.cardHit();
-  if (ev.outcome === 'push') audio.cardRoundPush();
-  if (ev.reshuffled) audio.cardShuffle();
+  // No stage to ride, so the cues are fired here instead. They are the SAME
+  // cues, read off the same timeline the stage would have played
+  // (`duelCues` -> `buildDuelBeats`), rather than a second hand-written list of
+  // the same decisions: a round told with the window shut is owed exactly the
+  // round a watched one is, and the way that promise breaks is a cue added to
+  // one arm and forgotten in the other, silently, for the players who by
+  // definition cannot see that anything is missing.
+  playDuelCues(
+    audio,
+    duelCues(
+      buildDuelStage({
+        mine: ev.mine,
+        theirs: ev.theirs,
+        outcome: ev.outcome,
+        reshuffled: ev.reshuffled,
+        steps: ev.steps,
+        damage: ev.damage,
+        damageTo: ev.damageTo,
+      }),
+    ),
+  );
 }

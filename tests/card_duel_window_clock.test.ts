@@ -7,6 +7,7 @@ import { CardDuelWindow } from '../src/ui/card_duel_window';
 import { DUEL_BEAT_GAP_MS } from '../src/ui/cards/duel_beats_core';
 import { resolveDuelMotion } from '../src/ui/cards/duel_theater_host';
 import type { CardMinigameInfo } from '../src/world_api';
+import { recordingCueAudio } from './helpers/card_duel_fixtures';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const CARDS_CSS = readFileSync(path.join(here, '..', 'src', 'styles', 'cards.css'), 'utf8');
@@ -438,33 +439,28 @@ describe('card duel window clock and round theater', () => {
     try {
       const { win } = makeWindow();
       win.render();
-      const cues: string[] = [];
-      const audio = {
-        cardReveal: () => cues.push('reveal'),
-        cardRoundPush: () => cues.push('push'),
-        cardShuffle: () => cues.push('shuffle'),
-        cardEffect: () => cues.push('effect'),
-        cardHit: () => cues.push('hit'),
-      };
+      const { cues, audio } = recordingCueAudio();
       const root = document.body.firstElementChild as HTMLElement;
       const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
       win.showReveal(
         { mine: 4, theirs: 4, mineBase: 2, theirsBase: 4, outcome: 'push', reshuffled: true },
         audio,
       );
-      // The first beat opens synchronously: the cards land face-down.
+      // The first beat opens synchronously: the cards land face-down, and
+      // they now do so audibly.
       expect(stage.dataset.beat).toBe('deal');
-      expect(cues).toEqual([]);
+      expect(cues).toEqual(['deal']);
       // Taken from the beat itself: the pacing is retuned from one constant,
       // and a literal here would pin the old numbers instead of the rule.
       vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.deal);
       expect(stage.dataset.beat).toBe('reveal');
-      expect(cues).toEqual(['reveal']);
+      expect(cues).toEqual(['deal', 'reveal']);
       vi.advanceTimersByTime(10000);
       expect(stage.dataset.beat).toBe('settle');
-      // The push cue rides the verdict and the shuffle rides the settle, so a
-      // round no longer sounds like one undifferentiated noise.
-      expect(cues).toEqual(['reveal', 'push', 'shuffle']);
+      // Every beat rides its own cue: the deal, the reveal, the clash, the
+      // push on the verdict and the shuffle on the settle. A round no longer
+      // sounds like one undifferentiated noise, and no beat is silent.
+      expect(cues).toEqual(['deal', 'reveal', 'clash', 'push', 'shuffle']);
     } finally {
       vi.useRealTimers();
     }
@@ -480,27 +476,20 @@ describe('card duel window clock and round theater', () => {
       document.documentElement.dataset.fxLevel = 'low';
       const { win, root } = makeWindow();
       win.render();
-      const cues: string[] = [];
+      const { cues, audio } = recordingCueAudio();
       const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
-      win.showReveal(
-        { mine: 6, theirs: 2, outcome: 'win', reshuffled: true },
-        {
-          cardReveal: () => cues.push('reveal'),
-          cardRoundPush: () => cues.push('push'),
-          cardShuffle: () => cues.push('shuffle'),
-          cardEffect: () => cues.push('effect'),
-          cardHit: () => cues.push('hit'),
-        },
-      );
+      win.showReveal({ mine: 6, theirs: 2, outcome: 'win', reshuffled: true }, audio);
       expect(stage.dataset.beat).toBe('deal');
       // Taken from the beat itself: the pacing is retuned from one constant,
       // and a literal here would pin the old numbers instead of the rule.
       vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.deal);
       expect(stage.dataset.beat).toBe('reveal');
-      expect(cues).toEqual(['reveal']);
+      expect(cues).toEqual(['deal', 'reveal']);
       vi.advanceTimersByTime(10000);
       expect(stage.dataset.beat).toBe('settle');
-      expect(cues).toEqual(['reveal', 'shuffle']);
+      // The cheapest machine hears the whole round too: the cue ladder is not
+      // tiered any more than the beats are.
+      expect(cues).toEqual(['deal', 'reveal', 'clash', 'roundWin', 'shuffle']);
     } finally {
       document.documentElement.removeAttribute('data-fx-level');
       vi.useRealTimers();
@@ -519,29 +508,23 @@ describe('card duel window clock and round theater', () => {
       document.body.classList.add('reduce-motion');
       const { win, root } = makeWindow();
       win.render();
-      const cues: string[] = [];
+      const { cues, audio } = recordingCueAudio();
       const stage = root.querySelector('[data-cd-stage]') as HTMLElement;
       const board = root.querySelector('[data-cd-board]') as HTMLElement;
-      win.showReveal(
-        { mine: 6, theirs: 2, outcome: 'win', reshuffled: true },
-        {
-          cardReveal: () => cues.push('reveal'),
-          cardRoundPush: () => cues.push('push'),
-          cardShuffle: () => cues.push('shuffle'),
-          cardEffect: () => cues.push('effect'),
-          cardHit: () => cues.push('hit'),
-        },
-      );
+      win.showReveal({ mine: 6, theirs: 2, outcome: 'win', reshuffled: true }, audio);
       expect(board.dataset.motion).toBe('calm');
       expect(stage.dataset.beat).toBe('deal');
-      expect(cues).toEqual([]);
+      expect(cues).toEqual(['deal']);
       vi.advanceTimersByTime(DUEL_BEAT_GAP_MS.deal);
       expect(stage.dataset.beat).toBe('reveal');
       expect(board.dataset.spot).toBe('both');
-      expect(cues).toEqual(['reveal']);
+      expect(cues).toEqual(['deal', 'reveal']);
       vi.advanceTimersByTime(10000);
       expect(stage.dataset.beat).toBe('settle');
-      expect(cues).toEqual(['reveal', 'shuffle']);
+      // Reduced motion is owed the absence of MOVEMENT, never the absence of
+      // being told what happened, and that goes for the telling a player
+      // HEARS as much as the one they watch.
+      expect(cues).toEqual(['deal', 'reveal', 'clash', 'roundWin', 'shuffle']);
     } finally {
       document.body.classList.remove('reduce-motion');
       vi.useRealTimers();

@@ -29,6 +29,7 @@
 // stage would be stomped by the next render, and staging the snapshot itself
 // would delay information the fairness rule forbids delaying.
 
+import { audio } from '../game/audio';
 import { CARD_CATALOG, CARD_OPPONENTS } from '../sim/content/cards';
 import { CARD_DUEL_ROUND_DEADLINE_S } from '../sim/minigames/card_duel';
 import type { IWorld } from '../world_api';
@@ -568,20 +569,28 @@ export class CardDuelWindow {
    * the window's shell flips to the Join screen and the board a player was
    * reading is replaced mid-thought. The summary holds the window until they
    * choose to leave it or sit down again.
+   *
+   * Returns whether the ending will be NARRATED, which is also the answer to
+   * "did it take the match verdict cue": the outro plays `matchWin` /
+   * `matchLose` on its own `glory` beat, so a caller that also fired the sound
+   * on the event would double it. False means the summary went up at once
+   * (a shut window, a stalled theater), and the caller owes the sound. The
+   * same contract `showReveal` has, for the same reason.
    */
-  showMatchEnd(input: DuelSummaryInput): void {
+  showMatchEnd(input: DuelSummaryInput): boolean {
     const summary = buildDuelSummary(input);
     this.lastPending = '';
     // Nobody is watching, or nothing is being told: the finished picture is the
     // only correct one, and a closed window has no beats to play anyway.
     if (!this.isOpen || !this.theater?.isPlaying) {
       this.revealSummary(summary);
-      return;
+      return false;
     }
     // The round that decided the match is still speaking. Queue behind it: the
     // theater calls back when its last beat opens, and the outro plays over the
     // finished stage before the summary takes the window.
     this.pendingEnd = summary;
+    return true;
   }
 
   /**
@@ -830,6 +839,19 @@ export class CardDuelWindow {
     el.addEventListener('click', (ev) => {
       const target = ev.target as HTMLElement | null;
       if (!target) return;
+      // Every control in this window answers audibly. They were all silent,
+      // which on a surface whose whole grammar is "one moment, one sound" read
+      // as the click not registering: a player who pressed Sit down and heard
+      // nothing had no way to tell a slow server from a missed button. The
+      // shared UI click is the right sound for it, because these are ordinary
+      // buttons rather than moments in a round; the round's own vocabulary
+      // (duel_cue_audio.ts) stays reserved for the beats.
+      //
+      // Placed ONCE, before the dispatch, rather than per arm: an arm added
+      // later is audible by construction instead of by remembering. Playing a
+      // CARD is the one exception and fires its own cue below, so it is
+      // excluded here rather than double-sounded.
+      if (!target.closest('[data-play]')) audio.click();
       if (target.closest('[data-close]')) {
         this.close();
         return;
@@ -877,6 +899,12 @@ export class CardDuelWindow {
           from: { left: box.left, top: box.top, width: box.width, height: box.height },
           html: card.outerHTML,
         };
+        // The card's own cue rather than the generic click: this is the one
+        // control here that is a MOVE in the round rather than a button, and
+        // it is the moment the player commits. The sim also emits `cardPlayed`
+        // (heard by both seats), so this is the local, immediate answer to the
+        // press, ahead of the round trip.
+        audio.cardPlay();
         // The INSTANCE id, not the face value: a hand can hold two different
         // cards of the same value, so a value would be an ambiguous request.
         world.playCardInDuel(Number(card.dataset.play));

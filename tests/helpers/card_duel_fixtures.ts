@@ -18,6 +18,8 @@ import {
   createMatchState,
 } from '../../src/sim/minigames/card_duel';
 import type { CardEvalContext } from '../../src/sim/minigames/card_duel/expressions';
+import type { DuelBeatCue } from '../../src/ui/cards/duel_beats_core';
+import { DUEL_CUE_METHOD, type DuelCueAudio } from '../../src/ui/cards/duel_cue_audio';
 
 let nextFixtureIid = 900000;
 
@@ -149,4 +151,26 @@ export function countingRng(values: readonly number[] = [0]): {
       return v;
     },
   };
+}
+
+/**
+ * A recording ClaudeStone audio surface: every cue, one method each, pushing
+ * its own cue name onto a shared list.
+ *
+ * BUILT FROM `DUEL_CUE_METHOD` rather than hand-written, and that is the whole
+ * point of it living here. Each suite used to spell its own five-method object
+ * literal, so a cue added to the vocabulary broke three suites into a compile
+ * error whose obvious fix (paste the new methods in) is also the fix that lets
+ * a stub go on silently under-reporting: a method a stub does not have is a
+ * sound a test cannot notice is missing. Derived from the map, a new cue
+ * appears in every recorder at once, and `cues` reads back in the exact
+ * vocabulary `DuelBeatCue` speaks.
+ */
+export function recordingCueAudio(): { cues: DuelBeatCue[]; audio: DuelCueAudio } {
+  const cues: DuelBeatCue[] = [];
+  const audio = {} as Record<string, () => void>;
+  for (const [cue, method] of Object.entries(DUEL_CUE_METHOD)) {
+    audio[method] = () => cues.push(cue as DuelBeatCue);
+  }
+  return { cues, audio: audio as unknown as DuelCueAudio };
 }

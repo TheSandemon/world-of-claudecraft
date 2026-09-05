@@ -126,8 +126,23 @@ describe('duel outro core', () => {
     expect(span).toBeGreaterThan(beats[2].at);
   });
 
-  it('fires no cue: the ending already has its own sound', () => {
-    for (const beat of buildDuelOutro('lose', 'full')) expect(beat.cue).toBeNull();
+  it('gives every ending beat a cue, and the verdict rides `glory`', () => {
+    // These used to be silent, on the reasoning that the match end "already
+    // has its own sound fired by the event handler". That was true and it was
+    // the defect: the sound fired on the EVENT, which the sim emits in the
+    // same tick as the final round, so a player heard the match end while the
+    // round that decided it was still being told, and then watched three more
+    // beats go by in silence.
+    const cues = (outcome: 'win' | 'lose' | 'draw') =>
+      buildDuelOutro(outcome, 'full').map((b) => b.cue);
+    expect(cues('win')).toEqual(['finish', 'matchWin', 'curtain']);
+    expect(cues('lose')).toEqual(['finish', 'matchLose', 'curtain']);
+    // A drawn match takes the vocabulary's existing word for "neither side
+    // took it" rather than minting a fourth verdict sound.
+    expect(cues('draw')).toEqual(['finish', 'push', 'curtain']);
+    for (const outcome of ['win', 'lose', 'draw'] as const) {
+      expect(cues(outcome)).not.toContain(null);
+    }
   });
 
   it('tells an outro beat from a round beat', () => {

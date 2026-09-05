@@ -13440,15 +13440,27 @@ export class Hud {
         case 'cardRoundResolved':
           applyCardRoundFeedback(ev, audio, this.cardWindows.cardDuel);
           break;
-        case 'cardDuelMatchEnd':
-          if (ev.won) audio.duelEnd();
-          else audio.arenaLoss();
+        case 'cardDuelMatchEnd': {
           // The match ends ON the table: the window keeps the summary up until
           // the player leaves it or sits down again. Without the payload there
           // is nothing to summarize (a void match), and the window falls back
           // to its ordinary idle body.
-          if (ev.summary) {
-            this.cardWindows.cardDuel.showMatchEnd({ won: ev.won, draw: ev.draw, ...ev.summary });
+          const narrated = ev.summary
+            ? this.cardWindows.cardDuel.showMatchEnd({ won: ev.won, draw: ev.draw, ...ev.summary })
+            : false;
+          // The verdict sound rides the ending's own `glory` beat when the
+          // ending is being narrated. It used to fire right here, on the
+          // event, which the sim emits in the SAME tick as the final round: a
+          // player heard the match end while the round that decided it was
+          // still being told. Firing it here as well would now double it.
+          //
+          // `narrated` false is the real other case (a shut window, a void
+          // match, a stalled theater), and it is owed the sound, exactly as
+          // applyCardRoundFeedback is owed the round's cues for the same
+          // reason. Same recordings either way: what was wrong was the timing.
+          if (!narrated) {
+            if (ev.won) audio.duelEnd();
+            else audio.arenaLoss();
           }
           this.showBanner(
             t(
@@ -13460,6 +13472,7 @@ export class Hud {
             ),
           );
           break;
+        }
         case 'fiestaWord': {
           const { text, tier, color } = this.fiestaWordParts(ev.flavor, ev.n);
           this.fiestaWordPop(text, color, tier);

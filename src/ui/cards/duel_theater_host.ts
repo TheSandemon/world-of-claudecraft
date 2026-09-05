@@ -9,19 +9,13 @@
 // own.
 
 import type { DuelBeat, DuelBeatCue, DuelMotion } from './duel_beats_core';
+import { type DuelCueAudio, playDuelCue } from './duel_cue_audio';
 import type { DuelTheaterHost } from './duel_theater';
 
-/** The ClaudeStone cues, narrowed to what a host needs to fire. */
-export interface DuelCueAudio {
-  cardReveal(): void;
-  cardRoundPush(): void;
-  cardShuffle(): void;
-  /** One effect landing. Fired once per narrated effect, so a round where three
-   *  things happened does not sound like a round where one did. */
-  cardEffect(): void;
-  /** The hit: health coming off. */
-  cardHit(): void;
-}
+/** Re-exported so the host's callers keep one import for "the cues and how to
+ *  fire them". The definition lives in duel_cue_audio.ts, which is DOM-free
+ *  and shared with the closed-window arm (card_round_feedback.ts). */
+export type { DuelCueAudio };
 
 /**
  * How the round timeline is played here.
@@ -124,11 +118,7 @@ export function browserTheaterHost(
     },
     play(cue: DuelBeatCue) {
       if (!audio) return;
-      if (cue === 'reveal') audio.cardReveal();
-      else if (cue === 'effect') audio.cardEffect();
-      else if (cue === 'hit') audio.cardHit();
-      else if (cue === 'push') audio.cardRoundPush();
-      else audio.cardShuffle();
+      playDuelCue(audio, cue);
     },
     schedule(ms, fn) {
       return timers.setTimeout(fn, ms) as unknown as number;

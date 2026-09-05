@@ -32,6 +32,19 @@ const MASTER_GAINS_DB = {
   // quiet next to the existing card cues.
   ui_card_effect: 0,
   ui_card_hit: 1.5,
+  // The rest of the round's beats, so none of them is silent. Every one is a
+  // per-BEAT sound heard many times a match, so they sit UNDER the four
+  // original card cues: the deal and the settle are the quietest things in the
+  // vocabulary by design (they bracket the round rather than reporting it),
+  // and the two verdicts are the only ones allowed any weight, because whose
+  // round it was is the news.
+  ui_card_deal: -3,
+  ui_card_clash: 0.5,
+  ui_card_round_win: 1,
+  ui_card_round_lose: 0.5,
+  ui_card_settle: -4,
+  ui_card_finish: 1,
+  ui_card_curtain: -2,
   // Craft-family cast-start placeholder (Craft Cast System Phase 6): soft
   // workbench wind-up, distinct from the per-family completion cues.
   ui_craft_cast: 0,
@@ -98,6 +111,70 @@ export const UI_SFX_SPECS = [
     tone(180, 0, 0.22, 0.3, { wave: 'saw', endFrequency: 70 }),
     noise('brown', 0, 0.18, 0.16, { lowpass: 900 }),
   ]),
+  // The two cards land face-down. Card on felt: almost all filtered noise, no
+  // pitch to speak of, and the quietest cue in the family. It opens a round
+  // rather than reporting one, and a loud deal would step on the reveal that
+  // follows it a beat later.
+  cue('ui_card_deal', 0.5, 'Two playing cards landing softly on a felt table. No speech.', [
+    noise('brown', 0, 0.07, 0.12, { lowpass: 1600 }),
+    noise('brown', 0.05, 0.07, 0.1, { lowpass: 1400 }),
+    tone(150, 0, 0.05, 0.05, { wave: 'sine', endFrequency: 90 }),
+  ]),
+  // The two cards lean in. A short rising tension swell, so the beat before
+  // the strike is heard as a wind-up rather than as another tick: it is the
+  // one cue in the round that leads somewhere instead of reporting something.
+  cue(
+    'ui_card_clash',
+    0.5,
+    'Short rising tension swell as two cards lean in to strike. No speech.',
+    [
+      tone(220, 0, 0.24, 0.16, { wave: 'saw', endFrequency: 480 }),
+      tone(330, 0.04, 0.2, 0.1, { wave: 'triangle', endFrequency: 660 }),
+      noise('white', 0.12, 0.12, 0.045, { highpass: 2400 }),
+    ],
+  ),
+  // The verdict, one per way it can go, and the pair is deliberately a MIRROR:
+  // the same two notes rising for a win and falling for a loss. A player has
+  // to know which happened without reading anything, and pitch direction is
+  // the one distinction that survives being heard from across a room.
+  cue('ui_card_round_win', 0.5, 'Two-note rising flourish: you took the round. No speech.', [
+    tone(523, 0, 0.16, 0.2, { wave: 'triangle' }),
+    tone(784, 0.11, 0.28, 0.18, { wave: 'triangle' }),
+    noise('white', 0.11, 0.1, 0.03, { highpass: 3000 }),
+  ]),
+  cue('ui_card_round_lose', 0.5, 'Two-note falling figure: they took the round. No speech.', [
+    tone(392, 0, 0.16, 0.18, { wave: 'triangle' }),
+    tone(262, 0.11, 0.3, 0.17, { wave: 'triangle' }),
+    noise('brown', 0.11, 0.14, 0.05, { lowpass: 1200 }),
+  ]),
+  // The round's picture settles with the deck unchanged. The quietest cue
+  // there is: it says "that was the round" and nothing else, and its louder
+  // sibling on the same beat is the existing reshuffle, which has actual news
+  // to report.
+  cue('ui_card_settle', 0.5, 'Soft low wooden tick as a card duel round settles. No speech.', [
+    tone(240, 0, 0.09, 0.1, { wave: 'sine', endFrequency: 180 }),
+    noise('brown', 0, 0.05, 0.05, { lowpass: 1100 }),
+  ]),
+  // The ending's first beat: a health bar running out. A long descending fall,
+  // the one long cue in the family, because it is the fact that ended the
+  // match rather than one more moment inside a round.
+  cue('ui_card_finish', 0.9, 'Long descending fall as a duel health bar empties out. No speech.', [
+    tone(440, 0, 0.6, 0.22, { wave: 'triangle', endFrequency: 110 }),
+    tone(220, 0.05, 0.5, 0.14, { wave: 'sine', endFrequency: 70 }),
+    noise('brown', 0.1, 0.45, 0.08, { lowpass: 800 }),
+  ]),
+  // The table clears and the summary is owed the window. A soft sweep away,
+  // quiet because the verdict a beat earlier is the loud one and this is the
+  // room emptying after it.
+  cue(
+    'ui_card_curtain',
+    0.5,
+    'Soft sweep as a card table clears at the end of a match. No speech.',
+    [
+      noise('white', 0, 0.3, 0.07, { highpass: 900, lowpass: 5000 }),
+      tone(330, 0, 0.26, 0.08, { wave: 'sine', endFrequency: 160 }),
+    ],
+  ),
   cue('ui_quest_done', 0.75, 'Three-note ascending fantasy quest completion chime.', [
     tone(523, 0, 0.35, 0.16, { wave: 'triangle' }),
     tone(659, 0.12, 0.38, 0.16, { wave: 'triangle' }),

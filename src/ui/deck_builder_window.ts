@@ -7,6 +7,7 @@
 // press Save: the server re-validates the shape on arrival, so an unsaved draft
 // can never seat an illegal deck.
 
+import { audio } from '../game/audio';
 import { CARD_CATALOG, CARDS } from '../sim/content/cards';
 import type { CardSetId } from '../sim/minigames/card_duel/types';
 import type { IWorld } from '../world_api';
@@ -202,6 +203,17 @@ export class DeckBuilderWindow {
   }
 
   private wire(el: HTMLElement): void {
+    // Every control here answers audibly, the same as the duel window's do.
+    // Building a deck is twenty separate presses on cards that look identical
+    // until the slot above them fills, so a press that makes no sound is the
+    // one place a player genuinely cannot tell a refusal (a full value row)
+    // from a miss. Delegated once on the root rather than added per control,
+    // because the pools are rebuilt on every toggle: a per-button call would
+    // be re-registered twenty times a rebuild and would still miss whichever
+    // arm was added last.
+    el.addEventListener('click', (ev) => {
+      if ((ev.target as HTMLElement | null)?.closest('button')) audio.click();
+    });
     el.querySelector('[data-close]')?.addEventListener('click', () => this.close());
     const name = el.querySelector('[data-name]') as HTMLInputElement | null;
     name?.addEventListener('input', () => {
