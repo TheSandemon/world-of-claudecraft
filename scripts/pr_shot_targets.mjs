@@ -44,6 +44,7 @@ async function awaitWorldPainted(page) {
     },
     { timeout: 120000 },
   );
+}
 
 // Wait until the loading screen has been continuously GONE for `stableMs`. A recipe
 // that teleports across a zone boundary raises it back over a HUD that is already laid
