@@ -81,15 +81,45 @@ function tribeLine(model: CardFaceModel): string {
 }
 
 /**
- * The modifier strip: what the effects did to this card, right now. Rendered
- * at every graphics tier and on every device, with no hover requirement.
+ * The value expression: what the card is PRINTED at, what the effects did to
+ * it, and what it is worth right now, read left to right as one sum.
+ *
+ * The three numbers were all on the face already and a player still could not
+ * read them as a sentence: the effective value sat in the top-left corner, the
+ * printed value hid behind it struck through (which reads as "void", not as
+ * "was"), and the modifier sat in the OTHER corner, so working out where a 7
+ * came from meant looking in two places and doing the arithmetic. On a card in
+ * hand, which is the moment a player is choosing between five of them, that is
+ * the one calculation the face exists to have already done.
+ *
+ * So it is one group: `5 +2 = 7`. The printed value leads because it is the
+ * card's identity, the signed modifier is coloured because its DIRECTION is
+ * the thing being read, and the effective value is last and largest because it
+ * is what the comparison will actually use.
+ *
+ * Rendered at every graphics tier and on every device, with no hover
+ * requirement, exactly as the separate pieces were: this is the same
+ * information laid out to be read, never a new thing to reveal.
  */
-function modifierStrip(model: CardFaceModel): string {
-  const label = deltaLabel(model);
-  if (!label) return '';
+function valueExpression(model: CardFaceModel): string {
+  const effective = `<span class="cf-value">${esc(num(model.effectiveValue))}</span>`;
+  // Unmodified: the printed value IS the effective value, and showing `5 + 0 =
+  // 5` would be three ways of saying one number.
+  if (model.delta === 0) return `<div class="cf-corner">${effective}</div>`;
   const kind = model.delta > 0 ? 'cf-delta-up' : 'cf-delta-down';
+  // The group carries the accessible name, not the pieces: a screen reader
+  // reading "five plus two equals seven" as three loose numbers is worse than
+  // the one sentence the button's own name already gives. Same key the
+  // modifier chip carried before the regroup, so no new string.
   const aria = t('cards.card.effectiveLabel', { value: num(model.effectiveValue) });
-  return `<div class="cf-delta ${kind}" aria-label="${esc(aria)}">${esc(label)}</div>`;
+  return (
+    `<div class="cf-corner cf-corner-sum" aria-label="${esc(aria)}">` +
+    `<span class="cf-base" aria-hidden="true">${esc(num(model.baseValue))}</span>` +
+    `<span class="cf-delta ${kind}" aria-hidden="true">${esc(deltaLabel(model))}</span>` +
+    `<span class="cf-eq" aria-hidden="true">=</span>` +
+    effective +
+    `</div>`
+  );
 }
 
 export interface CardFacePaintOptions {
@@ -137,17 +167,11 @@ export function cardFaceHtml(model: CardFaceModel, opts: CardFacePaintOptions): 
   const buttonBits = opts.playAttribute
     ? ` type="button"${model.playable ? '' : ' disabled'} aria-label="${esc(label)}"`
     : '';
-  // The effective value is the corner plate: it is what the comparison uses,
-  // so it is the number that must be readable first. The printed value rides
-  // beside it whenever an effect moved it.
-  const cornerBase =
-    model.delta === 0 ? '' : `<span class="cf-base">${esc(num(model.baseValue))}</span>`;
   return (
     `<${tag} class="${classes}"${play}${inspect}${buttonBits}>` +
     `<div class="cf-frame">` +
     artPanel(model, def) +
-    `<div class="cf-corner"><span class="cf-value">${esc(num(model.effectiveValue))}</span>${cornerBase}</div>` +
-    modifierStrip(model) +
+    valueExpression(model) +
     `<div class="cf-plate"><div class="cf-name">${esc(name)}</div>${tribeLine(model)}</div>` +
     (rules ? `<div class="cf-rules">${esc(rules)}</div>` : '') +
     `</div>` +

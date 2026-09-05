@@ -40,8 +40,11 @@ describe('card face markup', () => {
   it('shows the effective value, and the printed value only when an effect moved it', () => {
     const plain = faceOf(WOLF_ID);
     expect(plain).toContain('cf-value');
+    // Unmodified, the printed value IS the effective value: `3 + 0 = 3` would
+    // be three ways of saying one number.
     expect(plain).not.toContain('cf-base');
     expect(plain).not.toContain('cf-delta');
+    expect(plain).not.toContain('cf-eq');
 
     const buffed = faceOf(WOLF_ID, { effectiveValue: 5 });
     expect(buffed).toContain('cf-delta-up');
@@ -49,6 +52,43 @@ describe('card face markup', () => {
     // Both numbers are present at once: the player never has to remember what
     // the card was printed at to read what it is worth.
     expect(buffed).toContain('cf-base');
+  });
+
+  it('reads the three numbers as ONE sum: printed, what moved it, what it is now', () => {
+    // The defect: all three were on the face and none of them read together.
+    // The effective value sat in the top-left, the printed value hid BEHIND it
+    // struck through, and the modifier sat in the opposite corner, so a player
+    // choosing between cards in hand had to look in two places and do the
+    // arithmetic the face exists to have already done.
+    const buffed = faceOf(WOLF_ID, { effectiveValue: 5 });
+    const sum = buffed.match(/<div class="cf-corner cf-corner-sum"[^>]*>(.*?)<\/div>/)?.[1] ?? '';
+    expect(sum, 'no grouped sum in the corner').not.toBe('');
+    // Order is the whole point: printed, signed modifier, equals, effective.
+    const terms = [
+      ...sum.matchAll(/class="(cf-base|cf-delta|cf-eq|cf-value)[^"]*"[^>]*>([^<]*)</g),
+    ];
+    expect(terms.map((m) => m[1])).toEqual(['cf-base', 'cf-delta', 'cf-eq', 'cf-value']);
+    expect(terms.map((m) => m[2])).toEqual(['3', '+2', '=', '5']);
+    // And it is one group to a screen reader rather than four loose numbers:
+    // "three plus two equals five" read as digits is worse than the sentence
+    // the button's own accessible name already carries.
+    expect(sum).not.toContain('aria-hidden="true">5<');
+    for (const cls of ['cf-base', 'cf-delta', 'cf-eq']) {
+      expect(sum, `${cls} must be hidden from the reader`).toMatch(
+        new RegExp(`class="${cls}[^"]*" aria-hidden="true"`),
+      );
+    }
+  });
+
+  it('shows a debuff as a signed subtraction, not an unexplained smaller number', () => {
+    const nerfed = faceOf(WOLF_ID, { effectiveValue: 1 });
+    expect(nerfed).toContain('cf-delta-down');
+    expect(nerfed).toContain('-2');
+    const sum = nerfed.match(/<div class="cf-corner cf-corner-sum"[^>]*>(.*?)<\/div>/)?.[1] ?? '';
+    const terms = [
+      ...sum.matchAll(/class="(?:cf-base|cf-delta|cf-eq|cf-value)[^"]*"[^>]*>([^<]*)</g),
+    ];
+    expect(terms.map((m) => m[1])).toEqual(['3', '-2', '=', '1']);
   });
 
   it("falls back to the card's DRAWN SCENE rather than a broken image or a blank", () => {

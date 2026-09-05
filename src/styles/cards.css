@@ -1213,13 +1213,22 @@
        guard requires of every class the markup mints. */
     display: block;
   }
+  /* The value expression: printed, what the effects did, and what it is worth
+     now, as one left-to-right sum (`5 +2 = 7`). All three were on the face
+     before and none of them read together: the effective value was here, the
+     printed value hid behind it struck through, and the modifier sat in the
+     OPPOSITE corner, so a player choosing between five cards in hand had to
+     look in two places and do the arithmetic the face exists to have done.
+     Never tiered, never hover-gated, never animated into existence. */
   .cf-corner {
     position: absolute;
     top: 2px;
     left: 3px;
     display: flex;
     align-items: baseline;
-    gap: 3px;
+    gap: 2px;
+    /* One line whatever the terms: a wrapped sum reads as two numbers. */
+    white-space: nowrap;
   }
   .cf-value {
     font-family: var(--title-font);
@@ -1227,21 +1236,36 @@
     color: var(--gold);
     text-shadow: 0 1px 2px #000;
   }
+  /* The printed value LEADS the sum, so it is ordinary dim text rather than
+     struck through: a strike reads as "void", and this number is not void, it
+     is what the card is before the table got to it. */
   .cf-base {
-    font-size: 10px;
-    color: var(--color-text-light);
-    text-decoration: line-through;
+    font-family: var(--title-font);
+    font-size: 11px;
+    color: var(--color-text-muted);
     text-shadow: 0 1px 2px #000;
   }
-  /* The modifier strip: what the effects did, right now. Never tiered, never
-     hover-gated, never animated into existence. */
+  /* Signed, and coloured by DIRECTION: which way the value moved is the thing
+     being read here, more than by how much. */
   .cf-delta {
-    position: absolute;
-    top: 2px;
-    right: 3px;
     font-family: var(--title-font);
     font-size: 12px;
     text-shadow: 0 1px 2px #000;
+  }
+  .cf-eq {
+    font-size: 9px;
+    color: var(--color-text-muted);
+    text-shadow: 0 1px 2px #000;
+  }
+  /* Only the SUM takes a backing plate, and only because it needs one: four
+     terms of mixed size and colour sitting over painted art stop reading as
+     one group, where a lone gold digit under its own text-shadow does not.
+     Applied to the modified case alone rather than to every corner, so an
+     unmodified card is not given chrome it has no use for. */
+  .cf-corner-sum {
+    padding: 0 3px 1px;
+    border-radius: var(--radius-sm);
+    background: #00000066;
   }
   .cf-delta-up {
     color: var(--color-stat-bonus);
@@ -1328,10 +1352,13 @@
     font-size: 30px;
   }
   .cf-size-inspect .cf-base {
-    font-size: 15px;
+    font-size: 16px;
   }
   .cf-size-inspect .cf-delta {
     font-size: 18px;
+  }
+  .cf-size-inspect .cf-eq {
+    font-size: 13px;
   }
   .cf-size-inspect .cf-corner {
     top: 4px;
@@ -2149,6 +2176,9 @@
     }
     .dt-hand .cf-size-hand .cf-delta {
       font-size: 15px;
+    }
+    .dt-hand .cf-size-hand .cf-eq {
+      font-size: 11px;
     }
     .dt-hand .cf-size-hand .cf-name {
       font-size: 12px;

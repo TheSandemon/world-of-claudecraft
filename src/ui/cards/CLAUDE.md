@@ -99,10 +99,35 @@ these are markup that a rebuild inserts. Naming them painters would enter them
 into a gate whose contract they cannot meaningfully satisfy, and would claim a
 cadence they do not have.
 
+## The value a card is worth is a SUM, not three numbers
+
+A modified card shows `5 +2 = 7` as one group in its corner: the printed
+value, what the effects did to it signed, and what the comparison will
+actually use. All three were on the face before this and none of them read
+together: the effective value was in the top-left, the printed value hid
+BEHIND it struck through (which reads as "void", not as "was"), and the
+modifier sat in the OPPOSITE corner. Working out where a 7 came from meant
+looking in two places and doing the arithmetic, on a card in hand, at the
+moment a player is choosing between four of them. That is the one calculation
+the face exists to have already done.
+
+The order is load-bearing and pinned: printed leads because it is the card's
+identity, the modifier is coloured by DIRECTION because which way the value
+moved is what is being read, and the effective value is last and largest
+because it is what the round will compare. An unmodified card shows the single
+number alone, because `3 + 0 = 3` is three ways of saying one thing.
+
+The group carries the accessible name and its terms are `aria-hidden`: four
+loose digits read out is worse than the one sentence the card button's own
+name (`cards.card.playDetail`) already gives. `cf-corner-sum` is the only part
+that takes a backing plate, and only because four terms of mixed size and
+colour over painted art stop reading as one group where a lone gold digit does
+not.
+
 ## Two cadences, and why they must stay apart
 
-**The snapshot paints the truth.** The hand (at what each card is WORTH, with
-the printed value and a signed chip beside it), the score pips, the clock and
+**The snapshot paints the truth.** The hand (at what each card is WORTH, as
+the SUM that got it there), the score pips, the clock and
 its ring, each seat's commit lamp, the counter tokens, the opponent's hand with
 any revealed cards face up in it, and the effects row: every one is correct the
 instant the snapshot arrives, at every graphics tier and on every device. The
