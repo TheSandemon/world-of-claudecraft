@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const hud = readFileSync(join(__dirname, '../src/ui/hud.ts'), 'utf8');
+const gameAudio = readFileSync(join(__dirname, '../src/game/audio.ts'), 'utf8');
 
 function caseBody(caseLabel: string): string {
   const start = hud.indexOf(`case '${caseLabel}':`);
@@ -40,12 +41,33 @@ describe('ClaudeStone audio wiring in hud.ts', () => {
     expect(body).not.toContain('audio.card');
   });
 
-  it('reuses duelEnd for a match win and arenaLoss for a match loss, not new recordings', () => {
+  it('hands the match ending to the shared feedback module and plays nothing itself', () => {
+    // The verdict cue moved off this event onto the ENDING's own `glory` beat
+    // (duel_outro_core.ts). The sim emits cardDuelMatchEnd in the same tick as
+    // the final cardRoundResolved, so firing it here meant a player heard the
+    // match end while the round that decided it was still being told; firing
+    // it here as well would now double it. The fallback for an ending nothing
+    // narrates lives with the round's own fallback, and is pinned there
+    // (tests/card_round_feedback.test.ts).
     const body = caseBody('cardDuelMatchEnd');
-    // Pin the branch direction itself, not just that both cues appear
-    // somewhere in the case: a swapped if (ev.won) would still pass a bare
-    // toContain check on both lines.
-    expect(body).toContain('if (ev.won) audio.duelEnd();');
-    expect(body).toContain('else audio.arenaLoss();');
+    expect(body).toContain('applyCardMatchEndFeedback(ev, audio, this.cardWindows.cardDuel)');
+    expect(body).not.toContain('audio.');
+  });
+
+  it('still reuses duelEnd for a match win and arenaLoss for a loss, not new recordings', () => {
+    // The same claim the arm above used to carry, pinned where it now lives.
+    // What was wrong with the match-end sound was WHEN it played, never what
+    // it sounded like, so the two cues resolve to the existing duel
+    // recordings rather than to anything new.
+    //
+    // Pin the branch direction itself, not just that both names appear: a
+    // swapped pair would pass a bare toContain check on both lines.
+    const method = (name: string) => {
+      const start = gameAudio.indexOf(`${name}(): void {`);
+      expect(start, name).toBeGreaterThan(-1);
+      return gameAudio.slice(start, gameAudio.indexOf('}', start));
+    };
+    expect(method('cardMatchWin')).toContain('UI_CUES.duelEnd');
+    expect(method('cardMatchLose')).toContain('UI_CUES.arenaLoss');
   });
 });

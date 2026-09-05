@@ -180,7 +180,7 @@ import {
 import { blockLandingLogKey } from './block_landing_feedback_core';
 import { BootcampOverlay } from './bootcamp';
 import { CalendarWindow } from './calendar_window';
-import { applyCardRoundFeedback } from './cards/card_round_feedback';
+import { applyCardMatchEndFeedback, applyCardRoundFeedback } from './cards/card_round_feedback';
 import { createCardWindows } from './cards/card_windows';
 import { CastBarPainter, type CastBarPaintInput } from './cast_bar_painter';
 import { charBagsPaired } from './char_bags_pairing_core';
@@ -13440,28 +13440,10 @@ export class Hud {
         case 'cardRoundResolved':
           applyCardRoundFeedback(ev, audio, this.cardWindows.cardDuel);
           break;
-        case 'cardDuelMatchEnd': {
-          // The match ends ON the table: the window keeps the summary up until
-          // the player leaves it or sits down again. Without the payload there
-          // is nothing to summarize (a void match), and the window falls back
-          // to its ordinary idle body.
-          const narrated = ev.summary
-            ? this.cardWindows.cardDuel.showMatchEnd({ won: ev.won, draw: ev.draw, ...ev.summary })
-            : false;
-          // The verdict sound rides the ending's own `glory` beat when the
-          // ending is being narrated. It used to fire right here, on the
-          // event, which the sim emits in the SAME tick as the final round: a
-          // player heard the match end while the round that decided it was
-          // still being told. Firing it here as well would now double it.
-          //
-          // `narrated` false is the real other case (a shut window, a void
-          // match, a stalled theater), and it is owed the sound, exactly as
-          // applyCardRoundFeedback is owed the round's cues for the same
-          // reason. Same recordings either way: what was wrong was the timing.
-          if (!narrated) {
-            if (ev.won) audio.duelEnd();
-            else audio.arenaLoss();
-          }
+        case 'cardDuelMatchEnd':
+          // The match ends ON the table, and the verdict sound rides the
+          // ending's own beat rather than this event (card_round_feedback.ts).
+          applyCardMatchEndFeedback(ev, audio, this.cardWindows.cardDuel);
           this.showBanner(
             t(
               ev.draw
@@ -13472,7 +13454,6 @@ export class Hud {
             ),
           );
           break;
-        }
         case 'fiestaWord': {
           const { text, tier, color } = this.fiestaWordParts(ev.flavor, ev.n);
           this.fiestaWordPop(text, color, tier);

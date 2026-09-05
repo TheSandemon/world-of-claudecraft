@@ -16,11 +16,14 @@
 // single number here: information is never gated on an animation completing.
 
 import type { CardCatalog } from '../../sim/minigames/card_duel/match_state';
+import type { CardDefinition } from '../../sim/minigames/card_duel/types';
 import { cardArtUrl } from '../card_art';
 import { cardName, cardRulesText, cardRulesTextFrom, cardTribeName } from '../card_i18n';
 import { esc } from '../esc';
 import { formatNumber, t } from '../i18n';
 import { type CardFaceModel, deltaLabel, rarityClass } from './card_face_view';
+import { cardSceneSvg } from './card_scene_markup';
+import { buildCardScene } from './card_scene_view';
 
 /** A whole number as the player's locale writes it. */
 function num(value: number): string {
@@ -28,19 +31,47 @@ function num(value: number): string {
 }
 
 /**
- * The art panel: the committed painting when one exists, otherwise a
- * procedural panel keyed on the card's tribe and value, so a card with no
- * commissioned art still reads as a card rather than a blank rectangle.
+ * The art panel: the committed painting when one exists, otherwise the card's
+ * own DRAWN SCENE (card_scene_view.ts).
+ *
+ * The fallback used to be a flat gradient keyed on tribe, and only five of the
+ * twelve tribes had one, so two hundred cards rendered as roughly six coloured
+ * rectangles. Since no painting has been commissioned yet, that fallback is
+ * what every card in the game actually looks like: a hand of five was five
+ * blanks a player could only tell apart by reading the name plate. The scene
+ * is drawn from the card's setting, tribe and its own words instead, so a card
+ * is recognisable as itself at a glance and at the hand size.
+ *
+ * Deterministic per card, and keyed on the ART id rather than the card id, so
+ * two cards that deliberately share a painting also share a scene: that is
+ * exactly what the separate `art` field on a CardDefinition means.
  */
-function artPanel(model: CardFaceModel): string {
+function artPanel(model: CardFaceModel, def: CardDefinition | undefined): string {
   const url = cardArtUrl(model.art);
   if (url) {
     // Decorative: the name plate below is the accessible text, so an alt here
     // would just repeat it to a screen reader.
     return `<img class="cf-art" src="${esc(url)}" alt="" loading="lazy" decoding="async" />`;
   }
-  const tribe = model.tribes[0] ?? 'none';
-  return `<div class="cf-art cf-art-procedural" data-tribe="${esc(tribe)}" data-value="${model.baseValue}"></div>`;
+  // `def` is absent only for a card the catalog no longer knows (a retired id
+  // in a saved deck). The scene is total over that too: no set and no tribe
+  // still draws a place, which is the point of the fallback having no failure
+  // case of its own.
+  const scene = buildCardScene({
+    key: model.art,
+    tribes: model.tribes,
+    tags: def?.tags,
+    set: def?.set,
+    rarity: model.rarity,
+  });
+  // The svg id namespace: SVG ids are DOCUMENT-global and a hand holds five of
+  // these at once, so the gradients are namespaced per card or every face on
+  // screen paints in the first one's sky. The SEED rather than the art id,
+  // because the id is an internal string and the markup should not carry one
+  // (tests/card_face_markup.test.ts holds that line for the player-visible
+  // text, and this keeps it true of the attributes too); it is derived from
+  // the art id, so cards that share a painting still share a namespace.
+  return cardSceneSvg(scene, scene.seed.toString(36));
 }
 
 function tribeLine(model: CardFaceModel): string {
@@ -114,7 +145,7 @@ export function cardFaceHtml(model: CardFaceModel, opts: CardFacePaintOptions): 
   return (
     `<${tag} class="${classes}"${play}${inspect}${buttonBits}>` +
     `<div class="cf-frame">` +
-    artPanel(model) +
+    artPanel(model, def) +
     `<div class="cf-corner"><span class="cf-value">${esc(num(model.effectiveValue))}</span>${cornerBase}</div>` +
     modifierStrip(model) +
     `<div class="cf-plate"><div class="cf-name">${esc(name)}</div>${tribeLine(model)}</div>` +

@@ -19,6 +19,7 @@ import { buildDuelStage, duelCues } from './duel_beats_core';
 import { type DuelCueAudio, playDuelCues } from './duel_cue_audio';
 
 type CardRoundResolved = Extract<SimEvent, { type: 'cardRoundResolved' }>;
+type CardDuelMatchEnd = Extract<SimEvent, { type: 'cardDuelMatchEnd' }>;
 
 /** The audio surface this needs: every ClaudeStone cue, because a round played
  *  with the window shut is owed exactly the round a played one is. */
@@ -57,7 +58,16 @@ export interface CardRoundRevealInput {
  *  cues", so a closed window never silently eats them. */
 export interface CardRoundStage {
   showReveal(input: CardRoundRevealInput, audio: CardRoundAudio): boolean;
+  /** Puts the finished match on the table. Returns whether the ENDING will be
+   *  narrated, which is also the answer to "did it take the verdict cue". */
+  showMatchEnd(input: CardDuelMatchEndInput): boolean;
 }
+
+/** The summary payload the window builds its ending from. Both flags are taken
+ *  FROM the event rather than restated as `boolean`, so an optional field on
+ *  the wire stays optional here instead of being quietly widened at the seam. */
+export type CardDuelMatchEndInput = Pick<CardDuelMatchEnd, 'won' | 'draw'> &
+  NonNullable<CardDuelMatchEnd['summary']>;
 
 /**
  * Plays the round's cues and narrates it on the stage.
@@ -114,4 +124,36 @@ export function applyCardRoundFeedback(
       }),
     ),
   );
+}
+
+/**
+ * What the END of a match does to the client.
+ *
+ * A sibling of `applyCardRoundFeedback` above, and here for the same reason:
+ * both halves are about one moment, neither needs Hud's private state, and the
+ * `hud.ts` event switch is a named extraction target that keeps one line per
+ * arm (root CLAUDE.md, Modularity).
+ *
+ * The ordering is the whole content of this function. The sim emits
+ * `cardDuelMatchEnd` in the SAME tick as the final `cardRoundResolved`, so the
+ * verdict sound used to fire while the round that decided the match was still
+ * being told. It rides the ending's own `glory` beat now
+ * (duel_outro_core.ts), and `showMatchEnd` reports whether that ending will
+ * actually be narrated. When it will not (a shut window, a stalled theater, a
+ * void match with no summary to show), the sound is owed here instead: the
+ * same recordings, the same rule the round's own cues follow one layer up.
+ */
+export function applyCardMatchEndFeedback(
+  ev: CardDuelMatchEnd,
+  audio: CardRoundAudio,
+  stage: CardRoundStage,
+): void {
+  // Without a payload there is nothing to summarize (a void match), and the
+  // window falls back to its ordinary idle body.
+  const narrated = ev.summary
+    ? stage.showMatchEnd({ won: ev.won, draw: ev.draw, ...ev.summary })
+    : false;
+  if (narrated) return;
+  if (ev.won) audio.cardMatchWin();
+  else audio.cardMatchLose();
 }

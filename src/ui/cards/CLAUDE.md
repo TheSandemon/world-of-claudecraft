@@ -16,6 +16,8 @@ on where it appears.
 |---|---|
 | `card_face_view.ts` | pure core: ids, values, the signed delta, tribes, rarity, display states. In `UI_PURE_CORES`. |
 | `card_face_markup.ts` | thin consumer: face model in, markup out. Touches no DOM. |
+| `card_scene_view.ts` | pure core: the DEFAULT ART. The scene a card describes, from its setting, its tribe and the words in its own id. In `UI_PURE_CORES`. |
+| `card_scene_markup.ts` | thin consumer: scene model in, one inline SVG out. Touches no DOM. |
 | `duel_table_view.ts` | pure core: the clock band, the score pips, the counter tokens, each seat's commit, whose commit the round waits on. In `UI_PURE_CORES`. |
 | `duel_beats_core.ts` | pure core: one resolved round as an ordered beat timeline, with the cue and the SPOTLIGHT that ride each beat. In `UI_PURE_CORES`. |
 | `duel_outro_core.ts` | pure core: the MATCH ending as three more beats in the same grammar (`finish`, `glory`, `curtain`), played after the last round has been told. In `UI_PURE_CORES`. |
@@ -44,6 +46,48 @@ tokens, the opponent's hand, the effects row and the stage all come out of two p
 (`duel_table_view.ts`, `duel_beats_core.ts`) and one markup module.
 `DuelStageLabels` is the seam for a surface that is NOT played from one seat
 and cannot say "you".
+
+## The default art is DRAWN, and it is what every card looks like
+
+`art` on a `CardDefinition` is an id, not a path, and it resolves to a
+committed painting through `src/ui/card_art.ts`. **No painting has been
+commissioned yet**, so the fallback is not a placeholder behind the art: it IS
+the art, on all two hundred cards.
+
+It used to be a flat CSS gradient keyed on tribe, and only five of the twelve
+tribes even had a colour, so the whole catalog rendered as about six coloured
+rectangles. A hand of five was five blanks a player could tell apart only by
+reading the name plate, which is the one thing a card at hand size has no room
+for. So the fallback draws the SCENE, and it reads the scene off the card:
+
+- the **setting** from the design identity, with the tags as the fallback
+  (Ashen Flight burns, Mirefen floods, Tunnel Crown is underground),
+- the **subject** from the first tribe, one silhouette each,
+- the **motifs** from the words in the card's own id, which is the closest
+  thing the content has to a description of the scene:
+  `boneflame_host_pyre_night` gets a pyre and a moon because it says so.
+
+Three properties are load-bearing and the rest is taste:
+
+- **Total.** Every input draws a place. No tribe means a landscape with no
+  figure, an unrecognised word contributes nothing, and a retired card id (a
+  saved deck naming a card the catalog dropped) still renders. "No art" must
+  never be a state that reaches a player as an empty rectangle, because it is
+  the state every card is in.
+- **Deterministic**, from a hash of the ART id and nothing else: no wall clock,
+  no `Math.random`, no counter. A card a player is learning to recognise must
+  be the same picture in the next hand, the next session and on the next
+  machine. Keying on the art id rather than the card id also means two cards
+  that deliberately share a painting share a scene, which is what the separate
+  field is for.
+- **Decorative.** The whole SVG is `aria-hidden`. The card's accessible name
+  already carries its name, value and rules sentence.
+
+The sky rides an inline `background` gradient on the `<svg>` and the subject's
+rim is a `<use>` of its own path, because the deck builder paints the WHOLE
+catalog at once and rebuilds it on every card toggle. A face is about 1.9 KB of
+scene; that is a real cost on that one surface and the reason the cheap
+reductions are there rather than a matter of taste.
 
 ## Why the consumers are not called painters
 

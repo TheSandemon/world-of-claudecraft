@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../src/sim/types';
 import {
+  applyCardMatchEndFeedback,
   applyCardRoundFeedback,
   type CardRoundRevealInput,
 } from '../src/ui/cards/card_round_feedback';
@@ -24,16 +25,42 @@ function resolved(over: Partial<CardRoundResolved> = {}): CardRoundResolved {
   };
 }
 
+type CardDuelMatchEnd = Extract<SimEvent, { type: 'cardDuelMatchEnd' }>;
+
+function matchEnd(over: Partial<CardDuelMatchEnd> = {}): CardDuelMatchEnd {
+  return {
+    type: 'cardDuelMatchEnd',
+    won: true,
+    draw: false,
+    summary: {
+      rounds: 3,
+      myHp: 12,
+      theirHp: 0,
+      maxHp: 30,
+      damageDealt: 30,
+      damageTaken: 18,
+    },
+    ...over,
+  };
+}
+
 function rig(taken: boolean) {
   const { cues, audio } = recordingCueAudio();
   const seen: CardRoundRevealInput[] = [];
+  const ended: unknown[] = [];
   const stage = {
     showReveal(input: CardRoundRevealInput) {
       seen.push(input);
       return taken;
     },
+    // `taken` doubles as "the window is open", which is the one thing both
+    // entry points branch on.
+    showMatchEnd(input: unknown) {
+      ended.push(input);
+      return taken;
+    },
   };
-  return { cues, seen, audio, stage };
+  return { cues, seen, ended, audio, stage };
 }
 
 describe('card round feedback', () => {
@@ -107,5 +134,39 @@ describe('card round feedback', () => {
     const { cues, audio, stage } = rig(false);
     applyCardRoundFeedback(resolved({ outcome: 'win', reshuffled: false }), audio, stage);
     expect(cues).toEqual(['deal', 'reveal', 'clash', 'roundWin', 'settle']);
+  });
+
+  it('lets the ENDING carry the match verdict when it will be narrated', () => {
+    // The defect this closes: the sim emits cardDuelMatchEnd in the SAME tick
+    // as the final cardRoundResolved, so firing the verdict on the event meant
+    // a player heard the match end while the round that decided it was still
+    // being told. It rides the outro's own `glory` beat now, so firing it here
+    // as well would double it.
+    const { cues, ended, audio, stage } = rig(true);
+    applyCardMatchEndFeedback(matchEnd({ won: true }), audio, stage);
+    expect(ended).toHaveLength(1);
+    expect(cues).toEqual([]);
+  });
+
+  it('plays the verdict itself when nothing will narrate the ending', () => {
+    // A shut window or a stalled theater. Owed the sound for exactly the
+    // reason a shut window is owed the round's own cues one function up.
+    const won = rig(false);
+    applyCardMatchEndFeedback(matchEnd({ won: true }), won.audio, won.stage);
+    expect(won.cues).toEqual(['matchWin']);
+
+    const lost = rig(false);
+    applyCardMatchEndFeedback(matchEnd({ won: false }), lost.audio, lost.stage);
+    expect(lost.cues).toEqual(['matchLose']);
+  });
+
+  it('still sounds a VOID match, which has no summary to narrate', () => {
+    // No payload means nothing to show, so `showMatchEnd` is never reached and
+    // the ending cannot carry the cue. Silence here would drop the sound for a
+    // whole class of match end.
+    const { cues, ended, audio, stage } = rig(true);
+    applyCardMatchEndFeedback({ ...matchEnd({ won: false }), summary: undefined }, audio, stage);
+    expect(ended).toEqual([]);
+    expect(cues).toEqual(['matchLose']);
   });
 });

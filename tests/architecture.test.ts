@@ -321,6 +321,11 @@ const UI_PURE_CORES = [
   // The card face: one pure core behind the hand, the reveal stage, and a
   // collection cell (src/ui/cards/).
   'src/ui/cards/card_face_view.ts',
+  // The DEFAULT card art: the scene a card describes, decided from its setting,
+  // its tribe and the words in its own id. Every card falls back to it until a
+  // painting is commissioned, and none has one yet, so this core is what two
+  // hundred cards actually look like.
+  'src/ui/cards/card_scene_view.ts',
   // Where the enlarged copy of a hovered card sits: pure rectangle math, so the
   // placement is argued about in Node rather than by eye against a phone.
   'src/ui/cards/card_inspect_view.ts',

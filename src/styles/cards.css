@@ -1195,27 +1195,23 @@
     min-height: 0;
     object-fit: cover;
   }
-  /* The procedural face: a card with no commissioned painting still reads as a
-     card, keyed on its tribe, rather than as a blank rectangle. */
-  .cf-art-procedural {
-    background:
-      radial-gradient(circle at 50% 35%, #ffffff18, transparent 60%),
-      linear-gradient(160deg, #2a3242, #161c26);
-  }
-  .cf-art-procedural[data-tribe="Beast"] {
-    background: linear-gradient(160deg, #3b3320, #191509);
-  }
-  .cf-art-procedural[data-tribe="Undead"] {
-    background: linear-gradient(160deg, #23342b, #0d1712);
-  }
-  .cf-art-procedural[data-tribe="Spider"] {
-    background: linear-gradient(160deg, #2e2436, #140f19);
-  }
-  .cf-art-procedural[data-tribe="Human"] {
-    background: linear-gradient(160deg, #2c3242, #12161f);
-  }
-  .cf-art-procedural[data-tribe="Dragon"] {
-    background: linear-gradient(160deg, #3d2620, #170c09);
+  /* The DRAWN default art (src/ui/cards/card_scene_markup.ts): an inline SVG
+     scene, so it inherits the face's size at all four sizes and carries its own
+     colours rather than taking them from here.
+
+     It replaced a flat gradient keyed on tribe, which only five of the twelve
+     tribes even had, so with no painting commissioned yet every card in the
+     game rendered as one of about six coloured rectangles. Nothing is declared
+     here on purpose: every colour in the scene is the setting's, chosen in the
+     view core, and a background under it would only show through as a seam. */
+  .cf-art-scene {
+    /* The SKY arrives as an inline `background` gradient on the element (see
+       card_scene_markup.ts: it is a fifth less markup than a defs gradient
+       plus a full-bleed rect, and the deck builder paints the whole catalog at
+       once). Nothing is declared here so that inline value is not fought over;
+       the rule exists to keep the class in the sheet, which the face-markup
+       guard requires of every class the markup mints. */
+    display: block;
   }
   .cf-corner {
     position: absolute;

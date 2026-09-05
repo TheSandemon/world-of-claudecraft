@@ -51,12 +51,26 @@ describe('card face markup', () => {
     expect(buffed).toContain('cf-base');
   });
 
-  it('falls back to a procedural panel rather than a broken image when art is uncommissioned', () => {
+  it("falls back to the card's DRAWN SCENE rather than a broken image or a blank", () => {
     const html = faceOf(WOLF_ID);
-    // No paintings are committed yet, so every card is on the fallback today.
-    expect(html).toContain('cf-art-procedural');
-    expect(html).toContain('data-tribe="Beast"');
+    // No paintings are committed yet, so every card in the game is on this
+    // fallback today: it is the art, not a placeholder behind it.
     expect(html).not.toContain('<img');
+    expect(html).toContain('cf-art-scene');
+    expect(html).toContain('<svg');
+    // A real scene, not an empty frame: the ground, a horizon prop and the
+    // tribe's silhouette are all in it. The old fallback was a flat gradient
+    // keyed on tribe that only five of the twelve tribes even had, so two
+    // hundred cards rendered as about six coloured rectangles.
+    expect(html).toContain('<rect');
+    expect(html).toContain('<path');
+    expect(html).not.toContain('undefined');
+  });
+
+  it('draws a visibly different scene for two different cards', () => {
+    // Teeth: a fallback that is the same picture every time is the blank
+    // rectangle again, wearing more markup.
+    expect(faceOf(WOLF_ID)).not.toBe(faceOf('hollow_knight'));
   });
 
   it('prefers the values the sim resolved over a static re-derivation', () => {
