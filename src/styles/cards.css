@@ -1002,15 +1002,24 @@
   }
 
   /* ---------- the deck builder (src/ui/deck_builder_window.ts) ---------- */
-  /* Ten value rows, two slots each: the layout IS the rule, so a player never
-     has to be told the constraint in an error message. */
+  /* TWO PANES: the deck you are building (ten values, twenty slots, always in
+     view) and the cards on offer at the ONE value you are working on.
+
+     It used to be ten stacked rows each carrying its own full pool, so the
+     window listed every card in the game on one page: two hundred faces to
+     scroll past in order to fill twenty slots. A player fills one value at a
+     time, so the window shows one value at a time, and the deck column keeps
+     the whole thing in view while they do.
+
+     The ten values, two slots each, are still the layout doing the explaining:
+     the constraint never has to be stated in an error message. */
   #deck-builder-window {
-    width: min(720px, 92%);
-    max-height: 80vh;
+    width: min(940px, 94%);
+    max-height: 88vh;
     overflow-y: auto;
   }
   .db-body {
-    padding: 8px;
+    padding: 8px 10px 10px;
   }
   .db-rule {
     margin: 0 0 8px;
@@ -1073,16 +1082,25 @@
   /* The design-identity filter chips. Twenty sets is a long row, so it wraps
      and scrolls with the panel rather than growing a scroller of its own. */
   .db-set-row {
+    /* ONE row that scrolls sideways. Twenty-one identities wrap to four rows,
+       which is more of the pane than a filter has earned, and capping the
+       wrap just cut the last row in half. A single row costs a fixed, small
+       amount of height whatever the catalog grows to, and the cards stay the
+       thing the pane is mostly showing. */
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 4px;
+    overflow-x: auto;
+    overscroll-behavior: contain;
     margin-bottom: 8px;
     padding-bottom: 8px;
     border-bottom: 1px solid #ffffff18;
   }
   .db-set {
-    min-height: 32px;
-    padding: 4px 8px;
+    flex: 0 0 auto;
+    min-height: 28px;
+    padding: 3px 7px;
+    white-space: nowrap;
     border: 1px solid #ffffff26;
     border-radius: 4px;
     background: #ffffff08;
@@ -1096,37 +1114,110 @@
     background: #ffffff18;
     color: var(--gold);
   }
-  .db-row {
-    padding: 6px 0;
-    border-top: 1px solid #ffffff18;
+  /* The two panes. The deck column is fixed and narrow because it is a
+     readout; the pool takes the rest because it is where the work happens.
+     Both scroll inside THEMSELVES, so a long pool never pushes the deck
+     column out of view and the window never grows with the catalog.
+
+     The height is bounded HERE rather than on the window, and that is the
+     load-bearing detail: the HUD shows a window by writing `display: block`
+     inline, which beats any `display: flex` this sheet could set, so a flex
+     chain from the window down to the panes silently never forms. Capping the
+     pane row against the viewport needs no such chain. */
+  .db-panes {
+    display: grid;
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    gap: 10px;
+    max-height: 58vh;
   }
-  .db-row-title {
-    margin: 0 0 4px;
+  .db-deck,
+  .db-pool {
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .db-deck {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding-right: 4px;
+  }
+
+  /* One value in the deck column: the number, its label, and two pips saying
+     how far along it is. It is also the BUTTON that points the pool at that
+     value, which is what lets the pool show one value without hiding the deck. */
+  .db-value {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 40px;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: #ffffff08;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: var(--cursor-point);
+  }
+  .db-value:hover {
+    background: #ffffff14;
+  }
+  .db-value[aria-pressed="true"] {
+    border-color: var(--gold);
+    background: #ffffff1a;
+  }
+  .db-value-n {
     font-family: var(--title-font);
-    font-size: 12px;
-    color: var(--color-text-muted);
+    font-size: 16px;
+    color: var(--gold);
   }
-  .db-row-complete .db-row-title {
+  /* A finished value reads as finished from the column alone: its pips fill
+     and its edge takes the same green the rest of the HUD uses for "done". */
+  .db-value-done {
+    border-color: var(--color-stat-bonus);
+  }
+  .db-value-done .db-value-n {
     color: var(--color-stat-bonus);
   }
-  .db-slots {
+  /* Two pips per value: the deck rule, at a glance, ten times over. Marks
+     rather than card faces, because twenty faces here would put the window
+     back to scrolling and the face belongs where the choosing happens. */
+  .db-pips {
     display: flex;
-    gap: 6px;
-    margin-bottom: 6px;
+    gap: 3px;
   }
-  .db-slot {
-    display: block;
+  .db-pip {
+    width: 9px;
+    height: 13px;
+    border-radius: 2px;
   }
-  .db-slot-empty {
-    width: 68px;
-    height: 96px;
+  .db-pip-empty {
     border: 1px dashed var(--color-text-muted);
-    border-radius: 5px;
+  }
+  .db-pip-filled {
+    border: 1px solid var(--gold);
+    background: var(--gold);
+  }
+
+  /* The pool pane: which value it is for, the identity chips that narrow it,
+     and the cards themselves. */
+  .db-pool {
+    padding-right: 2px;
+  }
+  .db-pool-title {
+    margin: 0 0 6px;
+    font-family: var(--title-font);
+    font-size: 14px;
+    color: var(--gold);
   }
   .db-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 8px;
+    justify-items: start;
   }
   .db-option {
     padding: 0;
@@ -1496,6 +1587,30 @@
      portrait), so it is not narrow, it is SHORT. A short viewport is exactly
      when a stacked stage stops fitting, so it gets the side-by-side one. */
   @media (pointer: coarse), (max-width: 30rem), (max-height: 32rem) {
+    /* The deck builder STACKS: a 8.5rem column is a quarter of a phone screen
+       spent on a readout, and the pool is where the work is. The column
+       becomes a horizontal value strip above the cards, which keeps both of
+       its jobs (the deck at a glance, and the value navigator) at a size the
+       screen can afford. */
+    .db-panes {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      max-height: none;
+    }
+    .db-deck {
+      flex-direction: row;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-right: 0;
+      padding-bottom: 4px;
+    }
+    .db-value {
+      flex: 0 0 auto;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 44px;
+      padding: 4px 6px;
+    }
     /* The stage goes side by side: vertical space is the scarce thing on a
        phone, and the two seat bands still carry the top/bottom ownership. */
     .dt-stage {

@@ -4,7 +4,8 @@ import { validateDeck } from '../src/sim/minigames/card_duel';
 import { CARD_SETS } from '../src/sim/minigames/card_duel/types';
 import {
   buildDeckBuilderView,
-  deckBuilderRowSignature,
+  deckBuilderDeckSignature,
+  deckBuilderPoolSignature,
   deckBuilderShellSignature,
   deckBuilderSignature,
   draftCardIds,
@@ -43,11 +44,33 @@ describe('deck builder view', () => {
     expect(model.legal).toBe(false);
   });
 
-  it("each row's pool holds only cards of that value", () => {
-    for (const row of view([]).rows) {
-      expect(row.options.length).toBeGreaterThan(0);
-      for (const option of row.options) expect(option.def.value).toBe(row.value);
+  it('offers ONE value at a time, and only cards of that value', () => {
+    // The window used to hand every row its own pool, so it listed all two
+    // hundred cards in the game on one page: a wall to scroll past in order to
+    // fill twenty slots. A player fills one value at a time.
+    for (const value of [1, 5, 10] as const) {
+      const model = view([], { focusValue: value });
+      expect(model.focusValue).toBe(value);
+      expect(model.pool.length).toBeGreaterThan(0);
+      for (const option of model.pool) expect(option.def.value).toBe(value);
     }
+    // Teeth: the pool is a slice of the catalog, never the whole of it.
+    expect(view([]).pool.length).toBeLessThan(CARDS.length / 4);
+  });
+
+  it('opens on the first value still missing a card, so it lands on the work', () => {
+    // Values one and two filled: the pool should open on three, not on one.
+    const firstTwo = defaultIds.filter((id) => {
+      const value = CARD_CATALOG.get(id)?.value;
+      return value === 1 || value === 2;
+    });
+    expect(view(firstTwo).focusValue).toBe(3);
+    // A finished deck has no gap, so it falls back to the first value rather
+    // than to nothing.
+    expect(view(defaultIds).focusValue).toBe(1);
+    // And an explicit choice always wins: a focus that re-derived itself would
+    // jump away the moment the player filled the value they were looking at.
+    expect(view(firstTwo, { focusValue: 9 }).focusValue).toBe(9);
   });
 
   it('marks the cards already in the draft as taken', () => {
@@ -55,7 +78,8 @@ describe('deck builder view', () => {
     for (const row of model.rows) {
       expect(row.complete).toBe(true);
       expect(row.slots.filter(Boolean).length).toBe(2);
-      const chosen = row.options.filter((option) => option.chosen).map((option) => option.cardId);
+      const pool = view(defaultIds, { focusValue: row.value }).pool;
+      const chosen = pool.filter((option) => option.chosen).map((option) => option.cardId);
       expect(chosen.sort()).toEqual([...row.slots].filter(Boolean).sort());
     }
     expect(model.legal).toBe(true);
@@ -130,31 +154,39 @@ describe('deck builder view', () => {
     );
   });
 
-  it('splits the shell from the rows, so one toggle cannot repaint the catalog', () => {
-    // The builder paints a face for every card it offers, about two hundred of
-    // them. Toggling one card changes exactly ONE value row, so the row
-    // signatures have to move independently of the shell or every click costs
-    // the whole pool (measured: 6280 nodes, 172ms, versus 655 and 18ms).
+  it('holds the SHELL still for a toggle, so a click cannot rebuild the window', () => {
+    // A shell change is the only one that costs a full rebuild, so nothing
+    // that moves while a player is working may reach it. The progress count
+    // and the Save button track `filled`, and the window writes those in
+    // place rather than repainting to show them.
     const empty = view([]);
     const withCard = view([defaultIds[4]]);
-    const movedRows = empty.rows.filter(
-      (row, i) => deckBuilderRowSignature(row) !== deckBuilderRowSignature(withCard.rows[i]),
-    );
-    expect(movedRows).toHaveLength(1);
-    // And the shell holds still for it: the progress count and the Save button
-    // track `filled`, and the window writes those in place.
     expect(deckBuilderShellSignature(withCard)).toBe(deckBuilderShellSignature(empty));
     expect(withCard.filled).not.toBe(empty.filled);
+    // The two regions DO move: the column shows the new slot, and the pool
+    // shows that card as taken.
+    const focus = CARD_CATALOG.get(defaultIds[4])?.value;
+    const before = view([], { focusValue: focus });
+    const after = view([defaultIds[4]], { focusValue: focus });
+    expect(deckBuilderDeckSignature(after)).not.toBe(deckBuilderDeckSignature(before));
+    expect(deckBuilderPoolSignature(after)).not.toBe(deckBuilderPoolSignature(before));
   });
 
-  it('a row signature notices a card being TAKEN, not just its slots filling', () => {
+  it('the POOL signature notices a card being TAKEN, not just the slots filling', () => {
     // Teeth: the pressed state of an option is what tells a player their click
-    // landed, and two different drafts can leave a row's slot list looking the
-    // same, so the chosen flags belong in the row signature beside the slots.
+    // landed, and two different drafts can leave a value's slots looking the
+    // same, so the chosen flags belong in the pool signature.
     const model = view([]);
-    const row = model.rows[4];
-    const chosen = { ...row, options: row.options.map((o, i) => ({ ...o, chosen: i === 0 })) };
-    expect(deckBuilderRowSignature(chosen)).not.toBe(deckBuilderRowSignature(row));
+    const taken = { ...model, pool: model.pool.map((o, i) => ({ ...o, chosen: i === 0 })) };
+    expect(deckBuilderPoolSignature(taken)).not.toBe(deckBuilderPoolSignature(model));
+  });
+
+  it('the DECK signature notices the value being worked on, since the column shows it', () => {
+    // The column doubles as the navigator, so the selected row has to look
+    // selected; that is a repaint of the column, not of the pool alone.
+    const a = view([], { focusValue: 2 });
+    const b = view([], { focusValue: 7 });
+    expect(deckBuilderDeckSignature(a)).not.toBe(deckBuilderDeckSignature(b));
   });
 });
 
@@ -167,31 +199,32 @@ describe('deck builder design-identity filter', () => {
     expect(model.setFilter).toBeNull();
   });
 
-  it('narrows every row to one identity, which is why it is worth having', () => {
+  it('narrows the pool to one identity, which is why it is worth having', () => {
     const model = view([], { setFilter: 'briarpack' });
     expect(model.setFilter).toBe('briarpack');
-    const offered = model.rows.flatMap((row) => row.options);
-    expect(offered.length).toBeGreaterThan(0);
-    for (const option of offered) expect(option.def.set).toBe('briarpack');
+    expect(model.pool.length).toBeGreaterThan(0);
+    for (const option of model.pool) expect(option.def.set).toBe('briarpack');
     // One card per value, because an identity is a complete value 1 to 10 run.
-    for (const row of model.rows) expect(row.options.length).toBe(1);
+    for (const value of [1, 4, 10] as const) {
+      expect(view([], { setFilter: 'briarpack', focusValue: value }).pool.length).toBe(1);
+    }
   });
 
   it('keeps a chosen card visible under a filter that excludes it', () => {
     // Hiding it would leave a filled slot the player has no way to clear.
     const chosen = CARDS.find((def) => def.set === 'briarpack' && def.value === 3);
     expect(chosen).toBeDefined();
-    const model = view([chosen!.id], { setFilter: 'mirefen_tide' });
+    const model = view([chosen!.id], { setFilter: 'mirefen_tide', focusValue: 3 });
     const row = model.rows.find((r) => r.value === 3);
     expect(row?.slots).toContain(chosen!.id);
-    expect(row?.options.some((o) => o.cardId === chosen!.id && o.chosen)).toBe(true);
+    expect(model.pool.some((o) => o.cardId === chosen!.id && o.chosen)).toBe(true);
   });
 
   it('treats an identity the pool does not hold as no filter at all', () => {
     // Otherwise a stale filter would silently empty every row.
     const model = view([], { setFilter: 'basics' });
     expect(model.setFilter).toBeNull();
-    expect(model.rows[0].options.length).toBe(view([]).rows[0].options.length);
+    expect(model.pool.length).toBe(view([]).pool.length);
   });
 
   it('puts the filter in the repaint signature, or switching would show nothing', () => {

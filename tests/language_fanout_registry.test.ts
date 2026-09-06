@@ -310,20 +310,22 @@ const ANSWERED: readonly AnsweredSurface[] = [
   },
   {
     file: 'deck_builder_window.ts',
-    memos: ['lastRowSigs', 'lastSig'],
+    memos: ['lastDeck', 'lastPool', 'lastSig'],
     answer: 'this.cardWindows.deckBuilder.relocalize',
-    // BOTH memos are over structure and the DRAFT, never over text, so a
-    // locale change alone can move neither: the rule line, the value row
-    // titles and every card name would keep the old language until the player
-    // happened to edit a slot.
+    // ALL THREE memos are over structure and the DRAFT, never over text, so a
+    // locale change alone can move none of them: the rule line, the pool
+    // heading, the identity chips and every card name would keep the old
+    // language until the player happened to edit a slot.
     //
-    // One arm still answers for the pair, and that is a property of the split
-    // rather than an assumption. `lastRowSigs` is only ever consulted on the
-    // cheap path, which `relocalize` cannot reach: clearing `lastSig` forces
-    // the SHELL branch, and that branch repaints all ten rows and re-latches
-    // every row signature from the fresh markup. A row can therefore never be
-    // left holding pre-switch text behind a signature that still matches.
-    why: 'the deck rule line, the value row titles and the card names on every face',
+    // One arm still answers for all three, and that is a property of the split
+    // rather than an assumption. `lastDeck` and `lastPool` are only ever
+    // consulted on the cheap path, which `relocalize` cannot reach: clearing
+    // `lastSig` forces the SHELL branch, and that branch rebuilds both regions
+    // and re-latches their signatures from the fresh markup. A region can
+    // therefore never be left holding pre-switch text behind a signature that
+    // still matches. Pinned behaviorally in tests/deck_builder_repaint.test.ts
+    // ('relocalize repaints both regions').
+    why: 'the deck rule line, the pool heading, the identity chips and the card names on every face',
   },
   {
     file: 'deeds_window.ts',

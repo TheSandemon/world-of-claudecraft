@@ -237,45 +237,60 @@ written at once rather than on a beat, and it holds an already-decided round
 whatever the motion level. Nothing a player is still deciding on is ever
 staged.
 
-## The deck builder repaints ONE ROW, never the catalog
+## The deck builder shows ONE VALUE, never the catalog
 
-The builder shows a card face for every card in the game: ten value rows of two
-slots plus the whole pool at that value, about two hundred faces, roughly
-440 KB of markup and six thousand nodes. It sat behind one whole-view repaint
-signature, so **every click rebuilt all of it** to change one slot and one
-button's pressed state. Measured: 6280 nodes and 172 ms per toggle, against 655
-nodes and 18 ms for the row that actually moved.
+The builder is a deck COLUMN beside a POOL. The column is all ten values,
+twenty slots, always in view, drawn as pips rather than card faces. The pool is
+the cards on offer at the ONE value being worked on, about twenty of them.
 
-The signature is split the way the duel window's regions are split, and for the
-same reason:
+It used to hand every value row its own full pool, so the window listed every
+card in the game on a single page: two hundred faces to scroll past in order to
+fill twenty slots, and a full rebuild of all of them on every click (measured:
+6280 nodes and 172 ms per press). It is 693 nodes now, and a click costs the
+two regions rather than the catalog.
 
-- `deckBuilderShellSignature` covers only what RESTRUCTURES the builder: the set
-  filter (which changes what all ten rows offer, so a full rebuild is correct
-  there) and the saved-deck list.
-- `deckBuilderRowSignature` covers one value row: its two slots, and which of
-  its options are marked taken. A toggle can only ever move one of these.
-- The progress line, the Save button and the Delete button track the DRAFT, so
-  they are written in place on every render rather than riding a signature.
+The column is deliberately BOTH things. It is the deck at a glance, which is
+what a player wants while choosing, and it is the navigator that points the
+pool at a value. Making it both is what lets the pool narrow to one value
+without hiding the deck, which is the trade the old layout got wrong in the
+other direction. It opens on the first value still missing a card, so the
+window lands on the work; once the player picks a value the choice STICKS,
+because a focus that re-derived itself would jump away the moment they filled
+the value they were looking at.
+
+Three signatures, one per region, and each omission from the shell is
+deliberate:
+
+- `deckBuilderShellSignature` is the saved-deck list alone. It is the only
+  change that costs a full rebuild, so nothing that moves while a player works
+  may reach it.
+- `deckBuilderDeckSignature` is the twenty slots plus the focused value (the
+  column has to show which row is selected).
+- `deckBuilderPoolSignature` is the focused value, the set filter, and which
+  cards are taken. The filter lives here because it narrows only this pane.
+- `filled` and the draft NAME are in none of them. `filled` drives the progress
+  line and the Save button, written in place. The name is what the player types
+  into, and a signature that moved with it rebuilt the window mid-keystroke and
+  took the caret with it.
 
 Two consequences that are not optional:
 
-- **The wiring is delegated.** A row is now replaced under the handler, so a
+- **The wiring is delegated.** A region is replaced under the handler, so a
   listener bound to a card button is bound to a node the next toggle destroys.
-  One click handler on the root reads its target at click time and survives
-  every row repaint under it.
-- **The draft NAME is in no signature at all**, and that was a bug rather than
-  a cost. The name field is what the player is typing into, so a signature that
-  moved with it rebuilt the window because they typed, taking the field and the
-  caret with it. Loading a saved deck still repaints the field, through
-  `activeName`.
+  One click handler on the root reads its target at click time.
+- **The pane height is capped on `.db-panes`, never on the window.** The HUD
+  shows a window by writing `display: block` INLINE, which beats any
+  `display: flex` the stylesheet sets, so a flex chain from the window down to
+  the panes silently never forms; the bar escaped above the window frame for
+  exactly that reason before the cap moved.
 
-`relocalize` stays one arm for both memos, and that is a property of the split
-rather than an assumption: clearing the shell signature forces the shell
-branch, and that branch repaints all ten rows and re-latches every row
-signature from the fresh markup, so no row can be left holding pre-switch text.
+`relocalize` stays one arm for all three memos, and that is a property of the
+split rather than an assumption: clearing the shell signature forces the shell
+branch, which rebuilds both regions and re-latches their signatures from the
+fresh markup, so no region can be left holding pre-switch text.
 `tests/deck_builder_repaint.test.ts` pins all of it on node identity, which is
-the only check that tells "repainted one row" apart from "repainted everything
-and produced the same markup".
+the only check that tells "repainted one region" apart from "repainted
+everything and produced the same markup".
 
 ## How a match ENDS
 
