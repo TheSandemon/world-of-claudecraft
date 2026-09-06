@@ -525,7 +525,7 @@
     width: 96px;
     height: 148px;
   }
-  .dt-slot-card .cf-size-stage .cf-value {
+  .dt-slot-card .cf-size-stage .cf-corner {
     font-size: 19px;
   }
   .dt-back {
@@ -1229,49 +1229,53 @@
     gap: 2px;
     /* One line whatever the terms: a wrapped sum reads as two numbers. */
     white-space: nowrap;
-  }
-  .cf-value {
+    /* ONE size for the whole sum, set here and inherited by every term, so a
+       size variant retunes the group with a single declaration instead of four
+       that can drift apart. The terms are told apart by COLOUR, not by size:
+       three different sizes read as a heading with footnotes, when what this
+       is is one expression whose three parts are equally worth reading. */
     font-family: var(--title-font);
-    font-size: 17px;
-    color: var(--gold);
+    font-size: 15px;
     text-shadow: 0 1px 2px #000;
   }
-  /* The printed value LEADS the sum, so it is ordinary dim text rather than
-     struck through: a strike reads as "void", and this number is not void, it
+  .cf-base,
+  .cf-delta,
+  .cf-eq,
+  .cf-value {
+    font-family: inherit;
+    font-size: inherit;
+  }
+  /* The printed value: plain white. It LEADS the sum rather than being struck
+     through, because a strike reads as "void", and this number is not void, it
      is what the card is before the table got to it. */
   .cf-base {
-    font-family: var(--title-font);
-    font-size: 11px;
-    color: var(--color-text-muted);
-    text-shadow: 0 1px 2px #000;
+    color: var(--color-text-light);
   }
   /* Signed, and coloured by DIRECTION: which way the value moved is the thing
      being read here, more than by how much. */
-  .cf-delta {
-    font-family: var(--title-font);
-    font-size: 12px;
-    text-shadow: 0 1px 2px #000;
-  }
-  .cf-eq {
-    font-size: 9px;
-    color: var(--color-text-muted);
-    text-shadow: 0 1px 2px #000;
-  }
-  /* Only the SUM takes a backing plate, and only because it needs one: four
-     terms of mixed size and colour sitting over painted art stop reading as
-     one group, where a lone gold digit under its own text-shadow does not.
-     Applied to the modified case alone rather than to every corner, so an
-     unmodified card is not given chrome it has no use for. */
-  .cf-corner-sum {
-    padding: 0 3px 1px;
-    border-radius: var(--radius-sm);
-    background: #00000066;
-  }
   .cf-delta-up {
     color: var(--color-stat-bonus);
   }
   .cf-delta-down {
-    color: var(--mkt-name-legendary);
+    color: var(--color-debuff);
+  }
+  .cf-eq {
+    color: var(--color-text-muted);
+  }
+  /* The value the round will actually compare, in the same gold the rest of
+     the HUD reserves for a resolved number. */
+  .cf-value {
+    color: var(--gold);
+  }
+  /* Only the SUM takes a backing plate, and only because it needs one: four
+     terms sitting over painted art stop reading as one group, where a lone
+     gold digit under its own text-shadow does not. Applied to the modified
+     case alone rather than to every corner, so an unmodified card is not given
+     chrome it has no use for. */
+  .cf-corner-sum {
+    padding: 0 3px 1px;
+    border-radius: var(--radius-sm);
+    background: #00000066;
   }
   .cf-plate {
     padding: 2px 4px;
@@ -1322,12 +1326,19 @@
     width: 68px;
     height: 96px;
   }
+  /* The narrowest face, and the sum has to fit on ONE line in it: at the base
+     size a two-digit printed value with a two-digit result runs off a 68px
+     card. Tuned to the widest sum the game can actually produce rather than to
+     the common case, because the overflow is silent. */
+  .cf-size-hand .cf-corner {
+    font-size: 12px;
+  }
   .cf-size-stage {
     width: 108px;
     height: 152px;
   }
-  .cf-size-stage .cf-value {
-    font-size: 22px;
+  .cf-size-stage .cf-corner {
+    font-size: 20px;
   }
   .cf-size-stage .cf-rules,
   .cf-size-cell .cf-rules {
@@ -1348,21 +1359,10 @@
     padding: 5px 7px;
     font-size: 12px;
   }
-  .cf-size-inspect .cf-value {
-    font-size: 30px;
-  }
-  .cf-size-inspect .cf-base {
-    font-size: 16px;
-  }
-  .cf-size-inspect .cf-delta {
-    font-size: 18px;
-  }
-  .cf-size-inspect .cf-eq {
-    font-size: 13px;
-  }
   .cf-size-inspect .cf-corner {
     top: 4px;
     left: 6px;
+    font-size: 26px;
   }
   .cf-size-inspect .cf-plate {
     padding: 4px 7px;
@@ -1570,7 +1570,7 @@
     .dt-slot-card .cf-size-stage .cf-rules {
       display: none;
     }
-    .dt-slot-card .cf-size-stage .cf-value {
+    .dt-slot-card .cf-size-stage .cf-corner {
       font-size: 16px;
     }
     /* The hand becomes one rail that scrolls rather than a block that wraps to
@@ -2130,8 +2130,8 @@
       width: 128px;
       height: 180px;
     }
-    .dt-slot-card .cf-size-stage .cf-value {
-      font-size: 23px;
+    .dt-slot-card .cf-size-stage .cf-corner {
+      font-size: 21px;
     }
     .dt-slot-card .cf-size-stage .cf-rules {
       padding: 5px 7px;
@@ -2168,17 +2168,8 @@
     .dt-hand .cf-size-hand .cf-rules {
       display: block;
     }
-    .dt-hand .cf-size-hand .cf-value {
-      font-size: 22px;
-    }
-    .dt-hand .cf-size-hand .cf-base {
-      font-size: 12px;
-    }
-    .dt-hand .cf-size-hand .cf-delta {
-      font-size: 15px;
-    }
-    .dt-hand .cf-size-hand .cf-eq {
-      font-size: 11px;
+    .dt-hand .cf-size-hand .cf-corner {
+      font-size: 19px;
     }
     .dt-hand .cf-size-hand .cf-name {
       font-size: 12px;

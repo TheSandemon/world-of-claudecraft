@@ -172,6 +172,61 @@ describe('card face markup', () => {
     expect(strip(cell)).toBe(strip(hand));
   });
 
+  /**
+   * Every declaration block whose selector list is exactly this one class, at
+   * the sheet's top nesting level.
+   *
+   * ALL of them, not the first: `.cf-value` also appears as the last selector
+   * of the shared `font-size: inherit` group, and taking the first match there
+   * would silently test the wrong rule.
+   */
+  const rulesFor = (sel: string) => {
+    const out: string[] = [];
+    for (let at = CARDS_CSS.indexOf(`\n  .${sel} {`); at >= 0; ) {
+      out.push(CARDS_CSS.slice(at, CARDS_CSS.indexOf('}', at)));
+      at = CARDS_CSS.indexOf(`\n  .${sel} {`, at + 1);
+    }
+    return out;
+  };
+  /** The one that carries the colour. */
+  const colourRuleFor = (sel: string) =>
+    rulesFor(sel).find((rule) => rule.includes('color:')) ?? '';
+
+  it('sizes the sum ONCE and tells its terms apart by colour alone', () => {
+    // Three sizes read as a heading with footnotes. This is one expression
+    // whose three parts are equally worth reading, so the size is set once on
+    // the group and every term inherits it; colour carries the roles.
+    expect(rulesFor('cf-corner').join('')).toContain('font-size:');
+    const at = CARDS_CSS.indexOf('.cf-base,\n  .cf-delta,\n  .cf-eq,\n  .cf-value {');
+    expect(at, 'the four terms must share one inherit rule').toBeGreaterThan(-1);
+    expect(CARDS_CSS.slice(at, CARDS_CSS.indexOf('}', at))).toContain('font-size: inherit');
+    // Teeth: no term may re-declare its own size, at any face size, or the
+    // group stops being one declaration and the sizes drift apart again.
+    for (const term of ['cf-base', 'cf-delta', 'cf-eq', 'cf-value']) {
+      for (const rule of rulesFor(term)) {
+        // `font-size: inherit` IS the contract; a concrete size is the drift.
+        expect(rule, `${term} re-declares a size`).not.toMatch(/font-size:(?!\s*inherit\b)/);
+      }
+      expect(CARDS_CSS, `${term} is re-sized at some face size`).not.toContain(
+        `.${term} {\n      font-size`,
+      );
+    }
+  });
+
+  it('paints the three roles white, green (or red) and gold', () => {
+    // The printed value is plain white, the modifier is coloured by DIRECTION
+    // (a debuff in the same green as a buff would be actively misleading), and
+    // the value the round will compare takes the HUD's resolved-number gold.
+    expect(colourRuleFor('cf-base')).toContain('var(--color-text-light)');
+    expect(colourRuleFor('cf-delta-up')).toContain('var(--color-stat-bonus)');
+    expect(colourRuleFor('cf-delta-down')).toContain('var(--color-debuff)');
+    expect(colourRuleFor('cf-value')).toContain('var(--gold)');
+    // Tokens, never literals (src/styles/CLAUDE.md).
+    for (const sel of ['cf-base', 'cf-delta-up', 'cf-delta-down', 'cf-value']) {
+      expect(colourRuleFor(sel), `${sel} hardcodes a colour`).not.toMatch(/#[0-9a-f]{3,8}/i);
+    }
+  });
+
   it('every class the markup mints has a rule in the stylesheet', () => {
     const html =
       faceOf(WOLF_ID, { effectiveValue: 5, revealed: true, silenced: true }) +
