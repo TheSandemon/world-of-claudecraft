@@ -109,9 +109,14 @@ export const IWORLD_MEMBERS = [
   { name: 'craftSkills', kind: 'data' },
   { name: 'gatheringProficiency', kind: 'data' },
   { name: 'known', kind: 'data' },
+  { name: 'resolvedAbility', kind: 'method' },
   { name: 'activeConsecrations', kind: 'data' },
   { name: 'activeFrostRings', kind: 'data' },
   { name: 'activeIgnivarMeteors', kind: 'data' },
+  { name: 'activeNythraxisGraveEruptions', kind: 'data' },
+  { name: 'activeNythraxisGraveFlames', kind: 'data' },
+  { name: 'activeNythraxisGravefires', kind: 'data' },
+  { name: 'activeNythraxisBindingSigils', kind: 'data' },
   { name: 'activeVarkhulCinderFires', kind: 'data' },
   { name: 'activeVarkhulCinderOrbProjectiles', kind: 'data' },
   { name: 'activeVarkhulForgestormWarnings', kind: 'data' },
@@ -169,7 +174,6 @@ export const IWORLD_MEMBERS = [
   { name: 'sellAllJunk', kind: 'method' },
   { name: 'buyBackItem', kind: 'method' },
   { name: 'upgradeRiftItem', kind: 'method' },
-  { name: 'enchantRiftItem', kind: 'method' },
   { name: 'socketRiftGem', kind: 'method' },
   { name: 'partyTradeMsRemaining', kind: 'method' },
   { name: 'equipBag', kind: 'method' },
@@ -274,6 +278,7 @@ export const IWORLD_MEMBERS = [
   { name: 'guildEventCreate', kind: 'method' },
   { name: 'guildEventRemove', kind: 'method' },
   { name: 'guildSetMotd', kind: 'method' },
+  { name: 'guildBuyRosterPage', kind: 'method' },
   { name: 'searchCharacters', kind: 'method' }, // async (1/2)
   { name: 'characterProfile', kind: 'method' }, // async
   // Operator-set account flair, by name. A pure LOCAL read (the flair rides the entity
@@ -340,6 +345,7 @@ export const IWORLD_MEMBERS = [
   { name: 'guildBankWithdraw', kind: 'method' },
   { name: 'guildBankBuySlots', kind: 'method' },
   { name: 'guildBankLog', kind: 'method' },
+  { name: 'guildBankLogOlder', kind: 'method' },
   // --- dungeons + delves commands and reads ---
   { name: 'enterDungeon', kind: 'method' },
   { name: 'leaveDungeon', kind: 'method' },
@@ -604,7 +610,9 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
     // IWorldGuildBank members (guildBankInfo, one data read, plus five
     // commands), leaving 287. The guild bank ACTIVITY LOG adds one read member
     // (guildBankLog, a method because reading it is what requests the cold
-    // payload on demand: it has no snapshot key), leaving 288. Thornhollow
+    // payload on demand: it has no snapshot key), leaving 288; the transaction
+    // history adds guildBankLogOlder (method, the older-page request) on top
+    // of the final tally below. Thornhollow
     // Fields adds the four battleground facet members on top of that base:
     // the bgInfo data member plus the bgQueueJoin / bgQueueLeave / bgFlagAction
     // commands, leaving 292. The stop-auto-attack-on-target-switch setting
@@ -656,6 +664,11 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
     // The PR 3676 arm's ground-aim landing preview adds groundAimPlacementPreview
     // (IWorldCombat, a method) on top of the bank-storage members at the sixth
     // v0.41.0 sync; the totals below are read off a run on the merged tree.
+    // The v0.42.0 class-balance display-parity fix adds resolvedAbility
+    // (IWorldCombat, a method): the local player's own known ability with every
+    // presentation-layer transform folded in, so the HUD/cross-hotbar/spellbook
+    // can show the same resolve Sim.resolvedAbility would produce instead of a
+    // raw known-array lookup.
     //
     // NOTE for the next merge, four syncs run now: BOTH sides of this pin move
     // it independently every cycle. Twice git merged identical numbers with no
@@ -665,9 +678,13 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
     // even when the total agrees. Only running the suite says what these
     // numbers really are; never reconcile them by arithmetic in the diff (the
     // numbers below were set from a suite run, not from this narrative).
-    expect(IWORLD_MEMBERS.length).toBe(347);
-    expect(DATA_MEMBERS.length).toBe(95);
-    expect(METHOD_MEMBERS.length).toBe(252);
+    //
+    // The merged interface is the ClaudeStone deck and card-command members on
+    // top of the release's own (resolvedAbility from class balance and the four
+    // Nythraxis data readouts). Every number here is read off the merged tree.
+    expect(IWORLD_MEMBERS.length).toBe(353);
+    expect(DATA_MEMBERS.length).toBe(99);
+    expect(METHOD_MEMBERS.length).toBe(254);
   });
   it('has no duplicate member names', () => {
     const names = IWORLD_MEMBERS.map((m) => m.name);
@@ -694,6 +711,10 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'activeLootRolls',
       'activeMasterLootRolls',
       'activeMobileStationCraft',
+      'activeNythraxisBindingSigils',
+      'activeNythraxisGraveEruptions',
+      'activeNythraxisGraveFlames',
+      'activeNythraxisGravefires',
       'activeTemporalHourglasses',
       'activeTitle',
       'activeVarkhulAnvilMeteors',
@@ -795,7 +816,6 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'dungeonFinderQueueLeave',
       'dungeonFinderRespond',
       'dungeonFinderSetRoles',
-      'enchantRiftItem',
       'enterDelve',
       'enterDungeon',
       'entities',
@@ -817,8 +837,10 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'guildBankDepositGold',
       'guildBankInfo',
       'guildBankLog',
+      'guildBankLogOlder',
       'guildBankWithdraw',
       'guildBankWithdrawGold',
+      'guildBuyRosterPage',
       'guildCreate',
       'guildDecline',
       'guildDemote',
@@ -940,6 +962,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'renamePet',
       'renown',
       'reportTelemetry',
+      'resolvedAbility',
       'respec',
       'respondToResurrection',
       'restedXp',
@@ -1038,6 +1061,10 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'activeIgnivarMeteors',
       'activeLoadout',
       'activeMobileStationCraft',
+      'activeNythraxisBindingSigils',
+      'activeNythraxisGraveEruptions',
+      'activeNythraxisGraveFlames',
+      'activeNythraxisGravefires',
       'activeTemporalHourglasses',
       'activeTitle',
       'activeVarkhulAnvilMeteors',
@@ -1207,7 +1234,6 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'dungeonFinderQueueLeave',
       'dungeonFinderRespond',
       'dungeonFinderSetRoles',
-      'enchantRiftItem',
       'enterDelve',
       'enterDungeon',
       'equipBag',
@@ -1224,8 +1250,10 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'guildBankDeposit',
       'guildBankDepositGold',
       'guildBankLog',
+      'guildBankLogOlder',
       'guildBankWithdraw',
       'guildBankWithdrawGold',
+      'guildBuyRosterPage',
       'guildCreate',
       'guildDecline',
       'guildDemote',
@@ -1313,6 +1341,7 @@ describe('IWORLD_MEMBERS is the pinned IWorld contract (anti-loosening)', () => 
       'reliquaryRarity',
       'renamePet',
       'reportTelemetry',
+      'resolvedAbility',
       'respec',
       'respondToResurrection',
       'resurrectAtCorpse',
@@ -1479,9 +1508,14 @@ type _ExhaustEntityRoster = AssertNever<
 
 const FACET_COMBAT = [
   'known',
+  'resolvedAbility',
   'activeConsecrations',
   'activeFrostRings',
   'activeIgnivarMeteors',
+  'activeNythraxisGraveEruptions',
+  'activeNythraxisGraveFlames',
+  'activeNythraxisGravefires',
+  'activeNythraxisBindingSigils',
   'activeTemporalHourglasses',
   'activeVarkhulForgestormWarnings',
   'activeVarkhulCinderFires',
@@ -1561,7 +1595,6 @@ const FACET_INVENTORY = [
   'sellAllJunk',
   'buyBackItem',
   'upgradeRiftItem',
-  'enchantRiftItem',
   'socketRiftGem',
   'partyTradeMsRemaining',
   'equipBag',
@@ -1751,6 +1784,7 @@ const FACET_SOCIAL_GRAPH = [
   'guildEventCreate',
   'guildEventRemove',
   'guildSetMotd',
+  'guildBuyRosterPage',
   'searchCharacters',
   'characterProfile',
   'accountFlair',
@@ -1808,6 +1842,7 @@ const FACET_GUILD_BANK = [
   'guildBankWithdraw',
   'guildBankBuySlots',
   'guildBankLog',
+  'guildBankLogOlder',
 ] as const satisfies readonly (keyof IWorldGuildBank)[];
 type _ExhaustGuildBank = AssertNever<
   Exclude<keyof IWorldGuildBank, (typeof FACET_GUILD_BANK)[number]>
@@ -2035,8 +2070,10 @@ describe('W1: aggregate IWorld member set equals the disjoint union of the facet
 
   it('the facet union equals the pinned IWORLD_MEMBERS set', () => {
     const union = Object.values(FACET_MEMBER_ARRAYS).flatMap((arr) => [...arr]);
-    expect(union.length, 'union size before dedup (catches a duplicated member)').toBe(347);
-    expect(new Set(union).size, 'union size after dedup (catches a duplicated member)').toBe(347);
+    // Both union pins cover the complete merged contract: the ClaudeStone
+    // members, the resolved ability method and the four Nythraxis readouts.
+    expect(union.length, 'union size before dedup (catches a duplicated member)').toBe(353);
+    expect(new Set(union).size, 'union size after dedup (catches a duplicated member)').toBe(353);
     const sortedUnion = [...union].sort();
     const pinned = IWORLD_MEMBERS.map((m) => m.name).sort();
     expect(sortedUnion).toEqual(pinned);

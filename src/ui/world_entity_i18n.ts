@@ -94,6 +94,7 @@ const MOB_IDS = [
   'nythraxis_heroic_priest_add',
   'nythraxis_heroic_rogue_add',
   'nythraxis_scourge_of_thornpeak',
+  'nythraxis_bone_spike',
   'ignivar_herald_of_the_last_flame',
   'ignivar_heart_of_the_end',
   'ignivar_ember_sentinel',
@@ -347,6 +348,7 @@ const NPC_IDS = [
   'mender_saul',
   'bellkeeper_tam',
   'fisher_nell',
+  'riftwright_maelis', // the Rift Forge (Gullhaven, Farshore)
   'forgemistress_darva', // crafting-station master: forge (Eastbrook, zone 1)
   'cook_marlow', // crafting-station master: kitchens (Eastbrook, zone 1)
   'weaver_ottilie', // crafting-station master: loom (Eastbrook, zone 1)
