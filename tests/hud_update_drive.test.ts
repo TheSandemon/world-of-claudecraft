@@ -189,7 +189,11 @@ const VIEW_SIG_BLOCK = 'if (view.sig !== this.lastSig) {';
 // its own memo. The shell identity is the window's state OR the finished-match
 // summary sitting on top of it, which is why the guard compares a resolved
 // `shell` rather than `view.state` directly.
-const SHELL_BLOCK = 'if (shell !== this.lastShell) {';
+// The second half of the condition is the MATCH ENDING: the sim drops the match
+// in the same tick as the final round, so a poll that rebuilt on that reading
+// replaced the stage while the round was still speaking and took the theater
+// (and the queued summary) with it. A window mid-story holds its shell.
+const SHELL_BLOCK = 'if (shell !== this.lastShell && !this.isNarrating()) {';
 // The deck builder's shell guard, and the same shape as the ClaudeStone one
 // above for the same underlying reason: the window carries no single signature
 // over its whole body. It guards the full REBUILD, which only a restructuring
@@ -1782,7 +1786,7 @@ describe('Hud.update() drives exactly the registered set, on the registered band
         'bags_window.ts: if (!bagsMoneyRowStale(el.style.display, this.deps.world().copper, this.lastMoneyCopper)) return;',
         'bank_window.ts: if (sig === this.lastSig) return;',
         'calendar_window.ts: if (sig === this.lastSig) return;',
-        'card_duel_window.ts: if (shell !== this.lastShell) {',
+        'card_duel_window.ts: if (shell !== this.lastShell && !this.isNarrating()) {',
         'deck_builder_window.ts: if (sig !== this.lastSig) {',
         'daily_rewards_window.ts: if (!this.charterFit.changedFrom(this.deps.world().bankPurchasedSlots)) return;',
         'deeds_window.ts: if (sig === this.lastSig) return;',

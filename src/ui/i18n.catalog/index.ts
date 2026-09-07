@@ -1251,7 +1251,6 @@ export const en = {
       effectOther: '{card} resolves',
       yourCard: 'your card',
       theirCard: 'their card',
-      damage: '{target} takes {amount}',
       // The match ENDING (src/ui/cards/duel_outro_core.ts), one line per outro
       // beat. Written about the match rather than the round: by the time these
       // play, the last round has already been told in full.
@@ -1259,8 +1258,6 @@ export const en = {
       gloryWin: 'The duel is yours',
       gloryLose: 'The duel is lost',
       gloryDraw: 'The duel ends level',
-      you: 'You',
-      them: 'Your opponent',
     },
     // The end of a match. It lands IN the window, over the table it replaces:
     // the numbers only mean anything next to the board they came from, and a

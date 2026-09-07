@@ -20,6 +20,7 @@ on where it appears.
 | `card_scene_markup.ts` | thin consumer: scene model in, one inline SVG out. Touches no DOM. |
 | `duel_table_view.ts` | pure core: the clock band, the score pips, the counter tokens, each seat's commit, whose commit the round waits on. In `UI_PURE_CORES`. |
 | `duel_beats_core.ts` | pure core: one resolved round as an ordered beat timeline, with the cue and the SPOTLIGHT that ride each beat. In `UI_PURE_CORES`. |
+| `duel_health_core.ts` | pure core: what the two health bars SHOW while a round is told (the pre-round reading, until the damage beat). In `UI_PURE_CORES`. |
 | `duel_outro_core.ts` | pure core: the MATCH ending as three more beats in the same grammar (`finish`, `glory`, `curtain`), played after the last round has been told. In `UI_PURE_CORES`. |
 | `duel_table_markup.ts` | thin consumer: table and stage models in, markup out. Touches no DOM. |
 | `duel_theater.ts` | the driver that walks a timeline against an injected host. No element, no timer API, no audio object. |
@@ -141,6 +142,25 @@ effects row says what is still parked and on whom, sourced from the engine's
 own modifier list (`src/sim/minigames/card_duel/preview.ts`) rather than a
 second model that could disagree with the round.
 
+**The health bars are the one exception, and it is about PACING, not truth.**
+A round resolves in the same tick both cards land, so the snapshot's health is
+already the AFTER value while the cards are still turning: the bars dropped
+about six seconds before the `damage` beat whose entire job is to show the hit,
+the spotlight lit a number nobody had watched change, and a player who lost the
+match saw their health reach zero during the deal. So the bars HOLD their
+pre-round reading for the length of the telling and the damage beat releases
+them (`duel_health_core.ts`, which reconstructs that reading by adding the
+damage back onto the side that took it rather than remembering a paint that may
+never have happened). Three things keep it legal and all three must stay true:
+play is CLOSED for exactly that window (the sim holds the round clock for
+`cardNarrationSeconds` and refuses a card played inside it, so no decision can
+turn on the held number, and the bars are released before the hand comes back);
+it is identical at every preset, on every device and under reduced motion,
+because `calm` keeps every beat at its own moment; and it is bounded by the
+round, since every path that ends a timeline early drops the hold and the
+snapshot's own numbers are back on the bars. Nothing else on the table is ever
+held: this is the single member of that list, not a precedent for a second one.
+
 **The theater narrates.** A resolved round arrives as one `cardRoundResolved`
 event and is played out over that already-true picture: the cards land, both
 faces turn at once, the effects land with a delta chip on the card they moved,
@@ -222,6 +242,11 @@ play, the round score, the counters, the round clock, and
 whose commit is outstanding.
 `tests/card_duel_window_clock.test.ts` pins it against the stylesheet.
 
+Health is in that list too, with the timing note above attached: it is never
+tiered, never behind a hover and never behind an animation completing, and the
+one thing that moves it is the damage beat, which arrives at the same instant at
+every preset.
+
 The RULES TEXT is in that list with one honest asterisk: it is in the markup at
 every size, but the hand variant has no room to show it, and a display:none node
 is out of the accessibility tree too. So the sentence reaches a hand card two
@@ -275,9 +300,20 @@ deliberate:
 
 Two consequences that are not optional:
 
-- **The wiring is delegated.** A region is replaced under the handler, so a
-  listener bound to a card button is bound to a node the next toggle destroys.
-  One click handler on the root reads its target at click time.
+- **The wiring is delegated, and bound ONCE PER ELEMENT.** A region is replaced
+  under the handler, so a listener bound to a card button is bound to a node the
+  next toggle destroys. One click handler on the root reads its target at click
+  time. The second half is what both ClaudeStone windows got wrong: the rebuild
+  replaces the markup INSIDE the root, but the root is the element from
+  `index.html` and lives for the whole session, so wiring with the shell added a
+  listener per rebuild. A match walks the duel window's shell through available,
+  in a match, and over, so one press afterwards ran every arm several times: as
+  many click sounds, as many play commands, and a Decks button that toggled the
+  builder open and shut again in a single press and read as dead. Each window
+  keeps the root it wired and returns early on a second attempt; delegation is
+  exactly what makes one binding sufficient, so the guard costs nothing.
+  `tests/card_duel_window_lifecycle.test.ts` presses a button after several
+  rebuilds and pins one arm per press.
 - **The pane height is capped on `.db-panes`, never on the window.** The HUD
   shows a window by writing `display: block` INLINE, which beats any
   `display: flex` the stylesheet sets, so a flex chain from the window down to
@@ -298,6 +334,19 @@ The sim emits `cardDuelMatchEnd` in the SAME tick as the final
 `cardRoundResolved`. The window used to answer it directly: stop the theater,
 render the summary. So the round that DECIDED the match was the one round a
 player never saw, and the match ended by having its loudest moment deleted.
+
+**The SHELL is the second half of that, and queueing alone did not survive it.**
+The sim drops the match in the same tick, so by the very next HUD poll the
+projection was no longer `inMatch`, `render` computed a new shell, and the
+rebuild replaced the stage while `cacheRegions` dropped the theater bound to it.
+The queued ending, the outro and the last round all went at once, a frame after
+they started, and the match simply stopped with nothing narrated. So a window
+that `isNarrating()` (a timeline still running, or an ending queued behind one)
+HOLDS its shell whatever the projection now says, and `revealSummary` is what
+releases it, which is also the one place `summary` is set: the window still
+rebuilds into the ending exactly once. A window CLOSED mid-ending promotes the
+queued summary rather than dropping it, so a reopen still shows the result and
+no shell is held for a story that can no longer be told.
 
 The ending is QUEUED behind the round instead. `showMatchEnd` holds the summary
 in `pendingEnd`, `DuelTheater.play` takes a completion callback that fires when

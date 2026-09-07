@@ -52,6 +52,9 @@ export class DeckBuilderWindow {
    * value's pool; choosing another value repaints the same two.
    */
   private lastSig = '';
+  /** The root the delegated click handler is bound to, so a shell rebuild
+   *  cannot stack a second one on the same element. */
+  private wiredRoot: HTMLElement | null = null;
   private lastDeck = '';
   private lastPool = '';
   private deckEl: HTMLElement | null = null;
@@ -346,7 +349,18 @@ export class DeckBuilderWindow {
     );
   }
 
+  /**
+   * One delegated click handler for the whole builder, bound ONCE PER ELEMENT.
+   *
+   * A shell rebuild replaces the markup inside the root; the root itself is the
+   * element from index.html and lives for the session. Binding with the shell
+   * therefore stacked a listener per rebuild, so after a couple of saved-deck
+   * changes one press toggled a card in and straight back out and the builder
+   * stopped responding. Delegation is what makes one binding enough.
+   */
   private wire(el: HTMLElement): void {
+    if (this.wiredRoot === el) return;
+    this.wiredRoot = el;
     el.addEventListener('click', (ev) => {
       const target = ev.target as HTMLElement | null;
       if (!target) return;

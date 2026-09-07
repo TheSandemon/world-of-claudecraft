@@ -334,6 +334,9 @@ const UI_PURE_CORES = [
   // The duel table and its round theater: what a match reads like between
   // reveals, and the beat timeline one resolved round plays out over.
   'src/ui/cards/duel_beats_core.ts',
+  // What the two health bars show while a round is being told: the pre-round
+  // reading, until the damage beat says the hit landed.
+  'src/ui/cards/duel_health_core.ts',
   'src/ui/cards/duel_outro_core.ts',
   'src/ui/cards/duel_summary_view.ts',
   'src/ui/cards/duel_table_view.ts',

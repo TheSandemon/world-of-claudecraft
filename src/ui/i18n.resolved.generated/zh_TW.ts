@@ -8650,13 +8650,10 @@ export const zh_TW: EnTranslations = {
       "effectOther": "{card}生效",
       "yourCard": "你的牌",
       "theirCard": "對方的牌",
-      "damage": "{target}受到 {amount} 點傷害",
-      "finish": "The last blow lands",
-      "gloryWin": "The duel is yours",
-      "gloryLose": "The duel is lost",
-      "gloryDraw": "The duel ends level",
-      "you": "你",
-      "them": "對手"
+      "finish": "最後一擊落下",
+      "gloryWin": "這場對決屬於你",
+      "gloryLose": "這場對決輸了",
+      "gloryDraw": "這場對決打成平手"
     },
     "summary": {
       "win": "你贏下這場對決",

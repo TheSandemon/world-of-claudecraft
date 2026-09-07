@@ -40,6 +40,7 @@ import {
   buildCardFaceModel,
   buildDuelClock,
   buildDuelEffects,
+  buildDuelHealthHold,
   buildDuelOutro,
   buildDuelStage,
   buildDuelSummary,
@@ -50,6 +51,7 @@ import {
   type CardRoundAudio,
   type CardRoundRevealInput,
   cardFaceHtml,
+  type DuelHealthHold,
   type DuelMatchOutcome,
   type DuelMotion,
   type DuelStageModel,
@@ -59,6 +61,7 @@ import {
   duelBeatCaption,
   duelClockHtml,
   duelEffectsHtml,
+  duelHealthShown,
   duelOpponentHandHtml,
   duelOutroCaption,
   duelOutroSpanMs,
@@ -143,6 +146,9 @@ export class CardDuelWindow {
   // shell for its whole length, so the stage element survives every repaint
   // and a running timeline is never rebuilt out from under itself.
   private lastShell = '';
+  /** The root the delegated click handler is bound to, so a shell rebuild
+   *  cannot stack a second one on the same element. */
+  private wiredRoot: HTMLElement | null = null;
   private lastSeats = '';
   private lastHand = '';
   private lastOppoHand = '';
@@ -181,6 +187,16 @@ export class CardDuelWindow {
   /** Which ending the outro is currently narrating, for its caption line. Null
    *  whenever a round rather than a match end owns the stage. */
   private endingOutcome: DuelMatchOutcome | null = null;
+  /**
+   * What the two health bars READ before the round now being told.
+   *
+   * A round resolves in the tick both cards land, so the snapshot's health is
+   * already the AFTER value while the cards are still turning: the bars dropped
+   * about six seconds before the `damage` beat that exists to show the hit. The
+   * pre-round pair is held here for exactly that span and released on the beat
+   * (duel_health_core.ts carries the reasoning and the arithmetic).
+   */
+  private heldHealth: DuelHealthHold | null = null;
   /** Whether the projection has reported "no match" since the last one ended.
    *  What tells a NEW match apart from the tail of the one being summarized. */
   private sawNoMatch = false;
@@ -215,6 +231,27 @@ export class CardDuelWindow {
     return this.isOpen && this.summary !== null;
   }
 
+  /** Drops the health hold and repaints, so the bars take the snapshot's own
+   *  reading again. Idempotent: every path that ends a timeline calls it. */
+  private releaseHealthHold(): void {
+    if (!this.heldHealth) return;
+    this.heldHealth = null;
+    if (this.isOpen && this.lastView?.state === 'inMatch') this.paintTable(this.lastView);
+  }
+
+  /**
+   * Whether the table is mid-story: a round's beats are still running, or a
+   * match ending is queued behind one.
+   *
+   * The one question the shell rebuild asks, because both answers mean the same
+   * thing to it: the stage element and the theater bound to it must survive
+   * until the story is finished, whatever the projection now says about whether
+   * there is still a match.
+   */
+  private isNarrating(): boolean {
+    return this.theater?.isPlaying === true || this.pendingEnd !== null;
+  }
+
   toggle(): void {
     if (this.isOpen) {
       this.close();
@@ -236,8 +273,21 @@ export class CardDuelWindow {
       this.openerFocus = null;
       return;
     }
+    // A queued ending has nowhere left to play, but it is still the result of
+    // the player's match: promote it to the summary so a reopen shows it. It
+    // also has to leave `pendingEnd`, or the shell would stay held for a story
+    // that can no longer be told.
+    if (this.pendingEnd) {
+      this.summary = this.pendingEnd;
+      this.pendingEnd = null;
+      this.endingOutcome = null;
+      this.lastShell = '';
+      this.els.board?.removeAttribute('data-ending');
+    }
     // A timeline still running would keep firing beats at an element nobody is
-    // watching, and would be mid-phase if the window reopened.
+    // watching, and would be mid-phase if the window reopened. Its health hold
+    // goes with it: a reopened window paints the snapshot's own reading.
+    this.heldHealth = null;
     this.theater?.stop();
     // A peek is anchored to a card that is about to be hidden.
     this.inspector.hide();
@@ -273,11 +323,23 @@ export class CardDuelWindow {
     // The summary is part of the shell's identity, so the window rebuilds into
     // it and back out of it exactly once each.
     const shell = this.summary ? `summary:${this.summary.outcome}` : view.state;
-    if (shell !== this.lastShell) {
+    // ...but a round still being told OWNS the shell until it has finished
+    // speaking. The sim emits `cardDuelMatchEnd` in the same tick as the final
+    // `cardRoundResolved` and drops the match with it, so by the very next HUD
+    // poll the projection is no longer `inMatch`. Rebuilding on that reading
+    // replaced the stage mid-timeline and `cacheRegions` dropped the theater
+    // with it, which deleted the entire ending: the last round, the outro and
+    // the queued summary all went at once, and the match simply stopped. The
+    // round that DECIDED the match was the one round a player never saw.
+    //
+    // The hold is released by `revealSummary`, which is the one place `summary`
+    // is set: the shell it computes then is the summary's own, so the window
+    // still rebuilds into the ending exactly once.
+    if (shell !== this.lastShell && !this.isNarrating()) {
       this.lastShell = shell;
       const el = this.deps.root();
       el.innerHTML = this.html(view);
-      this.wire(el, world);
+      this.wire(el);
       this.cacheRegions(el);
     }
     this.lastView = view;
@@ -326,13 +388,21 @@ export class CardDuelWindow {
 
   /** The snapshot half: every region that carries information a player acts on. */
   private paintTable(view: CardDuelViewModel): void {
+    // The one region the snapshot does not paint outright. While a round is
+    // being told the bars hold their pre-round reading and the `damage` beat
+    // releases them, so the number moves at the moment the story says it does
+    // (duel_health_core.ts). Everything else here is the snapshot's truth.
+    const health = duelHealthShown(
+      { myHp: view.myHp, opponentHp: view.opponentHp },
+      this.heldHealth,
+    );
     const table = buildDuelTable({
       waitingOnOpponent: view.waitingOnOpponent,
       opponentCommitted: view.opponentCommitted,
       myRounds: view.myRounds,
       opponentRounds: view.opponentRounds,
-      myHp: view.myHp,
-      opponentHp: view.opponentHp,
+      myHp: health.myHp,
+      opponentHp: health.opponentHp,
       maxHp: view.maxHp,
       myCounters: view.myCounters,
       opponentCounters: view.opponentCounters,
@@ -347,8 +417,11 @@ export class CardDuelWindow {
       opponentName,
       view.myRounds,
       view.opponentRounds,
-      view.myHp,
-      view.opponentHp,
+      // The SHOWN health, not the snapshot's: the release on the damage beat
+      // changes nothing else, so a signature over the raw values would elide
+      // the one repaint the beat exists to cause.
+      health.myHp,
+      health.opponentHp,
       view.maxHp,
       view.deckCount,
       view.discardCount,
@@ -627,6 +700,8 @@ export class CardDuelWindow {
   private revealSummary(summary: DuelSummaryModel): void {
     this.pendingEnd = null;
     this.endingOutcome = null;
+    // The table is about to be replaced, so there are no bars left to hold.
+    this.heldHealth = null;
     // The board is about to be replaced by the summary, but clear the hook
     // anyway: a rematch that reuses this element must not open under the last
     // match's ending colours.
@@ -667,8 +742,13 @@ export class CardDuelWindow {
         outcome,
       });
     }
+    // Taken BEFORE the timeline starts, and before ensureTheater, whose stop()
+    // clears it: from here the bars read the pre-round pair until the damage
+    // beat opens.
+    const hold = buildDuelHealthHold(input);
     const motion = resolveDuelMotion(el.ownerDocument);
     const theater = this.ensureTheater(el, audio ?? null, stage, motion);
+    this.heldHealth = hold;
     // The completion hook is where a queued match ending gets its turn. A round
     // that ends an ordinary match-in-progress simply has nothing waiting.
     theater.play(stage, motion, () => {
@@ -704,8 +784,14 @@ export class CardDuelWindow {
         // than in it. The board is their common ancestor and survives every
         // region repaint, so one attribute lights whichever the beat means.
         spotlight: this.els.board,
-        // The round is fully told: the two spent cards leave for the piles.
         onBeat: (beat) => {
+          // The hit LANDS here: the bars have been holding their pre-round
+          // reading for the whole telling, and this is the moment the story
+          // says the health comes off. `settle` is the backstop for a timeline
+          // that never reaches a damage beat (a collapsed one opens only the
+          // settled picture), so the hold can never outlive its round.
+          if (beat.phase === 'damage' || beat.phase === 'settle') this.releaseHealthHold();
+          // The round is fully told: the two spent cards leave for the piles.
           if (beat.phase === 'settle') flyStageToDiscard(this.motionAnchors(el));
         },
       }),
@@ -831,12 +917,28 @@ export class CardDuelWindow {
    * rebuilt on its own signature, several times a match: re-wiring every card
    * on every refill is work, and a listener attached to a node the next
    * rebuild replaces is a leak waiting to happen.
+   *
+   * ONCE PER ELEMENT, and that is the load-bearing half. A shell rebuild
+   * replaces the markup INSIDE the root; the root itself is the element from
+   * index.html and lives for the session. Binding with the shell therefore
+   * added a listener per rebuild, and since a match walks the shell through
+   * available -> in a match -> over, a press after one match ran every arm
+   * several times: several click sounds, several play commands, and a Decks
+   * button that toggled the builder open and shut again in one press and so
+   * read as dead. The delegation is exactly what makes one binding enough, so
+   * the guard costs nothing.
    */
-  private wire(el: HTMLElement, world: IWorld): void {
-    // Rebound with the shell, for the same reason the click handler is: the
-    // subtree it delegates over has just been replaced.
+  private wire(el: HTMLElement): void {
+    // The inspector re-attaches freely: attach() detaches first, so it is
+    // idempotent per element and never stacks.
     this.inspector.attach(el);
+    if (this.wiredRoot === el) return;
+    this.wiredRoot = el;
     el.addEventListener('click', (ev) => {
+      // Resolved at CLICK time rather than captured at wire time: one binding
+      // outlives every rebuild, so a world captured in the closure would be
+      // the one that happened to be current when the window was first painted.
+      const world = this.deps.world();
       const target = ev.target as HTMLElement | null;
       if (!target) return;
       // Every control in this window answers audibly. They were all silent,

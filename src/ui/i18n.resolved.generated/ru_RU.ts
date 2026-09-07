@@ -8650,13 +8650,10 @@ export const ru_RU: EnTranslations = {
       "effectOther": "{card} срабатывает",
       "yourCard": "вашу карту",
       "theirCard": "карту противника",
-      "damage": "{target} получает {amount}",
-      "finish": "The last blow lands",
-      "gloryWin": "The duel is yours",
-      "gloryLose": "The duel is lost",
-      "gloryDraw": "The duel ends level",
-      "you": "Вы",
-      "them": "Противник"
+      "finish": "Последний удар нанесен",
+      "gloryWin": "Дуэль за вами",
+      "gloryLose": "Дуэль проиграна",
+      "gloryDraw": "Дуэль завершилась вничью"
     },
     "summary": {
       "win": "Вы выиграли дуэль",

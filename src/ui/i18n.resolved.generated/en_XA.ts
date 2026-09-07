@@ -8650,13 +8650,10 @@ export const en_XA: EnTranslations = {
       "effectOther": "[{card} ŕéšóļʋéš]",
       "yourCard": "[ýóúŕ çáŕð]",
       "theirCard": "[ţĥéíŕ çáŕð]",
-      "damage": "[{target} ţáķéš {amount}]",
       "finish": "[Ţĥé ļášţ ƀļóŵ ļáñðš]",
       "gloryWin": "[Ţĥé ðúéļ íš ýóúŕš]",
       "gloryLose": "[Ţĥé ðúéļ íš ļóšţ]",
-      "gloryDraw": "[Ţĥé ðúéļ éñðš ļéʋéļ]",
-      "you": "[Ýóú]",
-      "them": "[Ýóúŕ óþþóñéñţ]"
+      "gloryDraw": "[Ţĥé ðúéļ éñðš ļéʋéļ]"
     },
     "summary": {
       "win": "[Ýóú ŵíñ ţĥé ðúéļ]",

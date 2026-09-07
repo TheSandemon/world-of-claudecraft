@@ -227,6 +227,23 @@ describe('card face markup', () => {
     }
   });
 
+  it('centres every word on the face, from the frame down', () => {
+    // The name plate, the tribe line and the rules sentence all inherited the
+    // default left alignment, so each face read as a centred picture sitting on
+    // a ragged left-aligned column. Pinned on the FRAME because that is what
+    // makes it total: a block added to the face later is centred by
+    // construction rather than by remembering to add a fourth rule.
+    const frameAt = CARDS_CSS.indexOf('\n  .cf-frame {');
+    const frame = CARDS_CSS.slice(frameAt, CARDS_CSS.indexOf('}', frameAt));
+    expect(frame).toContain('text-align: center');
+    // And nothing below it puts the alignment back.
+    for (const sel of ['cf-plate', 'cf-name', 'cf-tribes', 'cf-rules']) {
+      const at = CARDS_CSS.indexOf(`\n  .${sel} {`);
+      expect(at, `no rule for .${sel}`).toBeGreaterThan(-1);
+      expect(CARDS_CSS.slice(at, CARDS_CSS.indexOf('}', at))).not.toContain('text-align: left');
+    }
+  });
+
   it('every class the markup mints has a rule in the stylesheet', () => {
     const html =
       faceOf(WOLF_ID, { effectiveValue: 5, revealed: true, silenced: true }) +

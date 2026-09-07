@@ -1260,6 +1260,13 @@
     background: #ffffff10;
     overflow: hidden;
     transition: transform 120ms ease-out;
+    /* Every word on a card face is CENTERED, at all four sizes: the name
+       plate, the tribe line and the rules sentence. A card is a small tall
+       panel read at a glance in a fan of four, and a ragged left edge under a
+       centered art panel made each face read as two different columns. Set
+       once here rather than per element, so a block added to the face later is
+       centered by construction. */
+    text-align: center;
   }
   .cf-playable:hover .cf-frame {
     transform: translateY(-2px);

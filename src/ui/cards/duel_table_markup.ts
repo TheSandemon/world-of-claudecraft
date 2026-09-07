@@ -382,8 +382,13 @@ export function duelBeatCaption(
   if (beat.phase === 'reveal') return t('cardDuel.beat.reveal');
   if (beat.phase === 'clash') return t('cardDuel.beat.clash');
   if (beat.phase === 'damage') {
-    return t('cardDuel.beat.damage', {
-      target: t(stage.damageTo === 'mine' ? 'cardDuel.beat.you' : 'cardDuel.beat.them'),
+    // TWO whole sentences, never one with the subject substituted in. The
+    // caption used to read "{target} takes {amount}" with "You" dropped into
+    // the slot, which is "You takes 7" in English and unanswerable in any
+    // language that inflects around the subject. These are the same two
+    // sentences the damage plate beside it already uses, so the strip and the
+    // plate cannot word the same hit differently.
+    return t(stage.damageTo === 'mine' ? 'cardDuel.damageMine' : 'cardDuel.damageTheirs', {
       amount: num(stage.damage),
     });
   }
